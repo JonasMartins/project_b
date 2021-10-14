@@ -1,0 +1,29 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "main": "server.ts",
+  "license": "MIT",
+  "scripts": {
+    "watch": "tsc -w",
+    "dev": "nodemon -r dotenv/config build/server.js",
+    "start": "node -r dotenv/config build/server.js"
+  },
+  "dependencies": {
+    "@types/express": "^4.17.13",
+    "@types/express-graphql": "^0.9.0",
+    "@types/graphql": "^14.5.0",
+    "apollo-server-express": "^3.4.0",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "express-graphql": "^0.12.0",
+    "graphql": "^15.6.1",
+    "pg": "^8.7.1",
+    "type-graphql": "^1.1.1",
+    "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "@types/node": "^16.11.0",
+    "nodemon": "^2.0.13",
+    "typescript": "^4.4.4"
+  }
+}
