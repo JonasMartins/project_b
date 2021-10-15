@@ -1,1 +1,2 @@
 yarn typeorm --name project_b --database postgres
+https://medium.com/@giuseppepace_505/graphql-apollo-server-express-typeorm-a67cf96c3bf8
