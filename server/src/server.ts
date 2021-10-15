@@ -1,22 +1,25 @@
-import express, { Request, Response } from "express";
+import "reflect-metadata";
+import { createConnection } from "typeorm";
+import * as express from "express";
 import { ApolloServer } from "apollo-server-express";
-import { buildSchema } from "type-graphql";
 
-//express initialization
-const app = express();
+import { typeDefs } from "./resolvers/typeDefs";
+import { resolvers } from "./resolvers/resolvers";
 
-//PORT
-const PORT = 4000;
+const startServer = async () => {
+    const server = new ApolloServer({ typeDefs, resolvers });
 
-app.get("/", (_req: Request, res: Response) => {
-  res.send("Hello World!");
-});
-/*
-const apolloServer = new ApolloServer({
-    schema : await buildSchema({})
-}); */
+    await createConnection();
 
-//localhost setup
-app.listen(4000, () => {
-  console.log("Graphql server now up at port 4000");
-});
+    const app = express();
+
+    server.applyMiddleware({ app });
+
+    app.listen({ port: 4000 }, () =>
+        console.log(
+            `🚀 Server ready at http://localhost:4000${server.graphqlPath}`
+        )
+    );
+};
+
+startServer();

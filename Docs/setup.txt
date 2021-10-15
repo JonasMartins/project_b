@@ -1,0 +1,1 @@
+yarn typeorm --name project_b --database postgres
