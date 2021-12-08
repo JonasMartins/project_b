@@ -10,7 +10,7 @@ import { Field, ObjectType } from "type-graphql";
 
 @ObjectType()
 export abstract class Base extends BaseEntity {
-    @Field((_type) => String)
+    @Field(() => String)
     @PrimaryGeneratedColumn("uuid")
     public id!: string;
 

@@ -12,7 +12,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const typeorm_1 = require("typeorm");
 const intializeDB = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        yield (0, typeorm_1.createConnection)();
+        const connection = yield (0, typeorm_1.createConnection)();
+        yield connection.synchronize();
         console.log("Database successfully initialized");
     }
     catch (error) {

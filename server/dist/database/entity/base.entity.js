@@ -19,7 +19,7 @@ let Base = class Base extends typeorm_1.BaseEntity {
     }
 };
 __decorate([
-    (0, type_graphql_1.Field)((_type) => String),
+    (0, type_graphql_1.Field)(() => String),
     (0, typeorm_1.PrimaryGeneratedColumn)("uuid"),
     __metadata("design:type", String)
 ], Base.prototype, "id", void 0);
