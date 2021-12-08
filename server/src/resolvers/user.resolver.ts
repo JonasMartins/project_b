@@ -9,7 +9,6 @@ import {
     Field,
     InputType,
 } from "type-graphql";
-import { Service } from "typedi";
 import { IsString } from "class-validator";
 import { Context } from "./../context";
 import { ErrorFieldHandler } from "./../helpers/errorFieldHandler";

@@ -4,7 +4,7 @@ import "express-async-errors";
 import { Server } from "http";
 import { buildSchema } from "type-graphql";
 import { getManager, EntityManager } from "typeorm";
-import initializeDB from "./database/index.database";
+import { intializeDB } from "./database/index.database";
 import { UserResolver } from "./resolvers/user.resolver";
 import { Context } from "./context";
 import cors from "cors";
@@ -16,8 +16,8 @@ export default class Application {
     public server: Server;
 
     public connect = async (): Promise<void> => {
-        //this.orm = getManager();
-        await initializeDB();
+        await intializeDB();
+        this.orm = getManager();
     };
 
     public init = async (): Promise<void> => {

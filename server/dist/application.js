@@ -16,14 +16,16 @@ const apollo_server_express_1 = require("apollo-server-express");
 const express_1 = __importDefault(require("express"));
 require("express-async-errors");
 const type_graphql_1 = require("type-graphql");
-const index_database_1 = __importDefault(require("./database/index.database"));
+const typeorm_1 = require("typeorm");
+const index_database_1 = require("./database/index.database");
 const user_resolver_1 = require("./resolvers/user.resolver");
 const cors_1 = __importDefault(require("cors"));
 const apollo_server_core_1 = require("apollo-server-core");
 class Application {
     constructor() {
         this.connect = () => __awaiter(this, void 0, void 0, function* () {
-            yield (0, index_database_1.default)();
+            yield (0, index_database_1.intializeDB)();
+            this.orm = (0, typeorm_1.getManager)();
         });
         this.init = () => __awaiter(this, void 0, void 0, function* () {
             this.app = (0, express_1.default)();
