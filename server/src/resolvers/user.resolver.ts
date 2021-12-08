@@ -38,8 +38,7 @@ class UserResponse {
     user?: User;
 }
 
-@Service()
-@Resolver(() => User)
+@Resolver()
 export class UserResolver {
     @Query(() => UserResponse)
     async getUserById(

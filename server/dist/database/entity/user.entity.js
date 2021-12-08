@@ -10,6 +10,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.User = void 0;
+const type_graphql_1 = require("type-graphql");
 const typeorm_1 = require("typeorm");
 const base_entity_1 = require("./base.entity");
 let User = class User extends base_entity_1.Base {
@@ -27,6 +28,7 @@ __decorate([
     __metadata("design:type", String)
 ], User.prototype, "password", void 0);
 User = __decorate([
+    (0, type_graphql_1.ObjectType)(),
     (0, typeorm_1.Entity)()
 ], User);
 exports.User = User;

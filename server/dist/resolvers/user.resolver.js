@@ -24,7 +24,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserResolver = void 0;
 const user_entity_1 = require("./../database/entity/user.entity");
 const type_graphql_1 = require("type-graphql");
-const typedi_1 = require("typedi");
 const class_validator_1 = require("class-validator");
 const errorFieldHandler_1 = require("./../helpers/errorFieldHandler");
 const generalAuxMethods_1 = require("./../helpers/generalAuxMethods");
@@ -109,8 +108,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], UserResolver.prototype, "createUser", null);
 UserResolver = __decorate([
-    (0, typedi_1.Service)(),
-    (0, type_graphql_1.Resolver)(() => user_entity_1.User)
+    (0, type_graphql_1.Resolver)()
 ], UserResolver);
 exports.UserResolver = UserResolver;
 //# sourceMappingURL=user.resolver.js.map

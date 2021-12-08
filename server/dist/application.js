@@ -16,15 +16,13 @@ const apollo_server_express_1 = require("apollo-server-express");
 const express_1 = __importDefault(require("express"));
 require("express-async-errors");
 const type_graphql_1 = require("type-graphql");
-const typeorm_1 = require("typeorm");
 const index_database_1 = __importDefault(require("./database/index.database"));
-const typedi_1 = require("typedi");
 const user_resolver_1 = require("./resolvers/user.resolver");
 const cors_1 = __importDefault(require("cors"));
+const apollo_server_core_1 = require("apollo-server-core");
 class Application {
     constructor() {
         this.connect = () => __awaiter(this, void 0, void 0, function* () {
-            this.orm = (0, typeorm_1.getManager)();
             yield (0, index_database_1.default)();
         });
         this.init = () => __awaiter(this, void 0, void 0, function* () {
@@ -35,8 +33,7 @@ class Application {
             }));
             const schema = yield (0, type_graphql_1.buildSchema)({
                 resolvers: [user_resolver_1.UserResolver],
-                container: typedi_1.Container,
-                emitSchemaFile: true,
+                validate: false,
             });
             const apolloServer = new apollo_server_express_1.ApolloServer({
                 schema,
@@ -46,7 +43,9 @@ class Application {
                     res,
                 }),
                 introspection: true,
+                plugins: [apollo_server_core_1.ApolloServerPluginLandingPageGraphQLPlayground],
             });
+            yield apolloServer.start();
             apolloServer.applyMiddleware({
                 app: this.app,
                 cors: false,

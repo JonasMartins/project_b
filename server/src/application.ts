@@ -5,10 +5,10 @@ import { Server } from "http";
 import { buildSchema } from "type-graphql";
 import { getManager, EntityManager } from "typeorm";
 import initializeDB from "./database/index.database";
-import { Container } from "typedi";
 import { UserResolver } from "./resolvers/user.resolver";
 import { Context } from "./context";
 import cors from "cors";
+import { ApolloServerPluginLandingPageGraphQLPlayground } from "apollo-server-core";
 
 export default class Application {
     public orm: EntityManager;
@@ -16,7 +16,7 @@ export default class Application {
     public server: Server;
 
     public connect = async (): Promise<void> => {
-        this.orm = getManager();
+        //this.orm = getManager();
         await initializeDB();
     };
 
@@ -32,8 +32,7 @@ export default class Application {
 
         const schema = await buildSchema({
             resolvers: [UserResolver],
-            container: Container,
-            emitSchemaFile: true,
+            validate: false,
         });
 
         const apolloServer = new ApolloServer({
@@ -44,7 +43,10 @@ export default class Application {
                 res,
             }),
             introspection: true,
+            plugins: [ApolloServerPluginLandingPageGraphQLPlayground],
         });
+
+        await apolloServer.start();
 
         apolloServer.applyMiddleware({
             app: this.app,
