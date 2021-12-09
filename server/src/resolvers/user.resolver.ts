@@ -1,4 +1,5 @@
 import { User } from "./../database/entity/user.entity";
+import argon2 from "argon2";
 import {
     Query,
     Resolver,
@@ -66,6 +67,21 @@ export class UserResolver {
         @Ctx() { em }: Context
     ): Promise<UserResponse> {
         try {
+
+            if(options.password.length < 6) {
+                return {
+                    errors: genericError(
+                        "password",
+                        "createUser",
+                        __filename,
+                        "Password must be at least length 6."
+                    ),
+                };
+            }
+
+            const hashedPasswWord = await argon2.hash(options.password);
+            options.password = hashedPasswWord;
+
             const user = await em.create(User, {
                 name: options.name,
                 email: options.email,
