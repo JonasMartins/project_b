@@ -14,4 +14,12 @@ export class UserValidator {
     @Field()
     @IsString()
     public password: string;
+
+    @Field()
+    @IsString()
+    public roleId: string;
+
+    @Field({ nullable: true })
+    @IsString()
+    public picture: string;
 }

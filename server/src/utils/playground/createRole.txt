@@ -1,0 +1,21 @@
+mutation {
+    createRole(
+        options: {
+            name: "Admin"
+            description: "The blog administrator."
+            code: "99999"
+        }
+    ) {
+        errors {
+            method
+            message
+            field
+        }
+        role {
+            id
+            name
+            description
+        }
+    }
+}
+

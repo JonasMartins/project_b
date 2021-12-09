@@ -1,0 +1,18 @@
+{
+    getRoles(limit: 5) {
+        errors {
+            method
+            message
+            field
+        }
+        roles {
+      		id
+            name
+            code
+            description
+      		createdAt
+      		updatedAt
+        }
+    }
+}
+

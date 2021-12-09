@@ -20,17 +20,19 @@ export class User extends Base {
     public password: string;
 
     @Field(() => String, { nullable: true })
-    @Column()
+    @Column({ nullable: true })
     public picture: string;
 
     @Field(() => Role)
     @ManyToOne(() => Role, { eager: true })
     public role: Role;
 
-    constructor(body: UserValidator) {
+    constructor(body?: UserValidator) {
         super();
-        this.name = body.name;
-        this.email = body.email;
-        this.password = body.password;
+        if (body) {
+            this.name = body.name;
+            this.email = body.email;
+            this.password = body.password;
+        }
     }
 }

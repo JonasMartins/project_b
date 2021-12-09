@@ -39,12 +39,16 @@ export class RoleResolver {
         const max = Math.min(20, limit);
 
         try {
-            const roles = await em
+            const qb = await em
                 .getRepository(Role)
                 .createQueryBuilder("role")
                 .where("1 = 1")
-                .limit(max)
-                .getMany();
+                .limit(max);
+
+            // saving to put on migrations
+            //console.log("Query: ", qb.getQuery());
+
+            const roles = await qb.getMany();
 
             return { roles };
         } catch (e) {
@@ -97,9 +101,10 @@ export class RoleResolver {
                 };
             }
 
-            const role = await em.create(Role, options);
+            // INSERT INTO "role"("id", "createdAt", "updatedAt", "name", "code", "description")
+            // VALUES (DEFAULT, DEFAULT, DEFAULT, :orm_param_0, :orm_param_1, :orm_param_2)
 
-            await role.save();
+            const role = await em.create(Role, options).save();
 
             return { role };
         } catch (e) {

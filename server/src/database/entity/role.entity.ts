@@ -23,10 +23,12 @@ export class Role extends Base {
     @OneToMany(() => User, (user) => user.role, { lazy: true })
     public users: User[];
 
-    constructor(body: RoleValidator) {
+    constructor(body?: RoleValidator) {
         super();
-        this.name = body.name;
-        this.code = body.code;
-        this.description = body.description;
+        if (body) {
+            this.name = body.name;
+            this.code = body.code;
+            this.description = body.description;
+        }
     }
 }

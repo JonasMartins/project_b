@@ -1,0 +1,23 @@
+mutation {
+    createUser(
+        options: {
+            name: "Admin"
+            email: "admin@email.com"
+            password: "pb_password"
+      		roleId: "146b7ca8-ab97-4b11-a060-771437f2e00e"
+        }
+    ) {
+        errors {
+            method
+            message
+            field
+        }
+        user {
+            id
+            name
+            email
+            password
+        }
+    }
+}
+

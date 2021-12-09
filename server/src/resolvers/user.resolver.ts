@@ -8,28 +8,13 @@ import {
     Ctx,
     ObjectType,
     Field,
-    InputType,
 } from "type-graphql";
-import { IsString } from "class-validator";
 import { Context } from "./../context";
 import { ErrorFieldHandler } from "./../helpers/errorFieldHandler";
 import { genericError, validateEmail } from "./../helpers/generalAuxMethods";
 import { createAcessToken } from "../helpers/aurth";
-
-@InputType()
-class UserValidator {
-    @Field()
-    @IsString()
-    public name: string;
-
-    @Field()
-    @IsString()
-    public email: string;
-
-    @Field()
-    @IsString()
-    public password: string;
-}
+import { UserValidator } from "../database/validators/user.validator";
+import { Role } from "../database/entity/role.entity";
 
 @ObjectType()
 class LoginResponse {
@@ -129,10 +114,25 @@ export class UserResolver {
             const hashedPasswWord = await argon2.hash(options.password);
             options.password = hashedPasswWord;
 
+            const role = await em.findOne(Role, { id: options.roleId });
+
+            if (!role) {
+                return {
+                    errors: [
+                        {
+                            field: "roleId",
+                            message: `Could not found role with id: ${options.roleId}`,
+                            method: `Method: createUser, at ${__filename}`,
+                        },
+                    ],
+                };
+            }
             const user = await em.create(User, {
                 name: options.name,
                 email: options.email,
                 password: options.password,
+                picture: options.picture,
+                role: role,
             });
 
             await user.save();
