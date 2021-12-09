@@ -5,7 +5,7 @@
     "username": "postgres",
     "password": "postgres",
     "database": "pb_dev",
-    "synchronize": true,
+    "synchronize": false,
     "logging": false,
     "entities": ["dist/**/*.entity.js"],
     "migrations": ["src/migration/**/*.ts"],

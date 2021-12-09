@@ -9,6 +9,7 @@ import { UserResolver } from "./resolvers/user.resolver";
 import { Context } from "./context";
 import cors from "cors";
 import { ApolloServerPluginLandingPageGraphQLPlayground } from "apollo-server-core";
+import { RoleResolver } from "./resolvers/role.resolver";
 
 export default class Application {
     public orm: EntityManager;
@@ -31,7 +32,7 @@ export default class Application {
         );
 
         const schema = await buildSchema({
-            resolvers: [UserResolver],
+            resolvers: [UserResolver, RoleResolver],
             validate: false,
         });
 
