@@ -111,9 +111,6 @@ export class UserResolver {
                 };
             }
 
-            const hashedPasswWord = await argon2.hash(options.password);
-            options.password = hashedPasswWord;
-
             const role = await em.findOne(Role, { id: options.roleId });
 
             if (!role) {
