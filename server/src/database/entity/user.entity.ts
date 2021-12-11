@@ -31,8 +31,8 @@ export class User extends Base {
 
 
     @BeforeInsert()
-    async setPassword(password: string) {
-        const hashedPasswWord = await argon2.hash(password);
+    async hashPassword() {
+        const hashedPasswWord = await argon2.hash(this.password);
         this.password = hashedPasswWord;
     }
 

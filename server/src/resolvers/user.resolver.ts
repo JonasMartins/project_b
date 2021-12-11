@@ -32,8 +32,50 @@ class UserResponse {
     user?: User;
 }
 
+@ObjectType()
+class UsersResponse {
+    @Field(() => [ErrorFieldHandler], { nullable: true })
+    errors?: ErrorFieldHandler[];
+    @Field(() => [User], { nullable: true })
+    users?: User[];
+}
+
 @Resolver()
 export class UserResolver {
+    @Query(() => UsersResponse)
+    async getUsers(
+        @Arg("limit", () => Number, { nullable: true }) limit: number,
+        @Arg("offset", () => Number, { nullable: true }) offset: number,
+        @Ctx() { em }: Context
+    ): Promise<UsersResponse> {
+        const max = Math.min(20, limit ? limit : 5);
+        const maxOffset = Math.min(10, offset ? offset : 0);
+
+        try {
+            const qb = await em
+                .getRepository(User)
+                .createQueryBuilder("user")
+                .where("1 = 1")
+                .limit(max)
+                .offset(maxOffset);
+
+            // console.log("query ", qb.getQuery());
+
+            const users = await qb.getMany();
+
+            return { users };
+        } catch (e) {
+            return {
+                errors: genericError(
+                    "-",
+                    "getUsers",
+                    __filename,
+                    `Could not get the users, details: ${e.message}`
+                ),
+            };
+        }
+    }
+
     @Query(() => UserResponse)
     async getUserById(
         @Arg("id") id: string,
@@ -128,9 +170,9 @@ export class UserResolver {
                 name: options.name,
                 email: options.email,
                 password: options.password,
-                picture: options.picture,
-                role: role,
             });
+
+            user.role = role;
 
             await user.save();
 

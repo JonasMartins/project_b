@@ -1,4 +1,4 @@
-{
+module.exports = {
     "type": "postgres",
     "host": "localhost",
     "port": 5432,
@@ -7,7 +7,7 @@
     "database": "pb_dev",
     "synchronize": false,
     "logging": false,
-    "entities": ["dist/**/*.entity.js"],
+    "entities": [process.env.NODE_ENV === 'test' ? "src/**/*.entity.ts" : "dist/**/*.entity.js"],
     "migrations": ["dist/migration/**/*.js"],
     "subscribers": ["dist/subscriber/**/*.js"],
     "cli": {

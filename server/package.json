@@ -5,9 +5,9 @@
     "license": "MIT",
     "scripts": {
         "watch": "tsc -w",
-        "dev": "nodemon -r dotenv/config dist/index.js",
+        "dev": "cross-env NODE_DEV=true nodemon -r dotenv/config dist/index.js",
         "start": "ts-node src/index.ts",
-        "test": "ts-mocha tests/**/*.test.ts --package package.json"
+        "test": "cross-env NODE_DEV=true NODE_ENV=test ts-mocha tests/**/*.test.ts --package package.json"
     },
     "dependencies": {
         "@types/dotenv": "^8.2.0",
