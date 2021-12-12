@@ -10,6 +10,10 @@ let application: Application;
 let em: EntityManager;
 
 describe("User tests", async () => {
+    let userId: String = "";
+    let createdUserId: String = "";
+    let createdRoleId: String = "";
+
     before(async () => {
         application = new Application();
         await application.connect();
@@ -45,5 +49,33 @@ describe("User tests", async () => {
             .expect(200);
 
         expect(response.body.data.getUsers.users).to.be.a("array");
+
+        if (response.body.data.getUsers.users.length) {
+            userId = response.body.data.getUsers.users[0].id;
+        }
     });
+
+    it("Should get a user by Id", async () => {
+        if (!userId) {
+            expect.fail("An user id must be filled here");
+        } else {
+            const response = await request
+                .post("/graphql")
+                .send({
+                    query: `query {
+                getUserById(id: "${userId}") {
+                    user {
+                        id
+                        name
+                    }
+                }
+            }`,
+                })
+                .expect(200);
+
+            expect(response.body.data.getUserById.user).to.be.a("object");
+        }
+    });
+
+    //it("Should Create a Role");
 });
