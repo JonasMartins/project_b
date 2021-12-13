@@ -225,4 +225,28 @@ export class UserResolver {
 
         return { token };
     }
+
+    @Mutation(() => Boolean)
+    async deleteUser(
+        @Arg("id") id: string,
+        @Ctx() { em }: Context
+    ): Promise<Boolean> {
+        try {
+            const user = await em.findOne(User, { id });
+            let result: boolean = false;
+            if (!user) {
+                throw new Error(`User with id: ${id} not found.`);
+            }
+
+            const userRemoved = await em.remove(user);
+            result = userRemoved ? true : false;
+            return new Promise((resolve, _) => {
+                resolve(result);
+            });
+        } catch (e) {
+            return new Promise((resolve, _) => {
+                resolve(false);
+            });
+        }
+    }
 }

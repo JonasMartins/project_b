@@ -118,4 +118,28 @@ export class RoleResolver {
             };
         }
     }
+
+    @Mutation(() => Boolean)
+    async deleteRole(
+        @Arg("id") id: string,
+        @Ctx() { em }: Context
+    ): Promise<Boolean> {
+        try {
+            const role = await em.findOne(Role, { id });
+            let result: boolean = false;
+            if (!Role) {
+                throw new Error(`Role with id: ${id} not found.`);
+            }
+
+            const roleRemoved = await em.remove(role);
+            result = roleRemoved ? true : false;
+            return new Promise((resolve, _) => {
+                resolve(result);
+            });
+        } catch (e) {
+            return new Promise((resolve, _) => {
+                resolve(false);
+            });
+        }
+    }
 }
