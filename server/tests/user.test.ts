@@ -80,17 +80,18 @@ describe("User tests", async () => {
         const response = await request
             .post("/graphql")
             .send({
-                query: `query {
-                            createRole(
-                                options: {
-                                    name: "TestRole"
-                                    description: "TestDescription"
-                                    code: "00001"
-                                }) {
-                                    role {
-                                        id
-                                    }
-                        }`,
+                query: `mutation {
+                        createRole(
+                            options: {
+                                name: "TestRole"
+                                   description: "TestDescription"
+                                code: "00001"
+                            }) {
+                                role {
+                                    id
+                                }
+                        }
+                    }`,
             })
             .expect(200);
 
@@ -107,7 +108,7 @@ describe("User tests", async () => {
             const response = await request
                 .post("/graphql")
                 .send({
-                    query: `query {
+                    query: `mutation {
                             createUser(options: {
                                 name: "TestUser"
                                 email: "test_user@email.com"
@@ -129,7 +130,7 @@ describe("User tests", async () => {
         }
     });
 
-    it("Should delete a user", async () => {
+    it("Should delete a User", async () => {
         if (!createdUserId.length) {
             expect.fail("An user created id must be filled here");
         } else {
@@ -137,8 +138,8 @@ describe("User tests", async () => {
                 .post("/graphql")
                 .send({
                     query: `
-                        query {
-                        deleteUser(id: "${createdUserId}")
+                        mutation {
+                            deleteUser(id: "${createdUserId}")
                         }
                     `,
                 })
@@ -148,7 +149,7 @@ describe("User tests", async () => {
         }
     });
 
-    it("Should delete a role", async () => {
+    it("Should delete a Role", async () => {
         if (!createdRoleId.length) {
             expect.fail("A role created id must be filled here");
         } else {
@@ -156,7 +157,7 @@ describe("User tests", async () => {
                 .post("/graphql")
                 .send({
                     query: `
-                        query {
+                        mutation {
                             deleteRole(id: "${createdRoleId}")
                         }
                     `,
