@@ -1,6 +1,7 @@
 export const pallet: object = {
     black: "#16161D",
     white: "#FFFFFF",
+    palePink: "#fff3f5",
     primary: {
         50: "#F18CFF",
         100: "#ED73FF",
