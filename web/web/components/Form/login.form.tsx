@@ -104,7 +104,7 @@ const MyForm = withFormik<MyFormProps, FormValues>({
 // Use <MyForm /> wherevs
 const LoginForm = () => (
     <div>
-        <MyForm message="Log In" />
+        <MyForm message="" />
     </div>
 );
 

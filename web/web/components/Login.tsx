@@ -1,10 +1,23 @@
-import { Box, Flex, Switch, useColorMode } from "@chakra-ui/react";
+import {
+    Box,
+    Flex,
+    Switch,
+    useColorMode,
+    Tabs,
+    TabList,
+    TabPanels,
+    Tab,
+    TabPanel,
+} from "@chakra-ui/react";
 import type { NextPage } from "next";
 import Image from "next/image";
 import Logo from "public/images/techBlog_logo_5000x4710.png";
 import React, { useEffect, useState } from "react";
 import { BsMoon, BsSun } from "react-icons/bs";
 import LoginForm from "components/Form/login.form";
+import { custonTabButton } from "utils/custom/customStyles";
+import { css, jsx } from "@emotion/react";
+
 interface Props {}
 
 const Login: NextPage<Props> = () => {
@@ -70,7 +83,25 @@ const Login: NextPage<Props> = () => {
                         width={"20em"}
                         alignSelf="stretch"
                     >
-                        <LoginForm />
+                        <Tabs
+                            isFitted
+                            variant="soft-rounded"
+                            colorScheme="primary.500"
+                        >
+                            <TabList>
+                                <Tab css={css(custonTabButton)}>Log In</Tab>
+                                <Tab css={css(custonTabButton)}>Register</Tab>
+                            </TabList>
+
+                            <TabPanels>
+                                <TabPanel>
+                                    <LoginForm />
+                                </TabPanel>
+                                <TabPanel>
+                                    <p>two!</p>
+                                </TabPanel>
+                            </TabPanels>
+                        </Tabs>
                     </Box>
                 </Flex>
             </Flex>
