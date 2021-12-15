@@ -15,8 +15,9 @@ import Logo from "public/images/techBlog_logo_5000x4710.png";
 import React, { useEffect, useState } from "react";
 import { BsMoon, BsSun } from "react-icons/bs";
 import LoginForm from "components/Form/login.form";
+import RegisterForm from "components/Form/register.form";
 import { custonTabButton } from "utils/custom/customStyles";
-import { css, jsx } from "@emotion/react";
+import { css } from "@emotion/react";
 
 interface Props {}
 
@@ -98,7 +99,7 @@ const Login: NextPage<Props> = () => {
                                     <LoginForm />
                                 </TabPanel>
                                 <TabPanel>
-                                    <p>two!</p>
+                                    <RegisterForm />
                                 </TabPanel>
                             </TabPanels>
                         </Tabs>

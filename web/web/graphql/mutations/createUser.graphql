@@ -1,0 +1,15 @@
+mutation CreateUser($options: UserValidator!) {
+    createUser(options: $options) {
+        errors {
+            method
+            message
+            field
+        }
+        user {
+            id
+            name
+            email
+            password
+        }
+    }
+}

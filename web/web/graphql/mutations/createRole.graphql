@@ -1,0 +1,14 @@
+mutation CreateRole($options: RoleValidator!) {
+    createRole(options: $options) {
+        errors {
+            method
+            message
+            field
+        }
+        role {
+            id
+            name
+            description
+        }
+    }
+}

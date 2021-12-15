@@ -15,7 +15,7 @@ export class UserValidator {
     @IsString()
     public password: string;
 
-    @Field()
+    @Field({ nullable: true })
     @IsString()
     public roleId: string;
 

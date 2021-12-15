@@ -10,23 +10,27 @@ import {
     FormLabel,
 } from "@chakra-ui/react";
 import { ComponentProps } from "react";
-import { LoginDocument } from "generated/graphql";
-import { useMutation } from "@apollo/client";
 
-const LoginSchema = Yup.object().shape({
+const RegisterSchema = Yup.object().shape({
+    name: Yup.string().required("Required"),
     email: Yup.string().email("Invalid email").required("Required"),
     password: Yup.string()
         .min(6, "Too Short!")
         .max(50, "Too Long!")
         .required("Required"),
+    passwordConfirmation: Yup.string().oneOf(
+        [Yup.ref("password"), null],
+        "Passwords must mtach"
+    ),
 });
 
 type InputProps = ComponentProps<typeof Input>;
 
-// Shape of form values
 interface FormValues {
+    name: string;
     email: string;
     password: string;
+    passwordConfirmation: string;
 }
 
 interface OtherProps {
@@ -37,7 +41,6 @@ const ChakraInput = (props: InputProps) => {
     return <Input {...props} borderRadius="1em" size={"sm"} variant="filled" />;
 };
 
-// Aside: You may see InjectedFormikProps<OtherProps, FormValues> instead of what comes below in older code.. InjectedFormikProps was artifact of when Formik only exported a HoC. It is also less flexible as it MUST wrap all props (it passes them through).
 const InnerForm = (props: OtherProps & FormikProps<FormValues>) => {
     const { touched, errors, isSubmitting, message } = props;
     return (
@@ -45,10 +48,21 @@ const InnerForm = (props: OtherProps & FormikProps<FormValues>) => {
             <Stack spacing={3}>
                 <Text fontSize={"md"}>{message}</Text>
 
+                <FormControl isInvalid={touched.name && !!errors.name}>
+                    <FormLabel htmlFor="name">Name</FormLabel>
+                    <Field
+                        id="nameReg"
+                        type="name"
+                        name="name"
+                        as={ChakraInput}
+                    />
+                    <FormErrorMessage>{errors.name}</FormErrorMessage>
+                </FormControl>
+
                 <FormControl isInvalid={touched.email && !!errors.email}>
                     <FormLabel htmlFor="email">Email</FormLabel>
                     <Field
-                        id="email"
+                        id="emailReg"
                         type="email"
                         name="email"
                         as={ChakraInput}
@@ -59,7 +73,7 @@ const InnerForm = (props: OtherProps & FormikProps<FormValues>) => {
                 <FormControl isInvalid={touched.password && !!errors.password}>
                     <FormLabel htmlFor="password">Password</FormLabel>
                     <Field
-                        id="password"
+                        id="passwordReg"
                         type="password"
                         name="password"
                         as={ChakraInput}
@@ -67,11 +81,29 @@ const InnerForm = (props: OtherProps & FormikProps<FormValues>) => {
                     <FormErrorMessage>{errors.password}</FormErrorMessage>
                 </FormControl>
 
+                <FormControl
+                    isInvalid={
+                        touched.passwordConfirmation &&
+                        !!errors.passwordConfirmation
+                    }
+                >
+                    <FormLabel htmlFor="passwordConfirmation">
+                        Password Confirmation
+                    </FormLabel>
+                    <Field
+                        id="passwordConfirmationReg"
+                        type="password"
+                        name="passwordConfirmation"
+                        as={ChakraInput}
+                    />
+                    <FormErrorMessage>
+                        {errors.passwordConfirmation}
+                    </FormErrorMessage>
+                </FormControl>
+
                 <Button
                     type="submit"
-                    disabled={
-                        isSubmitting || !!errors.email || !!errors.password
-                    }
+                    disabled={isSubmitting}
                     variant="phlox-gradient"
                     color="white"
                 >
@@ -82,52 +114,32 @@ const InnerForm = (props: OtherProps & FormikProps<FormValues>) => {
     );
 };
 
-type submit = (email: string, password: string) => void;
-
-// The type of props MyForm receives
 interface MyFormProps {
     initialEmail?: string;
-    message: string; // if this passed all the way through you might do this or make a union type
-    action: submit;
+    message: string;
 }
 
-// Wrap our form with the withFormik HoC
 const MyForm = withFormik<MyFormProps, FormValues>({
-    // Transform outer props into form values
     mapPropsToValues: (props) => {
         return {
+            name: "",
             email: props.initialEmail || "",
             password: "",
+            passwordConfirmation: "",
         };
     },
 
-    validationSchema: LoginSchema,
+    validationSchema: RegisterSchema,
 
-    handleSubmit: (values, formikBag) => {
+    handleSubmit: (values) => {
         console.log("values ", values);
-        formikBag.props.action(values.email, values.password);
     },
 })(InnerForm);
 
-const LoginForm = () => {
-    const [login, { data, loading, error }] = useMutation(LoginDocument);
+const RegisterForm = () => (
+    <div>
+        <MyForm message="" />
+    </div>
+);
 
-    const LoginMutation = async (email: string, password: string) => {
-        const result = await login({
-            variables: {
-                email,
-                password,
-            },
-        });
-
-        console.log("res ", result);
-    };
-
-    return (
-        <div>
-            <MyForm message="" action={LoginMutation} />
-        </div>
-    );
-};
-
-export default LoginForm;
+export default RegisterForm;

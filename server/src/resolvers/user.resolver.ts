@@ -153,7 +153,12 @@ export class UserResolver {
                 };
             }
 
-            const role = await em.findOne(Role, { id: options.roleId });
+            let role: Role | undefined | null = null;
+            if (options.roleId) {
+                role = await em.findOne(Role, { id: options.roleId });
+            } else {
+                role = await em.findOne(Role, { name: "User" });
+            }
 
             if (!role) {
                 return {
