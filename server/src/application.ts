@@ -56,7 +56,7 @@ export default class Application {
 
         this.server = this.app.listen(4001, () => {
             console.log(
-                `The application is listening on port 4001! at ${process.env.NODE_ENV} mode`
+                `The application is listening on port 4001! at ${process.env.ENV} mode`
             );
         });
     };

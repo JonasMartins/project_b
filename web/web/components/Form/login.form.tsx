@@ -1,17 +1,18 @@
+import type { NextPage } from "next";
+import React, { ComponentProps } from "react";
 import * as Yup from "yup";
-import { withFormik, FormikProps, Form, Field } from "formik";
+import { Formik, FormikProps, Form, Field } from "formik";
 import {
-    Button,
-    Text,
     Stack,
-    FormControl,
-    FormErrorMessage,
     Input,
+    FormControl,
     FormLabel,
+    FormErrorMessage,
+    Button,
 } from "@chakra-ui/react";
-import { ComponentProps } from "react";
-import { LoginDocument } from "generated/graphql";
+import { LoginDocument, LoginMutation } from "generated/graphql";
 import { useMutation } from "@apollo/client";
+import { useRouter } from "next/dist/client/router";
 
 const LoginSchema = Yup.object().shape({
     email: Yup.string().email("Invalid email").required("Required"),
@@ -21,113 +22,139 @@ const LoginSchema = Yup.object().shape({
         .required("Required"),
 });
 
-type InputProps = ComponentProps<typeof Input>;
-
-// Shape of form values
-interface FormValues {
+interface inputValues {
     email: string;
     password: string;
 }
 
-interface OtherProps {
-    message: string;
-}
+type InputProps = ComponentProps<typeof Input>;
 
 const ChakraInput = (props: InputProps) => {
     return <Input {...props} borderRadius="1em" size={"sm"} variant="filled" />;
 };
 
-// Aside: You may see InjectedFormikProps<OtherProps, FormValues> instead of what comes below in older code.. InjectedFormikProps was artifact of when Formik only exported a HoC. It is also less flexible as it MUST wrap all props (it passes them through).
-const InnerForm = (props: OtherProps & FormikProps<FormValues>) => {
-    const { touched, errors, isSubmitting, message } = props;
-    return (
-        <Form>
-            <Stack spacing={3}>
-                <Text fontSize={"md"}>{message}</Text>
+const LoginPage: NextPage = () => {
+    const router = useRouter();
+    const initialValues: inputValues = { email: "", password: "" };
+    const [login, { error }] = useMutation<LoginMutation>(LoginDocument);
 
-                <FormControl isInvalid={touched.email && !!errors.email}>
-                    <FormLabel htmlFor="email">Email</FormLabel>
-                    <Field
-                        id="email"
-                        type="email"
-                        name="email"
-                        as={ChakraInput}
-                    />
-                    <FormErrorMessage>{errors.email}</FormErrorMessage>
-                </FormControl>
-
-                <FormControl isInvalid={touched.password && !!errors.password}>
-                    <FormLabel htmlFor="password">Password</FormLabel>
-                    <Field
-                        id="password"
-                        type="password"
-                        name="password"
-                        as={ChakraInput}
-                    />
-                    <FormErrorMessage>{errors.password}</FormErrorMessage>
-                </FormControl>
-
-                <Button
-                    type="submit"
-                    disabled={
-                        isSubmitting || !!errors.email || !!errors.password
-                    }
-                    variant="phlox-gradient"
-                    color="white"
-                >
-                    Submit
-                </Button>
-            </Stack>
-        </Form>
-    );
-};
-
-type submit = (email: string, password: string) => void;
-
-// The type of props MyForm receives
-interface MyFormProps {
-    initialEmail?: string;
-    message: string; // if this passed all the way through you might do this or make a union type
-    action: submit;
-}
-
-// Wrap our form with the withFormik HoC
-const MyForm = withFormik<MyFormProps, FormValues>({
-    // Transform outer props into form values
-    mapPropsToValues: (props) => {
-        return {
-            email: props.initialEmail || "",
-            password: "",
-        };
-    },
-
-    validationSchema: LoginSchema,
-
-    handleSubmit: (values, formikBag) => {
-        console.log("values ", values);
-        formikBag.props.action(values.email, values.password);
-    },
-})(InnerForm);
-
-const LoginForm = () => {
-    const [login, { data, loading, error }] = useMutation(LoginDocument);
-
-    const LoginMutation = async (email: string, password: string) => {
+    const LoginMutation = async (
+        email: string,
+        password: string
+    ): Promise<LoginMutation> => {
         const result = await login({
             variables: {
                 email,
                 password,
             },
+            onError: () => {
+                console.error(error);
+            },
         });
 
-        console.log("res ", result);
+        if (!result.data) {
+            throw new Error(error?.message);
+        }
+        return result.data;
     };
 
     return (
-        <div>
-            <MyForm message="" action={LoginMutation} />
-        </div>
+        <Formik
+            initialValues={initialValues}
+            onSubmit={async (values, actions) => {
+                const result = await LoginMutation(
+                    values.email,
+                    values.password
+                );
+                if (result.login.errors) {
+                    switch (result.login.errors[0].field) {
+                        case "email":
+                            actions.setErrors({
+                                email: "Incorrect Email",
+                            });
+                            break;
+                        case "password":
+                            actions.setErrors({
+                                password: "Incorrect Password",
+                            });
+                            break;
+                        default:
+                            actions.setErrors({});
+                    }
+                } else {
+                    router.push("/");
+                }
+            }}
+            validationSchema={LoginSchema}
+        >
+            {(props: FormikProps<inputValues>) => (
+                <Form>
+                    <Stack spacing={3}>
+                        <FormControl
+                            isInvalid={
+                                props.touched.email && !!props.errors.email
+                            }
+                        >
+                            <FormLabel htmlFor="email">Email</FormLabel>
+                            <Field
+                                id="email"
+                                type="email"
+                                name="email"
+                                as={ChakraInput}
+                            />
+                            <FormErrorMessage>
+                                {props.errors.email}
+                            </FormErrorMessage>
+                        </FormControl>
+
+                        <FormControl
+                            isInvalid={
+                                props.touched.password &&
+                                !!props.errors.password
+                            }
+                        >
+                            <FormLabel htmlFor="password">Password</FormLabel>
+                            <Field
+                                id="password"
+                                type="password"
+                                name="password"
+                                as={ChakraInput}
+                            />
+                            <FormErrorMessage>
+                                {props.errors.password}
+                            </FormErrorMessage>
+                        </FormControl>
+
+                        <Button
+                            type="submit"
+                            disabled={
+                                props.isSubmitting ||
+                                !!props.errors.email ||
+                                !!props.errors.password
+                            }
+                            variant="phlox-gradient"
+                            color="white"
+                        >
+                            Submit
+                        </Button>
+                    </Stack>
+                </Form>
+            )}
+        </Formik>
     );
 };
 
-export default LoginForm;
+export default LoginPage;
+
+const RegisterSchema = Yup.object().shape({
+    name: Yup.string().required("Required"),
+    email: Yup.string().email("Invalid email").required("Required"),
+    password: Yup.string()
+        .min(6, "Too Short!")
+        .max(50, "Too Long!")
+        .required("Required"),
+    passwordConfirmation: Yup.string().oneOf(
+        [Yup.ref("password"), null],
+        "Passwords must mtach"
+    ),
+});

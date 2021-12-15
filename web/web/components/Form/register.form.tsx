@@ -1,15 +1,17 @@
+import type { NextPage } from "next";
+import React, { ComponentProps } from "react";
 import * as Yup from "yup";
-import { withFormik, FormikProps, Form, Field } from "formik";
+import { Formik, FormikProps, Form, Field } from "formik";
 import {
-    Button,
-    Text,
     Stack,
-    FormControl,
-    FormErrorMessage,
     Input,
+    FormControl,
     FormLabel,
+    FormErrorMessage,
+    Button,
 } from "@chakra-ui/react";
-import { ComponentProps } from "react";
+import { LoginDocument, LoginMutation } from "generated/graphql";
+import { useMutation } from "@apollo/client";
 
 const RegisterSchema = Yup.object().shape({
     name: Yup.string().required("Required"),
@@ -24,8 +26,6 @@ const RegisterSchema = Yup.object().shape({
     ),
 });
 
-type InputProps = ComponentProps<typeof Input>;
-
 interface FormValues {
     name: string;
     email: string;
@@ -33,113 +33,161 @@ interface FormValues {
     passwordConfirmation: string;
 }
 
-interface OtherProps {
-    message: string;
-}
+type InputProps = ComponentProps<typeof Input>;
 
 const ChakraInput = (props: InputProps) => {
     return <Input {...props} borderRadius="1em" size={"sm"} variant="filled" />;
 };
 
-const InnerForm = (props: OtherProps & FormikProps<FormValues>) => {
-    const { touched, errors, isSubmitting, message } = props;
+const LoginPage: NextPage = () => {
+    const initialValues: FormValues = {
+        name: "",
+        email: "",
+        password: "",
+        passwordConfirmation: "",
+    };
+
+    const [login, { error }] = useMutation<LoginMutation>(LoginDocument);
+
+    const LoginMutation = async (
+        email: string,
+        password: string
+    ): Promise<LoginMutation> => {
+        const result = await login({
+            variables: {
+                email,
+                password,
+            },
+            onError: () => {
+                console.error(error);
+            },
+        });
+
+        if (!result.data) {
+            throw new Error(error?.message);
+        }
+        return result.data;
+    };
+
     return (
-        <Form>
-            <Stack spacing={3}>
-                <Text fontSize={"md"}>{message}</Text>
-
-                <FormControl isInvalid={touched.name && !!errors.name}>
-                    <FormLabel htmlFor="name">Name</FormLabel>
-                    <Field
-                        id="nameReg"
-                        type="name"
-                        name="name"
-                        as={ChakraInput}
-                    />
-                    <FormErrorMessage>{errors.name}</FormErrorMessage>
-                </FormControl>
-
-                <FormControl isInvalid={touched.email && !!errors.email}>
-                    <FormLabel htmlFor="email">Email</FormLabel>
-                    <Field
-                        id="emailReg"
-                        type="email"
-                        name="email"
-                        as={ChakraInput}
-                    />
-                    <FormErrorMessage>{errors.email}</FormErrorMessage>
-                </FormControl>
-
-                <FormControl isInvalid={touched.password && !!errors.password}>
-                    <FormLabel htmlFor="password">Password</FormLabel>
-                    <Field
-                        id="passwordReg"
-                        type="password"
-                        name="password"
-                        as={ChakraInput}
-                    />
-                    <FormErrorMessage>{errors.password}</FormErrorMessage>
-                </FormControl>
-
-                <FormControl
-                    isInvalid={
-                        touched.passwordConfirmation &&
-                        !!errors.passwordConfirmation
+        <Formik
+            initialValues={initialValues}
+            onSubmit={async (values, actions) => {
+                const result = await LoginMutation(
+                    values.email,
+                    values.password
+                );
+                if (result.login.errors) {
+                    switch (result.login.errors[0].field) {
+                        case "email":
+                            actions.setErrors({
+                                email: "Incorrect Email",
+                            });
+                            break;
+                        case "password":
+                            actions.setErrors({
+                                password: "Incorrect Password",
+                            });
+                            break;
+                        default:
+                            actions.setErrors({});
                     }
-                >
-                    <FormLabel htmlFor="passwordConfirmation">
-                        Password Confirmation
-                    </FormLabel>
-                    <Field
-                        id="passwordConfirmationReg"
-                        type="password"
-                        name="passwordConfirmation"
-                        as={ChakraInput}
-                    />
-                    <FormErrorMessage>
-                        {errors.passwordConfirmation}
-                    </FormErrorMessage>
-                </FormControl>
+                }
+            }}
+            validationSchema={RegisterSchema}
+        >
+            {(props: FormikProps<FormValues>) => (
+                <Form>
+                    <Stack spacing={3}>
+                        <FormControl
+                            isInvalid={
+                                props.touched.name && !!props.errors.name
+                            }
+                        >
+                            <FormLabel htmlFor="nameReg">Name</FormLabel>
+                            <Field
+                                id="nameReg"
+                                name="nameReg"
+                                as={ChakraInput}
+                            />
+                            <FormErrorMessage>
+                                {props.errors.name}
+                            </FormErrorMessage>
+                        </FormControl>
 
-                <Button
-                    type="submit"
-                    disabled={isSubmitting}
-                    variant="phlox-gradient"
-                    color="white"
-                >
-                    Submit
-                </Button>
-            </Stack>
-        </Form>
+                        <FormControl
+                            isInvalid={
+                                props.touched.email && !!props.errors.email
+                            }
+                        >
+                            <FormLabel htmlFor="emailReg">Email</FormLabel>
+                            <Field
+                                id="emailReg"
+                                type="email"
+                                name="emailReg"
+                                as={ChakraInput}
+                            />
+                            <FormErrorMessage>
+                                {props.errors.email}
+                            </FormErrorMessage>
+                        </FormControl>
+
+                        <FormControl
+                            isInvalid={
+                                props.touched.password &&
+                                !!props.errors.password
+                            }
+                        >
+                            <FormLabel htmlFor="password">Password</FormLabel>
+                            <Field
+                                id="password"
+                                type="password"
+                                name="password"
+                                as={ChakraInput}
+                            />
+                            <FormErrorMessage>
+                                {props.errors.password}
+                            </FormErrorMessage>
+                        </FormControl>
+
+                        <FormControl
+                            isInvalid={
+                                props.touched.passwordConfirmation &&
+                                !!props.errors.passwordConfirmation
+                            }
+                        >
+                            <FormLabel htmlFor="passwordConformation">
+                                Password Confirmation
+                            </FormLabel>
+                            <Field
+                                id="passwordConfirmation"
+                                type="password"
+                                name="passwordConfirmation"
+                                as={ChakraInput}
+                            />
+                            <FormErrorMessage>
+                                {props.errors.passwordConfirmation}
+                            </FormErrorMessage>
+                        </FormControl>
+
+                        <Button
+                            type="submit"
+                            disabled={
+                                props.isSubmitting ||
+                                !!props.errors.email ||
+                                !!props.errors.password ||
+                                !!props.errors.passwordConfirmation
+                            }
+                            variant="phlox-gradient"
+                            color="white"
+                        >
+                            Submit
+                        </Button>
+                    </Stack>
+                </Form>
+            )}
+        </Formik>
     );
 };
 
-interface MyFormProps {
-    initialEmail?: string;
-    message: string;
-}
-
-const MyForm = withFormik<MyFormProps, FormValues>({
-    mapPropsToValues: (props) => {
-        return {
-            name: "",
-            email: props.initialEmail || "",
-            password: "",
-            passwordConfirmation: "",
-        };
-    },
-
-    validationSchema: RegisterSchema,
-
-    handleSubmit: (values) => {
-        console.log("values ", values);
-    },
-})(InnerForm);
-
-const RegisterForm = () => (
-    <div>
-        <MyForm message="" />
-    </div>
-);
-
-export default RegisterForm;
+export default LoginPage;
