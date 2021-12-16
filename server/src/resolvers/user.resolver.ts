@@ -198,7 +198,7 @@ export class UserResolver {
     async login(
         @Arg("email", () => String!) email: string,
         @Arg("password", () => String!) password: string,
-        @Ctx() { em }: Context
+        @Ctx() { em, req }: Context
     ): Promise<LoginResponse> {
         const user = await em.findOne(User, { email: email });
 
@@ -226,7 +226,11 @@ export class UserResolver {
             };
         }
 
-        const token = createAcessToken(user);
+        // const token = createAcessToken(user);
+        //console.log("req ", req);
+        console.log(req.session);
+
+        const token = "Logged!";
 
         return { token };
     }

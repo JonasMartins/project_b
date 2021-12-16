@@ -11,7 +11,7 @@ import {
 } from "@chakra-ui/react";
 import type { NextPage } from "next";
 import Image from "next/image";
-import Logo from "public/images/techBlog_logo_5000x4710.png";
+import Logo from "public/images/techBlog_logo_1024x965.png";
 import React, { useEffect, useState } from "react";
 import { BsMoon, BsSun } from "react-icons/bs";
 import LoginForm from "components/Form/login.form";

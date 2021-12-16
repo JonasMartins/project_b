@@ -10,11 +10,14 @@ import { Context } from "./context";
 import cors from "cors";
 import { ApolloServerPluginLandingPageGraphQLPlayground } from "apollo-server-core";
 import { RoleResolver } from "./resolvers/role.resolver";
+import session from "express-session";
+import { env } from "process";
 
 export default class Application {
     public orm: EntityManager;
     public app: express.Application;
     public server: Server;
+    public cookieLife: number = 1000 * 60 * 60 * 24 * 4; // four days
 
     public connect = async (): Promise<void> => {
         await intializeDB();
@@ -36,6 +39,20 @@ export default class Application {
             validate: false,
         });
 
+        this.app.use(
+            session({
+                name: process.env.COOKIE_NAME,
+                secret: process.env.SESSION_SECRET!,
+                resave: false,
+                saveUninitialized: false,
+                cookie: {
+                    httpOnly: false,
+                    secure: true,
+                    maxAge: this.cookieLife,
+                },
+            })
+        );
+
         const apolloServer = new ApolloServer({
             schema,
             context: ({ req, res }): Context => ({
@@ -48,6 +65,15 @@ export default class Application {
         });
 
         await apolloServer.start();
+
+        /*
+        this.app.get("/graphql", (req, res) => {
+            res.cookie("name", "TechBlog", { maxAge: this.cookieLife }).send(
+                "Cookie-Parser"
+            );
+
+            console.log("> ", req.cookies);
+        });*/
 
         apolloServer.applyMiddleware({
             app: this.app,

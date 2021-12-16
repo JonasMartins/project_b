@@ -7,12 +7,31 @@ import {
     ApolloClient,
     InMemoryCache,
     ApolloProvider,
-    useQuery,
-    gql,
+    createHttpLink,
 } from "@apollo/client";
+import { setContext } from "@apollo/client/link/context";
+import Cookies from "js-cookie";
+
+const uriServer = "http://localhost:4001/graphql";
+
+/*
+npm install apollo-client apollo-boost apollo-link-http apollo-cache-inmemory react-apollo apollo-link-context @reach/router js-cookie graphql-tag
+*/
+
+const httpLink = createHttpLink({ uri: uriServer });
+const authLink = setContext((_, { headers }) => {
+    //const token = Cookies.get("token");
+    const token = "test";
+    return {
+        headers: {
+            ...headers,
+            authorization: `Bearer ${token}`,
+        },
+    };
+});
 
 const client = new ApolloClient({
-    uri: "http://localhost:4001/graphql",
+    link: authLink.concat(httpLink),
     cache: new InMemoryCache(),
 });
 
