@@ -194,11 +194,20 @@ export class UserResolver {
         }
     }
 
+    @Query(() => String)
+    async loginTest(@Ctx() { req }: Context): Promise<String> {
+        console.log("cookie ", req.session.cookie);
+
+        return new Promise((resolve, _) => {
+            resolve("Logged");
+        });
+    }
+
     @Mutation(() => LoginResponse)
     async login(
         @Arg("email", () => String!) email: string,
         @Arg("password", () => String!) password: string,
-        @Ctx() { em }: Context
+        @Ctx() { em, res, req }: Context
     ): Promise<LoginResponse> {
         const user = await em.findOne(User, { email: email });
 
@@ -226,13 +235,19 @@ export class UserResolver {
             };
         }
 
-        // const token = createAcessToken(user);
-        // console.log("req ", req.session);
-        //console.log("headers ", req.headers);
+        const token = createAcessToken(user);
 
-        const token = "Logged!";
+        res.cookie(process.env.COOKIE_NAME || "pbTechBlog", req.sessionID, {
+            httpOnly: true,
+            secure: true,
+            maxAge: 1000 * 60 * 60 * 24 * 4,
+        });
 
-        return { token };
+        const cookie = req.session.cookie;
+
+        console.log("signed ", cookie.signed);
+
+        return { token: "logged" };
     }
 
     @Mutation(() => Boolean)

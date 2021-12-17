@@ -138,9 +138,11 @@ const LoginPage: NextPage = () => {
                                 !!props.errors.password
                             }
                         >
-                            <FormLabel htmlFor="password">Password</FormLabel>
+                            <FormLabel htmlFor="passwordReg">
+                                Password
+                            </FormLabel>
                             <Field
-                                id="password"
+                                id="passwordReg"
                                 type="password"
                                 name="password"
                                 as={ChakraInput}

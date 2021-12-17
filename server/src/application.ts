@@ -32,15 +32,20 @@ export default class Application {
         const RedisStore = connectRedis(session);
         const redis = new Redis(process.env.REDIS_URL);
         this.app.set("trust proxy", 1);
+        var corsOptions = {
+            origin: process.env.DEV_FRONT_URL,
+            credentials: true, // <-- REQUIRED backend setting
+        };
 
+        /*
         this.app.use(
             cors({
                 origin: process.env.DEV_FRONT_URL,
                 credentials: true,
             })
-        );
+        ); */
 
-        this.app.use(cookieParser());
+        //this.app.use(cookieParser());
         this.app.use(
             session({
                 name: process.env.COOKIE_NAME,
@@ -51,11 +56,6 @@ export default class Application {
                 secret: process.env.SESSION_SECRET!,
                 resave: false,
                 saveUninitialized: false,
-                cookie: {
-                    httpOnly: true,
-                    maxAge: this.cookieLife,
-                    sameSite: "none",
-                },
             })
         );
 
@@ -72,14 +72,14 @@ export default class Application {
                 res,
             }),
             introspection: true,
-            plugins: [ApolloServerPluginLandingPageGraphQLPlayground],
+            plugins: [ApolloServerPluginLandingPageGraphQLPlayground()],
         });
 
         await apolloServer.start();
 
         apolloServer.applyMiddleware({
             app: this.app,
-            cors: false,
+            cors: corsOptions,
         });
 
         this.server = this.app.listen(4001, () => {

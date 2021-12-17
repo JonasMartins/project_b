@@ -14,9 +14,9 @@ import Cookies from "js-cookie";
 
 const uriServer = "http://localhost:4001/graphql";
 
-const httpLink = createHttpLink({ uri: uriServer });
+const httpLink = createHttpLink({ uri: uriServer, credentials: "include" });
 const authLink = setContext((_, { headers }) => {
-    const cookie = Cookies.get("pbTechBlog");
+    const cookie = Cookies.get();
 
     console.log("cook ", cookie);
 

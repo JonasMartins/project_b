@@ -71,6 +71,7 @@ export type Query = {
   getRoles: RolesResponse;
   getUserById: UserResponse;
   getUsers: UsersResponse;
+  loginTest: Scalars['String'];
 };
 
 
@@ -176,6 +177,11 @@ export type LoginMutationVariables = Exact<{
 
 
 export type LoginMutation = { __typename?: 'Mutation', login: { __typename?: 'LoginResponse', token?: string | null | undefined, errors?: Array<{ __typename?: 'ErrorFieldHandler', method: string, message: string, field: string }> | null | undefined } };
+
+export type LoginTestQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type LoginTestQuery = { __typename?: 'Query', loginTest: string };
 
 
 export const CreateRoleDocument = gql`
@@ -302,6 +308,38 @@ export function useLoginMutation(baseOptions?: Apollo.MutationHookOptions<LoginM
 export type LoginMutationHookResult = ReturnType<typeof useLoginMutation>;
 export type LoginMutationResult = Apollo.MutationResult<LoginMutation>;
 export type LoginMutationOptions = Apollo.BaseMutationOptions<LoginMutation, LoginMutationVariables>;
+export const LoginTestDocument = gql`
+    query LoginTest {
+  loginTest
+}
+    `;
+
+/**
+ * __useLoginTestQuery__
+ *
+ * To run a query within a React component, call `useLoginTestQuery` and pass it any options that fit your needs.
+ * When your component renders, `useLoginTestQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useLoginTestQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useLoginTestQuery(baseOptions?: Apollo.QueryHookOptions<LoginTestQuery, LoginTestQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<LoginTestQuery, LoginTestQueryVariables>(LoginTestDocument, options);
+      }
+export function useLoginTestLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<LoginTestQuery, LoginTestQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<LoginTestQuery, LoginTestQueryVariables>(LoginTestDocument, options);
+        }
+export type LoginTestQueryHookResult = ReturnType<typeof useLoginTestQuery>;
+export type LoginTestLazyQueryHookResult = ReturnType<typeof useLoginTestLazyQuery>;
+export type LoginTestQueryResult = Apollo.QueryResult<LoginTestQuery, LoginTestQueryVariables>;
 
       export interface PossibleTypesResultData {
         possibleTypes: {
