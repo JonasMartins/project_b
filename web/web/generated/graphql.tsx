@@ -71,7 +71,7 @@ export type Query = {
   getRoles: RolesResponse;
   getUserById: UserResponse;
   getUsers: UsersResponse;
-  loginTest: Scalars['String'];
+  loginTest: Scalars['Boolean'];
 };
 
 
@@ -181,7 +181,7 @@ export type LoginMutation = { __typename?: 'Mutation', login: { __typename?: 'Lo
 export type LoginTestQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type LoginTestQuery = { __typename?: 'Query', loginTest: string };
+export type LoginTestQuery = { __typename?: 'Query', loginTest: boolean };
 
 
 export const CreateRoleDocument = gql`

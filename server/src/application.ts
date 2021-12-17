@@ -11,9 +11,15 @@ import cors from "cors";
 import { ApolloServerPluginLandingPageGraphQLPlayground } from "apollo-server-core";
 import { RoleResolver } from "./resolvers/role.resolver";
 import session from "express-session";
-import cookieParser from "cookie-parser";
 import connectRedis from "connect-redis";
 import Redis from "ioredis";
+
+declare module "express-session" {
+    interface SessionData {
+        userId: string;
+        userRole: string;
+    }
+}
 
 export default class Application {
     public orm: EntityManager;
@@ -37,15 +43,7 @@ export default class Application {
             credentials: true, // <-- REQUIRED backend setting
         };
 
-        /*
-        this.app.use(
-            cors({
-                origin: process.env.DEV_FRONT_URL,
-                credentials: true,
-            })
-        ); */
-
-        //this.app.use(cookieParser());
+        this.app.use(cors(corsOptions));
         this.app.use(
             session({
                 name: process.env.COOKIE_NAME,
@@ -79,7 +77,7 @@ export default class Application {
 
         apolloServer.applyMiddleware({
             app: this.app,
-            cors: corsOptions,
+            cors: false,
         });
 
         this.server = this.app.listen(4001, () => {

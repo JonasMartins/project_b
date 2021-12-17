@@ -1,15 +1,24 @@
 import type { NextPage } from "next";
-import React from "react";
+import React, { useEffect } from "react";
 import { useQuery } from "@apollo/client";
 import { LoginTestDocument, LoginTestQuery } from "generated/graphql";
+import Spinner from "components/Layout/Spinner";
+import { useRouter } from "next/dist/client/router";
 
 const Home: NextPage = () => {
     const { loading, data } = useQuery<LoginTestQuery>(LoginTestDocument);
 
-    console.log("loading ", loading);
-    console.log("data ", data);
+    const router = useRouter();
 
-    return <h1>Hello World</h1>;
+    useEffect(() => {
+        if (!data?.loginTest) {
+            router.push("/login");
+        }
+    }, [loading, data]);
+
+    const content = <h1>Welcome</h1>;
+
+    return loading ? <Spinner /> : content;
 };
 
 export default Home;

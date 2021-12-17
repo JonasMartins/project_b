@@ -12,7 +12,6 @@ import {
 import { Context } from "./../context";
 import { ErrorFieldHandler } from "./../helpers/errorFieldHandler";
 import { genericError, validateEmail } from "./../helpers/generalAuxMethods";
-import { createAcessToken } from "../helpers/aurth";
 import { UserValidator } from "../database/validators/user.validator";
 import { Role } from "../database/entity/role.entity";
 
@@ -58,8 +57,6 @@ export class UserResolver {
                 .where("1 = 1")
                 .limit(max)
                 .offset(maxOffset);
-
-            // console.log("query ", qb.getQuery());
 
             const users = await qb.getMany();
 
@@ -194,20 +191,27 @@ export class UserResolver {
         }
     }
 
-    @Query(() => String)
-    async loginTest(@Ctx() { req }: Context): Promise<String> {
-        console.log("cookie ", req.session.cookie);
+    @Query(() => Boolean)
+    async loginTest(@Ctx() { req }: Context): Promise<Boolean> {
+        console.log("userId ", req.session.userId);
+        console.log("role ", req.session.userRole);
 
-        return new Promise((resolve, _) => {
-            resolve("Logged");
-        });
+        if (req.session.userId) {
+            return new Promise((resolve, _) => {
+                resolve(false);
+            });
+        } else {
+            return new Promise((resolve, _) => {
+                resolve(true);
+            });
+        }
     }
 
     @Mutation(() => LoginResponse)
     async login(
         @Arg("email", () => String!) email: string,
         @Arg("password", () => String!) password: string,
-        @Ctx() { em, res, req }: Context
+        @Ctx() { em, req }: Context
     ): Promise<LoginResponse> {
         const user = await em.findOne(User, { email: email });
 
@@ -235,17 +239,8 @@ export class UserResolver {
             };
         }
 
-        const token = createAcessToken(user);
-
-        res.cookie(process.env.COOKIE_NAME || "pbTechBlog", req.sessionID, {
-            httpOnly: true,
-            secure: true,
-            maxAge: 1000 * 60 * 60 * 24 * 4,
-        });
-
-        const cookie = req.session.cookie;
-
-        console.log("signed ", cookie.signed);
+        req.session.userId = user.id;
+        req.session.userRole = user.role.name;
 
         return { token: "logged" };
     }

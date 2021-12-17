@@ -3,37 +3,12 @@ import type { AppProps } from "next/app";
 import { ChakraProvider } from "@chakra-ui/react";
 import theme from "./../utils/theme/theme";
 import { ColorModeScript } from "@chakra-ui/react";
-import {
-    ApolloClient,
-    InMemoryCache,
-    ApolloProvider,
-    createHttpLink,
-} from "@apollo/client";
-import { setContext } from "@apollo/client/link/context";
-import Cookies from "js-cookie";
-
-const uriServer = "http://localhost:4001/graphql";
-
-const httpLink = createHttpLink({ uri: uriServer, credentials: "include" });
-const authLink = setContext((_, { headers }) => {
-    const cookie = Cookies.get();
-
-    console.log("cook ", cookie);
-
-    const token = "test";
-    return {
-        headers: {
-            ...headers,
-            authorization: `Bearer ${token}`,
-        },
-    };
-});
+import { ApolloClient, InMemoryCache, ApolloProvider } from "@apollo/client";
 
 const client = new ApolloClient({
-    link: authLink.concat(httpLink),
+    uri: "http://localhost:4001/graphql",
     cache: new InMemoryCache(),
 });
-
 function MyApp({ Component, pageProps }: AppProps) {
     return (
         <ApolloProvider client={client}>
