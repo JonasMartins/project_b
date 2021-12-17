@@ -11,7 +11,9 @@ import cors from "cors";
 import { ApolloServerPluginLandingPageGraphQLPlayground } from "apollo-server-core";
 import { RoleResolver } from "./resolvers/role.resolver";
 import session from "express-session";
-import { env } from "process";
+import cookieParser from "cookie-parser";
+import connectRedis from "connect-redis";
+import Redis from "ioredis";
 
 export default class Application {
     public orm: EntityManager;
@@ -27,6 +29,10 @@ export default class Application {
     public init = async (): Promise<void> => {
         this.app = express();
 
+        const RedisStore = connectRedis(session);
+        const redis = new Redis(process.env.REDIS_URL);
+        this.app.set("trust proxy", 1);
+
         this.app.use(
             cors({
                 origin: process.env.DEV_FRONT_URL,
@@ -34,24 +40,29 @@ export default class Application {
             })
         );
 
-        const schema = await buildSchema({
-            resolvers: [UserResolver, RoleResolver],
-            validate: false,
-        });
-
+        this.app.use(cookieParser());
         this.app.use(
             session({
                 name: process.env.COOKIE_NAME,
+                store: new RedisStore({
+                    client: redis,
+                    disableTouch: true,
+                }),
                 secret: process.env.SESSION_SECRET!,
                 resave: false,
                 saveUninitialized: false,
                 cookie: {
-                    httpOnly: false,
-                    secure: true,
+                    httpOnly: true,
                     maxAge: this.cookieLife,
+                    sameSite: "none",
                 },
             })
         );
+
+        const schema = await buildSchema({
+            resolvers: [UserResolver, RoleResolver],
+            validate: false,
+        });
 
         const apolloServer = new ApolloServer({
             schema,
@@ -65,15 +76,6 @@ export default class Application {
         });
 
         await apolloServer.start();
-
-        /*
-        this.app.get("/graphql", (req, res) => {
-            res.cookie("name", "TechBlog", { maxAge: this.cookieLife }).send(
-                "Cookie-Parser"
-            );
-
-            console.log("> ", req.cookies);
-        });*/
 
         apolloServer.applyMiddleware({
             app: this.app,

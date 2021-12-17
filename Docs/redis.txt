@@ -1,0 +1,42 @@
+install:
+sudo apt update
+sudo apt install redis-server
+
+sudo vim /etc/redis/redis.conf
+
+change :
+
+supervised no 
+
+to:
+
+supervised systemd
+
+try:
+
+sudo systemctl restart redis.service
+
+if this error occur:
+System has not been booted with systemd as init system (PID 1). Can't operate. Failed to connect to bus: Host is down
+
+run:
+sudo apt-get update && sudo apt-get install -yqq daemonize dbus-user-session fontconfig
+
+sudo daemonize /usr/bin/unshare --fork --pid --mount-proc /lib/systemd/systemd --system-unit=basic.target
+
+exec sudo nsenter -t $(pidof systemd) -a su - $LOGNAME
+
+then:
+sudo systemctl status redis
+
+As we enabled the Redis as a system daemon, it will automatically start with the system startup; 
+if you want to stop that, run the following command and start it manually when you need.
+
+sudo systemctl disable redis
+
+then:
+
+redis-cli
+
+
+nice tuto https://www.ubuntupit.com/how-to-install-and-configure-redis-on-linux-system/

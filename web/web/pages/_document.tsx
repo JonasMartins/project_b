@@ -7,7 +7,7 @@ class Document extends NextDocument {
         return (
             <Html>
                 <Head>
-                    <title>TechBlog</title>
+                    {/* <title>TechBlog</title> */}
                     <meta charSet="utf-8" />
                     <link
                         rel="apple-touch-icon"

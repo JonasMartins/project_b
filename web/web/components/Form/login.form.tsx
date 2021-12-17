@@ -82,6 +82,7 @@ const LoginPage: NextPage = () => {
                             actions.setErrors({});
                     }
                 } else {
+                    console.log(document.cookie);
                     router.push("/");
                 }
             }}

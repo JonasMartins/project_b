@@ -1,0 +1,21 @@
+Erro:
+psql: error: connection to server on socket "/var/run/postgresql/.s.PGSQL.5432" failed: No such file or directory Is the server running locally and accepting connections on that socket?
+
+sudo /etc/init.d/postgresql restart
+
+Olhar se está rodando:
+ps -ef | grep postgres
+
+logar:
+
+sudo -i -u postgres
+ 
+psql
+
+- Setando o password para o user postgres:
+
+alter role postgres with password 'postgres';
+
+- Configurar pgAdmin com 
+localhost e a senha para o usuário postgres
+OBS: localhost deve ser 127.0.0.1

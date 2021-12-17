@@ -14,13 +14,12 @@ import Cookies from "js-cookie";
 
 const uriServer = "http://localhost:4001/graphql";
 
-/*
-npm install apollo-client apollo-boost apollo-link-http apollo-cache-inmemory react-apollo apollo-link-context @reach/router js-cookie graphql-tag
-*/
-
 const httpLink = createHttpLink({ uri: uriServer });
 const authLink = setContext((_, { headers }) => {
-    //const token = Cookies.get("token");
+    const cookie = Cookies.get("pbTechBlog");
+
+    console.log("cook ", cookie);
+
     const token = "test";
     return {
         headers: {
