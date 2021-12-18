@@ -37,7 +37,7 @@ export default class Application {
 
         const RedisStore = connectRedis(session);
         const redis = new Redis(process.env.REDIS_URL);
-        this.app.set("trust proxy", 1);
+        //this.app.set("trust proxy", 1);
         var corsOptions = {
             origin: process.env.DEV_FRONT_URL,
             credentials: true, // <-- REQUIRED backend setting
@@ -54,6 +54,12 @@ export default class Application {
                 secret: process.env.SESSION_SECRET!,
                 resave: false,
                 saveUninitialized: false,
+                unset: "destroy",
+                // cookie: {
+                //     httpOnly: true,
+                //     maxAge: this.cookieLife,
+                //     sameSite: "strict",
+                // },
             })
         );
 

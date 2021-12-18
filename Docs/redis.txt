@@ -40,3 +40,21 @@ redis-cli
 
 
 nice tuto https://www.ubuntupit.com/how-to-install-and-configure-redis-on-linux-system/
+
+
+
+-------
+
+On a terminal tab with redis-server and another with redis-cli
+
+list all keys: 
+
+KEYS *
+
+see all info:
+
+info.
+
+delete all data from a db:
+
+flushdb

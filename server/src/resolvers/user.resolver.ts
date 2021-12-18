@@ -193,10 +193,9 @@ export class UserResolver {
 
     @Query(() => Boolean)
     async loginTest(@Ctx() { req }: Context): Promise<Boolean> {
-        console.log("userId ", req.session.userId);
-        console.log("role ", req.session.userRole);
+        console.log(`sessionArrived ${req.sessionID}`, req.session);
 
-        if (req.session.userId) {
+        if (req.session.userId === undefined) {
             return new Promise((resolve, _) => {
                 resolve(false);
             });
@@ -207,11 +206,20 @@ export class UserResolver {
         }
     }
 
+    @Mutation(() => Boolean)
+    async logout(@Ctx() { req }: Context): Promise<Boolean> {
+        req.session.destroy(() => {});
+
+        return new Promise((resolve, _) => {
+            resolve(true);
+        });
+    }
+
     @Mutation(() => LoginResponse)
     async login(
         @Arg("email", () => String!) email: string,
         @Arg("password", () => String!) password: string,
-        @Ctx() { em, req }: Context
+        @Ctx() { em, req, res }: Context
     ): Promise<LoginResponse> {
         const user = await em.findOne(User, { email: email });
 
@@ -241,6 +249,14 @@ export class UserResolver {
 
         req.session.userId = user.id;
         req.session.userRole = user.role.name;
+
+        // MOST IMPORTANT EVER
+        res.cookie("pbTechBlog", req.sessionID, {
+            httpOnly: true,
+            maxAge: 1000 * 60,
+        });
+
+        console.log(`session set ${req.sessionID}`, req.session);
 
         return { token: "logged" };
     }
