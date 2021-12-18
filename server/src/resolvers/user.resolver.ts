@@ -41,6 +41,8 @@ class UsersResponse {
 
 @Resolver()
 export class UserResolver {
+    public cookieLife: number = 1000 * 60 * 60 * 24 * 4;
+
     @Query(() => UsersResponse)
     async getUsers(
         @Arg("limit", () => Number, { nullable: true }) limit: number,
@@ -97,7 +99,7 @@ export class UserResolver {
     @Mutation(() => UserResponse)
     async createUser(
         @Arg("options") options: UserValidator,
-        @Ctx() { em }: Context
+        @Ctx() { em, req, res }: Context
     ): Promise<UserResponse> {
         try {
             if (options.password.length < 6) {
@@ -113,13 +115,12 @@ export class UserResolver {
 
             if (!validateEmail(options.email)) {
                 return {
-                    errors: [
-                        {
-                            field: "email",
-                            message: `Email ${options.email} wrong email format.`,
-                            method: `Method: createUser, at ${__filename}`,
-                        },
-                    ],
+                    errors: genericError(
+                        "email",
+                        "createUser",
+                        __filename,
+                        `Email ${options.email} wrong email format.`
+                    ),
                 };
             }
 
@@ -127,26 +128,23 @@ export class UserResolver {
 
             if (userEmail) {
                 return {
-                    errors: [
-                        {
-                            field: "email",
-                            message: `Email ${options.email} already takken.`,
-                            method: `Method: createUser, at ${__filename}`,
-                        },
-                    ],
+                    errors: genericError(
+                        "email",
+                        "createUser",
+                        __filename,
+                        `Email ${options.email} already takken.`
+                    ),
                 };
             }
 
             if (options.name.length <= 2) {
                 return {
-                    errors: [
-                        {
-                            field: "name",
-                            message:
-                                "A user name must have length greater than 2.",
-                            method: `Method: createUser, at ${__filename}`,
-                        },
-                    ],
+                    errors: genericError(
+                        "name",
+                        "createUser",
+                        __filename,
+                        "A user name must have length greater than 2."
+                    ),
                 };
             }
 
@@ -159,13 +157,12 @@ export class UserResolver {
 
             if (!role) {
                 return {
-                    errors: [
-                        {
-                            field: "roleId",
-                            message: `Could not found role with id: ${options.roleId}`,
-                            method: `Method: createUser, at ${__filename}`,
-                        },
-                    ],
+                    errors: genericError(
+                        "roleId",
+                        "createUser",
+                        __filename,
+                        `Could not found role with id: ${options.roleId}`
+                    ),
                 };
             }
             const user = await em.create(User, {
@@ -177,6 +174,13 @@ export class UserResolver {
             user.role = role;
 
             await user.save();
+
+            req.session.userId = user.id;
+            req.session.userRole = user.role.name;
+            res.cookie("pbTechBlog", req.sessionID, {
+                httpOnly: true,
+                maxAge: this.cookieLife,
+            });
 
             return { user };
         } catch (e) {
@@ -193,8 +197,6 @@ export class UserResolver {
 
     @Query(() => Boolean)
     async loginTest(@Ctx() { req }: Context): Promise<Boolean> {
-        console.log(`sessionArrived ${req.sessionID}`, req.session);
-
         if (req.session.userId === undefined) {
             return new Promise((resolve, _) => {
                 resolve(false);
@@ -253,10 +255,8 @@ export class UserResolver {
         // MOST IMPORTANT EVER
         res.cookie("pbTechBlog", req.sessionID, {
             httpOnly: true,
-            maxAge: 1000 * 60,
+            maxAge: this.cookieLife,
         });
-
-        console.log(`session set ${req.sessionID}`, req.session);
 
         return { token: "logged" };
     }

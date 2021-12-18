@@ -11,18 +11,21 @@ export const genericError = (
         field: "",
         message: "",
         method: "",
+        detailedMessage: "",
     };
 
     if (!field || !method) {
         err = {
             field: "-",
             message: "Must pass field, method and path, as arguments",
+            detailedMessage: "Must pass field, method and path, as arguments",
             method: "-",
         };
     } else {
         err = {
             field,
-            message: message + ` Field: ( ${field} ) at, ${path}`,
+            message,
+            detailedMessage: message + ` Field: ( ${field} ) at, ${path}`,
             method,
         };
     }

@@ -15,5 +15,8 @@ export class ErrorFieldHandler {
     message: string;
 
     @Field()
+    detailedMessage: string;
+
+    @Field()
     method: string;
 }

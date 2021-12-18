@@ -10,8 +10,9 @@ import {
     FormErrorMessage,
     Button,
 } from "@chakra-ui/react";
-import { LoginDocument, LoginMutation } from "generated/graphql";
+import { CreateUserDocument, CreateUserMutation } from "generated/graphql";
 import { useMutation } from "@apollo/client";
+import { useRouter } from "next/dist/client/router";
 
 const RegisterSchema = Yup.object().shape({
     name: Yup.string().required("Required"),
@@ -47,13 +48,16 @@ const LoginPage: NextPage = () => {
         passwordConfirmation: "",
     };
 
-    const [login, { error }] = useMutation<LoginMutation>(LoginDocument);
+    const router = useRouter();
 
-    const LoginMutation = async (
+    const [createUser, { error }] =
+        useMutation<CreateUserMutation>(CreateUserDocument);
+
+    const RegisterMutation = async (
         email: string,
         password: string
-    ): Promise<LoginMutation> => {
-        const result = await login({
+    ): Promise<CreateUserMutation> => {
+        const result = await createUser({
             variables: {
                 email,
                 password,
@@ -73,25 +77,27 @@ const LoginPage: NextPage = () => {
         <Formik
             initialValues={initialValues}
             onSubmit={async (values, actions) => {
-                const result = await LoginMutation(
+                const result = await RegisterMutation(
                     values.email,
                     values.password
                 );
-                if (result.login.errors) {
-                    switch (result.login.errors[0].field) {
+                if (result.createUser.errors) {
+                    switch (result.createUser.errors[0].field) {
                         case "email":
                             actions.setErrors({
-                                email: "Incorrect Email",
+                                email: result.createUser.errors[0].message,
                             });
                             break;
                         case "password":
                             actions.setErrors({
-                                password: "Incorrect Password",
+                                password: result.createUser.errors[0].message,
                             });
                             break;
                         default:
                             actions.setErrors({});
                     }
+                } else {
+                    router.push("/");
                 }
             }}
             validationSchema={RegisterSchema}

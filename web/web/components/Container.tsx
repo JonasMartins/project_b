@@ -4,7 +4,7 @@ import { useToast } from "@chakra-ui/react";
 import { LoginTestDocument, LoginTestQuery } from "generated/graphql";
 import type { NextPage } from "next";
 import { useRouter } from "next/dist/client/router";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import Spinner from "components/Layout/Spinner";
 
 interface ContainerProps {}
@@ -31,14 +31,9 @@ const Container: NextPage<ContainerProps> = ({ children }) => {
     useEffect(() => {
         if (loading) return;
 
-        setTimeout(() => {
-            console.log("data ", data?.loginTest);
-            if (!data?.loginTest) {
-                handleRedirect();
-            } else {
-                console.log("Logged");
-            }
-        }, 800);
+        if (!data?.loginTest) {
+            handleRedirect();
+        }
     }, [loading]);
 
     const content = <Flex direction="column">{children}</Flex>;

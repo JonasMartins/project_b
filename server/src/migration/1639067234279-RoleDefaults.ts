@@ -2,8 +2,8 @@ import { MigrationInterface, QueryRunner } from "typeorm";
 import { v4 } from "uuid";
 
 export class RoleDefaults1639067234279 implements MigrationInterface {
-    public async up(_queryRunner: QueryRunner): Promise<void> {
-        await _queryRunner.query(`
+    public async up(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.query(`
             INSERT INTO public.role (id, name, code, description) 
             VALUES ('${v4()}', 'Admin', '99999', 'The blog administrator.' );
         
@@ -13,7 +13,7 @@ export class RoleDefaults1639067234279 implements MigrationInterface {
         `);
     }
 
-    public async down(_queryRunner: QueryRunner): Promise<void> {
-        await _queryRunner.query(`DELETE FROM public.role;`);
+    public async down(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.query(`DELETE FROM public.role;`);
     }
 }
