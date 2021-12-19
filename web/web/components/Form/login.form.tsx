@@ -9,6 +9,7 @@ import {
     FormLabel,
     FormErrorMessage,
     Button,
+    useColorMode,
 } from "@chakra-ui/react";
 import { LoginDocument, LoginMutation } from "generated/graphql";
 import { useMutation } from "@apollo/client";
@@ -35,6 +36,7 @@ const ChakraInput = (props: InputProps) => {
 
 const LoginPage: NextPage = () => {
     const router = useRouter();
+    const { colorMode } = useColorMode();
     const initialValues: inputValues = { email: "", password: "" };
     const [login, { error }] = useMutation<LoginMutation>(LoginDocument);
 
@@ -132,7 +134,7 @@ const LoginPage: NextPage = () => {
                                 !!props.errors.email ||
                                 !!props.errors.password
                             }
-                            variant="phlox-gradient"
+                            variant={`phlox-gradient-${colorMode}`}
                             color="white"
                         >
                             Submit

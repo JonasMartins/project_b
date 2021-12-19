@@ -9,6 +9,7 @@ import {
     FormLabel,
     FormErrorMessage,
     Button,
+    useColorMode,
 } from "@chakra-ui/react";
 import { CreateUserDocument, CreateUserMutation } from "generated/graphql";
 import { useMutation } from "@apollo/client";
@@ -52,7 +53,7 @@ const LoginPage: NextPage = () => {
     };
 
     const router = useRouter();
-
+    const { colorMode } = useColorMode();
     const [createUser, { error }] =
         useMutation<CreateUserMutation>(CreateUserDocument);
 
@@ -201,7 +202,7 @@ const LoginPage: NextPage = () => {
                                 !!props.errors.passwordReg ||
                                 !!props.errors.passwordConfirmationReg
                             }
-                            variant="phlox-gradient"
+                            variant={`phlox-gradient-${colorMode}`}
                             color="white"
                         >
                             Submit
