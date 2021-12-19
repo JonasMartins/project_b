@@ -35,8 +35,11 @@ const theme = extendTheme({
                 fontWeight: "semibold", // Normally, it is "semibold"
             },
             variants: {
-                "phlox-gradient": {
-                    bgGradient: "linear(to-l, #6c23b5, #d8006c)",
+                "phlox-gradient-light": {
+                    bgGradient: "linear(to-r, #6c23b5, #d8006c)",
+                },
+                "phlox-gradient-dark": {
+                    bgGradient: "linear(to-r, #311052, #890045)",
                 },
             },
         },
