@@ -1,4 +1,4 @@
-import { useQuery } from "@apollo/client";
+import { useLazyQuery, useQuery } from "@apollo/client";
 import { Flex } from "@chakra-ui/layout";
 import { useToast } from "@chakra-ui/react";
 import { LoginTestDocument, LoginTestQuery } from "generated/graphql";
@@ -13,6 +13,7 @@ const Container: NextPage<ContainerProps> = ({ children }) => {
     const toast = useToast();
     const router = useRouter();
     const [delay, setDelay] = useState(true);
+    //const [logedInTest, { data, loading }] = useLazyQuery<LoginTestQuery>(
     const { data, loading } = useQuery<LoginTestQuery>(LoginTestDocument, {
         fetchPolicy: "network-only",
     });

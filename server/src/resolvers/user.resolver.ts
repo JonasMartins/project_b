@@ -209,8 +209,13 @@ export class UserResolver {
     }
 
     @Mutation(() => Boolean)
-    async logout(@Ctx() { req }: Context): Promise<Boolean> {
+    async logout(@Ctx() { req, res }: Context): Promise<Boolean> {
         req.session.destroy(() => {});
+        // resets also the cookie value
+        res.cookie("pbTechBlog", "", {
+            httpOnly: true,
+            maxAge: this.cookieLife,
+        });
 
         return new Promise((resolve, _) => {
             resolve(true);

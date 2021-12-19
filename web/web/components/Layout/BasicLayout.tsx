@@ -12,7 +12,7 @@ interface BasicLayoutProps {}
 
 const BasicLayout: NextPage<BasicLayoutProps> = ({ children }) => {
     const { colorMode } = useColorMode();
-    const bgColor = { light: "gray.50", dark: "gray.700" };
+    const bgColor = { light: "gray.200", dark: "gray.700" };
 
     return (
         <Container>

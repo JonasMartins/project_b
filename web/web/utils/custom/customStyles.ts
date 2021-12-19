@@ -20,3 +20,11 @@ export const customHamburgerMenu = `
         color: unset !important;
     }
 `;
+
+export const customPostFeedInput = `
+    border: none;
+    :focus{
+        box-shadow: 1px 1px 1px 1px #e10dff,
+        1px 1px 1px 1px #e10dff inset;
+    }
+`;

@@ -1,19 +1,19 @@
-import type { NextPage } from "next";
-import React, { ComponentProps } from "react";
-import * as Yup from "yup";
-import { Formik, FormikProps, Form, Field } from "formik";
+import { useMutation } from "@apollo/client";
 import {
-    Stack,
-    Input,
-    FormControl,
-    FormLabel,
-    FormErrorMessage,
     Button,
+    FormControl,
+    FormErrorMessage,
+    FormLabel,
+    Input,
+    Stack,
     useColorMode,
 } from "@chakra-ui/react";
+import { Field, Form, Formik, FormikProps } from "formik";
 import { CreateUserDocument, CreateUserMutation } from "generated/graphql";
-import { useMutation } from "@apollo/client";
+import type { NextPage } from "next";
 import { useRouter } from "next/dist/client/router";
+import React, { ComponentProps } from "react";
+import * as Yup from "yup";
 
 const RegisterSchema = Yup.object().shape({
     nameReg: Yup.string()
