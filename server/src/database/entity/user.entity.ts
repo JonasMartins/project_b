@@ -1,8 +1,16 @@
 import { Field, ObjectType } from "type-graphql";
-import { BeforeInsert, Column, Entity, JoinColumn, ManyToOne } from "typeorm";
+import {
+    BeforeInsert,
+    Column,
+    Entity,
+    JoinColumn,
+    ManyToOne,
+    OneToMany,
+} from "typeorm";
 import { UserValidator } from "../validators/user.validator";
 import { Base } from "./base.entity";
 import { Role } from "./role.entity";
+import { Post } from "./post.entity";
 import argon2 from "argon2";
 
 @ObjectType()
@@ -26,16 +34,18 @@ export class User extends Base {
 
     @Field(() => Role)
     @ManyToOne(() => Role, { eager: true })
-    @JoinColumn({name: 'roleId'})
+    @JoinColumn({ name: "roleId" })
     public role: Role;
 
+    @Field(() => [Post], { nullable: true })
+    @OneToMany(() => Post, (post) => post.creator)
+    public posts: Post[];
 
     @BeforeInsert()
     async hashPassword() {
         const hashedPasswWord = await argon2.hash(this.password);
         this.password = hashedPasswWord;
     }
-
 
     constructor(body?: UserValidator) {
         super();

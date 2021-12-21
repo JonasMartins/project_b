@@ -18,6 +18,8 @@ const httpLink = createHttpLink({
 const client = new ApolloClient({
     link: httpLink,
     cache: new InMemoryCache(),
+    name: "TechBlog",
+    version: "0.0.1_alpha",
 });
 function MyApp({ Component, pageProps }: AppProps) {
     return (

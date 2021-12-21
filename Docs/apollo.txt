@@ -1,0 +1,1 @@
+cache updates is to update local cache without communicating with your GraphQL server.
