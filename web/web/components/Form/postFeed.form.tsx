@@ -8,23 +8,39 @@ import {
     Stack,
     Textarea,
     useColorMode,
+    Input,
+    FormLabel,
 } from "@chakra-ui/react";
-import React, { ComponentProps } from "react";
+import React, { ComponentProps, useCallback, useMemo } from "react";
 import { Field, Form, Formik, FormikProps } from "formik";
 import { css } from "@emotion/react";
 import { customPostFeedInput } from "utils/custom/customStyles";
+import { useDropzone } from "react-dropzone";
+import {
+    baseStyle,
+    acceptStyle,
+    activeStyle,
+    rejectStyle,
+} from "utils/dropzone/dropzoneStyles";
 
 const PostFeedSchema = Yup.object().shape({
     body: Yup.string().required("Required"),
+    title: Yup.string().required("Required"),
 });
 
 interface FormValues {
     body: string;
+    title: string;
 }
 
-type InputProps = ComponentProps<typeof Textarea>;
+type TextAreaProps = ComponentProps<typeof Textarea>;
+type InputProps = ComponentProps<typeof Input>;
 
-const ChakraTextArea = (props: InputProps) => {
+const ChakraInput = (props: InputProps) => {
+    return <Input {...props} borderRadius="1em" size={"sm"} variant="filled" />;
+};
+
+const ChakraTextArea = (props: TextAreaProps) => {
     return (
         <Textarea
             {...props}
@@ -39,8 +55,41 @@ const ChakraTextArea = (props: InputProps) => {
 const PostFeed: NextPage = () => {
     const initialValues: FormValues = {
         body: "",
+        title: "",
     };
     const { colorMode } = useColorMode();
+
+    const handleOnDrop = useCallback((acceptedFiles: File[]) => {
+        // Do something with the files
+        console.log("files ", acceptedFiles);
+    }, []);
+
+    const {
+        getRootProps,
+        getInputProps,
+        isDragActive,
+        isDragAccept,
+        isDragReject,
+    } = useDropzone({
+        onDrop: handleOnDrop,
+        accept: "image/*",
+    });
+
+    const style = useMemo(
+        () => ({
+            ...baseStyle,
+            ...(isDragActive ? activeStyle : {}),
+            ...(isDragAccept ? acceptStyle : {}),
+            ...(isDragReject ? rejectStyle : {}),
+        }),
+        [isDragActive, isDragReject, isDragAccept]
+    );
+    /*
+    const files = acceptedFiles.map((file) => (
+        <li key={file.name}>
+            {file.name} - {file.size} bytes
+        </li>
+    )); */
 
     return (
         <Formik
@@ -53,6 +102,17 @@ const PostFeed: NextPage = () => {
             {(props: FormikProps<FormValues>) => (
                 <Form>
                     <Stack spacing={3}>
+                        <FormControl
+                            isInvalid={
+                                props.touched.title && !!props.errors.title
+                            }
+                        >
+                            <FormLabel htmlFor="title">Title</FormLabel>
+                            <Field id="_title" name="title" as={ChakraInput} />
+                            <FormErrorMessage>
+                                {props.errors.title}
+                            </FormErrorMessage>
+                        </FormControl>
                         <FormControl
                             isInvalid={
                                 props.touched.body && !!props.errors.body
@@ -74,6 +134,17 @@ const PostFeed: NextPage = () => {
                                 {props.errors.body}
                             </FormErrorMessage>
                         </FormControl>
+
+                        <FormControl>
+                            <div {...getRootProps({ style: style })}>
+                                <input {...getInputProps()} />
+                                <p>
+                                    Drag 'n' drop some files here, or click to
+                                    select files
+                                </p>
+                            </div>
+                        </FormControl>
+
                         <Flex justifyContent="flex-end">
                             <Button
                                 type="submit"

@@ -1,7 +1,7 @@
 import React from "react";
 import type { NextPage } from "next";
 import { Flex } from "@chakra-ui/react";
-import PostFeedForm from "components/Form/postFeed.from";
+import PostFeedForm from "components/Form/postFeed.form";
 
 interface CentralFeedProps {}
 

@@ -10,6 +10,7 @@ import { Context } from "./context";
 import cors from "cors";
 import { ApolloServerPluginLandingPageGraphQLPlayground } from "apollo-server-core";
 import { RoleResolver } from "./resolvers/role.resolver";
+import { PostResolver } from "./resolvers/post.resolver";
 import session from "express-session";
 import connectRedis from "connect-redis";
 import Redis from "ioredis";
@@ -59,7 +60,7 @@ export default class Application {
         );
 
         const schema = await buildSchema({
-            resolvers: [UserResolver, RoleResolver],
+            resolvers: [UserResolver, RoleResolver, PostResolver],
             validate: false,
         });
 
