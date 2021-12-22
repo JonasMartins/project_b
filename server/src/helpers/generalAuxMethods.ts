@@ -1,4 +1,16 @@
 import { ErrorFieldHandler } from "./errorFieldHandler";
+import { FileUpload } from "graphql-upload";
+import { ObjectType, Field } from "type-graphql";
+import { createWriteStream, existsSync, mkdirSync } from "fs";
+
+@ObjectType()
+export class FileResponse {
+    @Field(() => [ErrorFieldHandler], { nullable: true })
+    errors?: ErrorFieldHandler[];
+
+    @Field(() => String, { nullable: true })
+    path?: string;
+}
 
 export const genericError = (
     field: string,
@@ -39,4 +51,35 @@ export const validateEmail = (email: string): boolean => {
     const re =
         /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     return re.test(String(email).toLowerCase());
+};
+
+export const manageUploadFile = async (
+    { createReadStream, filename }: FileUpload,
+    field: string,
+    method: string,
+    callerFile: string
+): Promise<FileResponse> => {
+    let success: boolean = false;
+    let path: string = "";
+
+    try {
+        path = process.cwd() + `/images/${new Date().getTime()}`;
+
+        if (!existsSync(path)) {
+            mkdirSync(path);
+        }
+
+        success = await new Promise(async (resolve, reject) =>
+            createReadStream()
+                .pipe(createWriteStream(path + "/" + filename))
+                .on("finish", () => resolve(true))
+                .on("error", () => reject(false))
+        );
+    } catch (err) {
+        return {
+            errors: genericError(field, method, callerFile, err.message),
+        };
+    }
+
+    return { path: path + "/" + filename };
 };

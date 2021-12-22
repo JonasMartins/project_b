@@ -13,6 +13,7 @@ import { RoleResolver } from "./resolvers/role.resolver";
 import session from "express-session";
 import connectRedis from "connect-redis";
 import Redis from "ioredis";
+import { graphqlUploadExpress } from "graphql-upload";
 
 declare module "express-session" {
     interface SessionData {
@@ -37,7 +38,6 @@ export default class Application {
 
         const RedisStore = connectRedis(session);
         const redis = new Redis(process.env.REDIS_URL);
-        //this.app.set("trust proxy", 1);
         var corsOptions = {
             origin: process.env.DEV_FRONT_URL,
             credentials: true, // <-- REQUIRED backend setting
@@ -55,11 +55,6 @@ export default class Application {
                 resave: false,
                 saveUninitialized: false,
                 unset: "destroy",
-                // cookie: {
-                //     httpOnly: true,
-                //     maxAge: this.cookieLife,
-                //     sameSite: "strict",
-                // },
             })
         );
 
@@ -78,6 +73,10 @@ export default class Application {
             introspection: true,
             plugins: [ApolloServerPluginLandingPageGraphQLPlayground()],
         });
+
+        this.app.use(
+            graphqlUploadExpress({ maxFileSize: 10000000, maxFiles: 5 })
+        );
 
         await apolloServer.start();
 

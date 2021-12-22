@@ -15,6 +15,10 @@ export class Post extends Base {
     @Column()
     public body: string;
 
+    @Field()
+    @Column()
+    public file: string;
+
     @Field(() => User)
     @ManyToOne(() => User, (user) => user.posts)
     creator: User;
