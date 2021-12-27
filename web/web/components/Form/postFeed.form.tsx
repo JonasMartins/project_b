@@ -9,7 +9,9 @@ import {
     Textarea,
     useColorMode,
     Input,
+    Text,
     FormLabel,
+    Box,
 } from "@chakra-ui/react";
 import React, { ComponentProps, useCallback, useMemo } from "react";
 import { Field, Form, Formik, FormikProps } from "formik";
@@ -21,7 +23,13 @@ import {
     acceptStyle,
     activeStyle,
     rejectStyle,
+    thumbsContainer,
+    thumb,
+    thumbInner,
+    img,
 } from "utils/dropzone/dropzoneStyles";
+//import { AiOutlineFileImage } from "react-icons/ai";
+import { truncateString } from "utils/generalAuxFunctions";
 
 const PostFeedSchema = Yup.object().shape({
     body: Yup.string().required("Required"),
@@ -70,9 +78,12 @@ const PostFeed: NextPage = () => {
         isDragActive,
         isDragAccept,
         isDragReject,
+        acceptedFiles,
     } = useDropzone({
         onDrop: handleOnDrop,
         accept: "image/*",
+        maxFiles: 10,
+        maxSize: 25000,
     });
 
     const style = useMemo(
@@ -84,12 +95,6 @@ const PostFeed: NextPage = () => {
         }),
         [isDragActive, isDragReject, isDragAccept]
     );
-    /*
-    const files = acceptedFiles.map((file) => (
-        <li key={file.name}>
-            {file.name} - {file.size} bytes
-        </li>
-    )); */
 
     return (
         <Formik
@@ -143,6 +148,28 @@ const PostFeed: NextPage = () => {
                                     select files
                                 </p>
                             </div>
+                            <Flex style={thumbsContainer}>
+                                {acceptedFiles.map((file) => (
+                                    <Flex
+                                        key={file.name}
+                                        mr={2}
+                                        p={2}
+                                        flexDir="column"
+                                        style={thumb}
+                                    >
+                                        <div style={thumbInner}>
+                                            <img
+                                                src={URL.createObjectURL(file)}
+                                                style={img}
+                                            />
+                                        </div>
+                                        <Text fontSize="xs">
+                                            {truncateString(file.name, 5)} -{" "}
+                                            {Math.round(file.size / 1024)} Kb
+                                        </Text>
+                                    </Flex>
+                                ))}
+                            </Flex>
                         </FormControl>
 
                         <Flex justifyContent="flex-end">
