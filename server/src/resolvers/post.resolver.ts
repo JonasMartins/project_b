@@ -87,7 +87,6 @@ export class PostResolver {
 
             const post = await em.create(Post, {
                 body: options.body,
-                title: options.title,
             });
 
             if (file) {
@@ -100,7 +99,7 @@ export class PostResolver {
 
                 // throw an error if the file could note been uploaded
                 if (result.path) {
-                    post.file = result.path;
+                    post.files.push(result.path);
                 }
             }
 

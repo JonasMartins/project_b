@@ -8,16 +8,13 @@ import {
     Stack,
     Textarea,
     useColorMode,
-    Input,
     Text,
-    FormLabel,
-    Box,
 } from "@chakra-ui/react";
 import React, { ComponentProps, useCallback, useMemo } from "react";
 import { Field, Form, Formik, FormikProps } from "formik";
 import { css } from "@emotion/react";
 import { customPostFeedInput } from "utils/custom/customStyles";
-import { useDropzone } from "react-dropzone";
+import { useDropzone, FileRejection } from "react-dropzone";
 import {
     baseStyle,
     acceptStyle,
@@ -28,25 +25,17 @@ import {
     thumbInner,
     img,
 } from "utils/dropzone/dropzoneStyles";
-//import { AiOutlineFileImage } from "react-icons/ai";
 import { truncateString } from "utils/generalAuxFunctions";
 
 const PostFeedSchema = Yup.object().shape({
     body: Yup.string().required("Required"),
-    title: Yup.string().required("Required"),
 });
 
 interface FormValues {
     body: string;
-    title: string;
 }
 
 type TextAreaProps = ComponentProps<typeof Textarea>;
-type InputProps = ComponentProps<typeof Input>;
-
-const ChakraInput = (props: InputProps) => {
-    return <Input {...props} borderRadius="1em" size={"sm"} variant="filled" />;
-};
 
 const ChakraTextArea = (props: TextAreaProps) => {
     return (
@@ -63,27 +52,32 @@ const ChakraTextArea = (props: TextAreaProps) => {
 const PostFeed: NextPage = () => {
     const initialValues: FormValues = {
         body: "",
-        title: "",
     };
     const { colorMode } = useColorMode();
 
-    const handleOnDrop = useCallback((acceptedFiles: File[]) => {
-        // Do something with the files
-        console.log("files ", acceptedFiles);
-    }, []);
+    const handleOnDrop = useCallback(
+        (acceptedFiles: File[], fileRejections: FileRejection[]) => {
+            // Do something with the files
+            console.log("files ", acceptedFiles);
+
+            console.log("rejections ", fileRejections);
+        },
+        []
+    );
 
     const {
         getRootProps,
         getInputProps,
         isDragActive,
         isDragAccept,
+        fileRejections,
         isDragReject,
         acceptedFiles,
     } = useDropzone({
         onDrop: handleOnDrop,
         accept: "image/*",
         maxFiles: 10,
-        maxSize: 25000,
+        maxSize: 250000,
     });
 
     const style = useMemo(
@@ -107,17 +101,6 @@ const PostFeed: NextPage = () => {
             {(props: FormikProps<FormValues>) => (
                 <Form>
                     <Stack spacing={3}>
-                        <FormControl
-                            isInvalid={
-                                props.touched.title && !!props.errors.title
-                            }
-                        >
-                            <FormLabel htmlFor="title">Title</FormLabel>
-                            <Field id="_title" name="title" as={ChakraInput} />
-                            <FormErrorMessage>
-                                {props.errors.title}
-                            </FormErrorMessage>
-                        </FormControl>
                         <FormControl
                             isInvalid={
                                 props.touched.body && !!props.errors.body
@@ -167,6 +150,25 @@ const PostFeed: NextPage = () => {
                                             {truncateString(file.name, 5)} -{" "}
                                             {Math.round(file.size / 1024)} Kb
                                         </Text>
+                                    </Flex>
+                                ))}
+                            </Flex>
+                            <Flex flexDir="column">
+                                {fileRejections.map(({ file, errors }) => (
+                                    <Flex flexDir="column">
+                                        <Text
+                                            fontSize="sm"
+                                            textColor="red.500"
+                                        >{`"${file.name}"`}</Text>
+                                        {errors.map((error, index) => (
+                                            <Text
+                                                fontSize="sm"
+                                                textColor="red.500"
+                                                key={index}
+                                            >
+                                                {error.message}
+                                            </Text>
+                                        ))}
                                     </Flex>
                                 ))}
                             </Flex>
