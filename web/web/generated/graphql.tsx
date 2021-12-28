@@ -15,10 +15,13 @@ export type Scalars = {
   Float: number;
   /** The javascript `Date` as string. Type represents date and time as the ISO Date string. */
   DateTime: any;
+  /** The `Upload` scalar type represents a file upload. */
+  Upload: any;
 };
 
 export type ErrorFieldHandler = {
   __typename?: 'ErrorFieldHandler';
+  detailedMessage: Scalars['String'];
   field: Scalars['String'];
   message: Scalars['String'];
   method: Scalars['String'];
@@ -32,12 +35,19 @@ export type LoginResponse = {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  createPost: PostResponse;
   createRole: RoleResponse;
   createUser: UserResponse;
   deleteRole: Scalars['Boolean'];
   deleteUser: Scalars['Boolean'];
   login: LoginResponse;
   logout: Scalars['Boolean'];
+};
+
+
+export type MutationCreatePostArgs = {
+  files?: InputMaybe<Array<Scalars['Upload']>>;
+  options: PostValidator;
 };
 
 
@@ -66,13 +76,47 @@ export type MutationLoginArgs = {
   password: Scalars['String'];
 };
 
+export type Post = {
+  __typename?: 'Post';
+  body: Scalars['String'];
+  createdAt: Scalars['DateTime'];
+  creator: User;
+  files?: Maybe<Array<Scalars['String']>>;
+  id: Scalars['String'];
+  updatedAt: Scalars['DateTime'];
+};
+
+export type PostResponse = {
+  __typename?: 'PostResponse';
+  errors?: Maybe<Array<ErrorFieldHandler>>;
+  post?: Maybe<Post>;
+};
+
+export type PostValidator = {
+  body: Scalars['String'];
+  creator_id: Scalars['String'];
+};
+
+export type PostsResponse = {
+  __typename?: 'PostsResponse';
+  errors?: Maybe<Array<ErrorFieldHandler>>;
+  posts?: Maybe<Array<Post>>;
+};
+
 export type Query = {
   __typename?: 'Query';
+  getPosts: PostsResponse;
   getRoleById: RoleResponse;
   getRoles: RolesResponse;
   getUserById: UserResponse;
   getUsers: UsersResponse;
   loginTest: Scalars['Boolean'];
+};
+
+
+export type QueryGetPostsArgs = {
+  limit?: InputMaybe<Scalars['Float']>;
+  offset?: InputMaybe<Scalars['Float']>;
 };
 
 
@@ -133,6 +177,7 @@ export type User = {
   name: Scalars['String'];
   password: Scalars['String'];
   picture?: Maybe<Scalars['String']>;
+  posts?: Maybe<Array<Post>>;
   role: Role;
   updatedAt: Scalars['DateTime'];
 };
@@ -156,6 +201,14 @@ export type UsersResponse = {
   errors?: Maybe<Array<ErrorFieldHandler>>;
   users?: Maybe<Array<User>>;
 };
+
+export type CreatePostMutationVariables = Exact<{
+  options: PostValidator;
+  files?: InputMaybe<Array<Scalars['Upload']> | Scalars['Upload']>;
+}>;
+
+
+export type CreatePostMutation = { __typename?: 'Mutation', createPost: { __typename?: 'PostResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', method: string, message: string, field: string }> | null | undefined, post?: { __typename?: 'Post', id: string, body: string, files?: Array<string> | null | undefined, creator: { __typename?: 'User', id: string, name: string } } | null | undefined } };
 
 export type CreateRoleMutationVariables = Exact<{
   options: RoleValidator;
@@ -190,6 +243,53 @@ export type LoginTestQueryVariables = Exact<{ [key: string]: never; }>;
 export type LoginTestQuery = { __typename?: 'Query', loginTest: boolean };
 
 
+export const CreatePostDocument = gql`
+    mutation CreatePost($options: PostValidator!, $files: [Upload!]) {
+  createPost(options: $options, files: $files) {
+    errors {
+      method
+      message
+      field
+    }
+    post {
+      id
+      body
+      files
+      creator {
+        id
+        name
+      }
+    }
+  }
+}
+    `;
+export type CreatePostMutationFn = Apollo.MutationFunction<CreatePostMutation, CreatePostMutationVariables>;
+
+/**
+ * __useCreatePostMutation__
+ *
+ * To run a mutation, you first call `useCreatePostMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreatePostMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createPostMutation, { data, loading, error }] = useCreatePostMutation({
+ *   variables: {
+ *      options: // value for 'options'
+ *      files: // value for 'files'
+ *   },
+ * });
+ */
+export function useCreatePostMutation(baseOptions?: Apollo.MutationHookOptions<CreatePostMutation, CreatePostMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<CreatePostMutation, CreatePostMutationVariables>(CreatePostDocument, options);
+      }
+export type CreatePostMutationHookResult = ReturnType<typeof useCreatePostMutation>;
+export type CreatePostMutationResult = Apollo.MutationResult<CreatePostMutation>;
+export type CreatePostMutationOptions = Apollo.BaseMutationOptions<CreatePostMutation, CreatePostMutationVariables>;
 export const CreateRoleDocument = gql`
     mutation CreateRole($options: RoleValidator!) {
   createRole(options: $options) {

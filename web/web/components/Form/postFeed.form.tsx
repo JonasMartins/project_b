@@ -14,7 +14,7 @@ import React, { ComponentProps, useCallback, useMemo } from "react";
 import { Field, Form, Formik, FormikProps } from "formik";
 import { css } from "@emotion/react";
 import { customPostFeedInput } from "utils/custom/customStyles";
-import { useDropzone, FileRejection } from "react-dropzone";
+import { useDropzone } from "react-dropzone";
 import {
     baseStyle,
     acceptStyle,
@@ -26,6 +26,8 @@ import {
     img,
 } from "utils/dropzone/dropzoneStyles";
 import { truncateString } from "utils/generalAuxFunctions";
+import { CreatePostDocument, CreatePostMutation } from "generated/graphql";
+import { useMutation } from "@apollo/client";
 
 const PostFeedSchema = Yup.object().shape({
     body: Yup.string().required("Required"),
@@ -55,15 +57,36 @@ const PostFeed: NextPage = () => {
     };
     const { colorMode } = useColorMode();
 
-    const handleOnDrop = useCallback(
-        (acceptedFiles: File[], fileRejections: FileRejection[]) => {
-            // Do something with the files
-            console.log("files ", acceptedFiles);
+    const [createPost, { error }] =
+        useMutation<CreatePostMutation>(CreatePostDocument);
 
-            console.log("rejections ", fileRejections);
-        },
-        []
-    );
+    const handleOnDrop = useCallback((acceptedFiles: File[]) => {
+        // Do something with the files
+        console.log("files ", acceptedFiles);
+    }, []);
+
+    const handleCreatePostMutation = async (
+        body: string,
+        files?: File[]
+    ): Promise<CreatePostMutation> => {
+        const result = await createPost({
+            variables: {
+                options: {
+                    body,
+                    creatorId: "?",
+                    files,
+                },
+                onError: () => {
+                    console.error(error);
+                },
+            },
+        });
+
+        if (!result.data) {
+            throw new Error(error?.message);
+        }
+        return result.data;
+    };
 
     const {
         getRootProps,
@@ -95,6 +118,7 @@ const PostFeed: NextPage = () => {
             initialValues={initialValues}
             onSubmit={(values) => {
                 console.log(values);
+                console.log("files ", acceptedFiles);
             }}
             validationSchema={PostFeedSchema}
         >
@@ -125,7 +149,18 @@ const PostFeed: NextPage = () => {
 
                         <FormControl>
                             <div {...getRootProps({ style: style })}>
-                                <input {...getInputProps()} />
+                                <input
+                                    id="_files"
+                                    name="files"
+                                    {...getInputProps()}
+                                    // onChange={({
+                                    //     target: { validity, files },
+                                    // }) => {
+                                    //     if (validity.valid && files) {
+                                    //         props.setFieldValue("files", files);
+                                    //     }
+                                    // }}
+                                />
                                 <p>
                                     Drag 'n' drop some files here, or click to
                                     select files
@@ -157,13 +192,23 @@ const PostFeed: NextPage = () => {
                                 {fileRejections.map(({ file, errors }) => (
                                     <Flex flexDir="column">
                                         <Text
-                                            fontSize="sm"
-                                            textColor="red.500"
+                                            fontSize="md"
+                                            fontStyle="bold"
+                                            textColor={
+                                                colorMode === "dark"
+                                                    ? "red.200"
+                                                    : "red.500"
+                                            }
                                         >{`"${file.name}"`}</Text>
                                         {errors.map((error, index) => (
                                             <Text
-                                                fontSize="sm"
-                                                textColor="red.500"
+                                                fontSize="md"
+                                                textColor={
+                                                    colorMode === "dark"
+                                                        ? "red.200"
+                                                        : "red.500"
+                                                }
+                                                fontStyle="bold"
                                                 key={index}
                                             >
                                                 {error.message}

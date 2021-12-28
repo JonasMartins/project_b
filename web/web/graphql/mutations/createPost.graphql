@@ -1,0 +1,18 @@
+mutation CreatePost($options: PostValidator!, $files: [Upload!]) {
+    createPost(options: $options, files: $files) {
+        errors {
+            method
+            message
+            field
+        }
+        post {
+            id
+            body
+            files
+            creator {
+                id
+                name
+            }
+        }
+    }
+}

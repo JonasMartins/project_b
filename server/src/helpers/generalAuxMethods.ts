@@ -9,7 +9,7 @@ export class FileResponse {
     errors?: ErrorFieldHandler[];
 
     @Field(() => String, { nullable: true })
-    path?: string;
+    paths?: string[];
 }
 
 export const genericError = (
@@ -54,12 +54,12 @@ export const validateEmail = (email: string): boolean => {
 };
 
 export const manageUploadFile = async (
-    { createReadStream, filename }: FileUpload,
+    files: FileUpload[],
     field: string,
     method: string,
     callerFile: string
 ): Promise<FileResponse> => {
-    let success: boolean = false;
+    let paths: string[] = [];
     let path: string = "";
 
     try {
@@ -69,11 +69,16 @@ export const manageUploadFile = async (
             mkdirSync(path);
         }
 
-        success = await new Promise(async (resolve, reject) =>
-            createReadStream()
-                .pipe(createWriteStream(path + "/" + filename))
-                .on("finish", () => resolve(true))
-                .on("error", () => reject(false))
+        await new Promise(async (resolve, reject) =>
+            files.forEach((file) => {
+                file.createReadStream()
+                    .pipe(createWriteStream(path + "/" + file.filename))
+                    .on("finish", () => {
+                        resolve(true);
+                        paths.push(path + "/" + file.filename);
+                    })
+                    .on("error", () => reject(false));
+            })
         );
     } catch (err) {
         return {
@@ -81,5 +86,5 @@ export const manageUploadFile = async (
         };
     }
 
-    return { path: path + "/" + filename };
+    return { paths };
 };

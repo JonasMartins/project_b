@@ -68,7 +68,8 @@ export class PostResolver {
     @Mutation(() => PostResponse)
     async createPost(
         @Arg("options") options: PostValidator,
-        @Arg("file", () => GraphQLUpload, { nullable: true }) file: FileUpload,
+        @Arg("files", () => [GraphQLUpload], { nullable: true })
+        files: FileUpload[],
         @Ctx() { em }: Context
     ): Promise<PostResponse> {
         try {
@@ -89,17 +90,17 @@ export class PostResolver {
                 body: options.body,
             });
 
-            if (file) {
+            if (files) {
                 let result = await manageUploadFile(
-                    file,
+                    files,
                     "file",
                     "getUniqueFolderName",
                     __filename
                 );
 
                 // throw an error if the file could note been uploaded
-                if (result.path) {
-                    post.files.push(result.path);
+                if (result.paths?.length) {
+                    post.files = result.paths;
                 }
             }
 
