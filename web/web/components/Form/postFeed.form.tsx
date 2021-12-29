@@ -36,6 +36,7 @@ const PostFeedSchema = Yup.object().shape({
 
 interface FormValues {
     body: string;
+    file: File | undefined;
 }
 
 type TextAreaProps = ComponentProps<typeof Textarea>;
@@ -55,6 +56,7 @@ const ChakraTextArea = (props: TextAreaProps) => {
 const PostFeed: NextPage = () => {
     const initialValues: FormValues = {
         body: "",
+        file: undefined,
     };
     const { colorMode } = useColorMode();
     const user = useUser();
@@ -69,15 +71,16 @@ const PostFeed: NextPage = () => {
 
     const handleCreatePostMutation = async (
         body: string,
-        files?: File[]
+        files?: File
     ): Promise<CreatePostMutation> => {
+        console.log("files ", files);
         const result = await createPost({
             variables: {
                 options: {
                     body,
                     creator_id: user?.id,
                 },
-                files,
+                file: files,
                 onError: () => {
                     console.error(error);
                 },
@@ -123,8 +126,7 @@ const PostFeed: NextPage = () => {
         <Formik
             initialValues={initialValues}
             onSubmit={(values) => {
-                //handleCreatePostMutation(values.body, acceptedFiles);
-                console.log("values ", values);
+                handleCreatePostMutation(values.body, values.file);
             }}
             validationSchema={PostFeedSchema}
         >
@@ -152,7 +154,7 @@ const PostFeed: NextPage = () => {
                                 {props.errors.body}
                             </FormErrorMessage>
                         </FormControl>
-
+                        {/* 
                         <FormControl>
                             <div {...getRootProps({ style: style })}>
                                 <input
@@ -217,7 +219,7 @@ const PostFeed: NextPage = () => {
                                     </Flex>
                                 ))}
                             </Flex>
-                        </FormControl>
+                        </FormControl> */}
 
                         <input
                             type="file"
@@ -226,7 +228,7 @@ const PostFeed: NextPage = () => {
                             multiple={true}
                             onChange={({ target: { validity, files } }) => {
                                 if (validity.valid && files) {
-                                    props.setFieldValue("files", files);
+                                    props.setFieldValue("file", files[0]);
                                 }
                             }}
                         />

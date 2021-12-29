@@ -1,5 +1,5 @@
-mutation CreatePost($options: PostValidator!, $files: [Upload!]) {
-    createPost(options: $options, files: $files) {
+mutation CreatePost($options: PostValidator!, $file: Upload) {
+    createPost(options: $options, file: $file) {
         errors {
             method
             message
