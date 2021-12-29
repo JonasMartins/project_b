@@ -166,12 +166,20 @@
             "description": null,
             "args": [
               {
-                "name": "file",
+                "name": "files",
                 "description": null,
                 "type": {
-                  "kind": "SCALAR",
-                  "name": "Upload",
-                  "ofType": null
+                  "kind": "LIST",
+                  "name": null,
+                  "ofType": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "SCALAR",
+                      "name": "Upload",
+                      "ofType": null
+                    }
+                  }
                 },
                 "defaultValue": null,
                 "isDeprecated": false,

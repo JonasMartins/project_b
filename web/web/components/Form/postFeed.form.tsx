@@ -36,7 +36,7 @@ const PostFeedSchema = Yup.object().shape({
 
 interface FormValues {
     body: string;
-    file: File | undefined;
+    files: File[] | undefined;
 }
 
 type TextAreaProps = ComponentProps<typeof Textarea>;
@@ -56,7 +56,7 @@ const ChakraTextArea = (props: TextAreaProps) => {
 const PostFeed: NextPage = () => {
     const initialValues: FormValues = {
         body: "",
-        file: undefined,
+        files: undefined,
     };
     const { colorMode } = useColorMode();
     const user = useUser();
@@ -71,7 +71,7 @@ const PostFeed: NextPage = () => {
 
     const handleCreatePostMutation = async (
         body: string,
-        files?: File
+        files?: File[] | undefined
     ): Promise<CreatePostMutation> => {
         console.log("files ", files);
         const result = await createPost({
@@ -80,7 +80,7 @@ const PostFeed: NextPage = () => {
                     body,
                     creator_id: user?.id,
                 },
-                file: files,
+                files,
                 onError: () => {
                     console.error(error);
                 },
@@ -126,7 +126,7 @@ const PostFeed: NextPage = () => {
         <Formik
             initialValues={initialValues}
             onSubmit={(values) => {
-                handleCreatePostMutation(values.body, values.file);
+                handleCreatePostMutation(values.body, values.files);
             }}
             validationSchema={PostFeedSchema}
         >
@@ -223,12 +223,12 @@ const PostFeed: NextPage = () => {
 
                         <input
                             type="file"
-                            name="test"
+                            name="files"
                             accept="image/*"
                             multiple={true}
                             onChange={({ target: { validity, files } }) => {
                                 if (validity.valid && files) {
-                                    props.setFieldValue("file", files[0]);
+                                    props.setFieldValue("files", files);
                                 }
                             }}
                         />

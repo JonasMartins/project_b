@@ -46,7 +46,7 @@ export type Mutation = {
 
 
 export type MutationCreatePostArgs = {
-  file?: InputMaybe<Scalars['Upload']>;
+  files?: InputMaybe<Array<Scalars['Upload']>>;
   options: PostValidator;
 };
 
@@ -205,7 +205,7 @@ export type UsersResponse = {
 
 export type CreatePostMutationVariables = Exact<{
   options: PostValidator;
-  file?: InputMaybe<Scalars['Upload']>;
+  files?: InputMaybe<Array<Scalars['Upload']> | Scalars['Upload']>;
 }>;
 
 
@@ -258,8 +258,8 @@ export type LoginTestQuery = { __typename?: 'Query', loginTest: boolean };
 
 
 export const CreatePostDocument = gql`
-    mutation CreatePost($options: PostValidator!, $file: Upload) {
-  createPost(options: $options, file: $file) {
+    mutation CreatePost($options: PostValidator!, $files: [Upload!]) {
+  createPost(options: $options, files: $files) {
     errors {
       method
       message
@@ -293,7 +293,7 @@ export type CreatePostMutationFn = Apollo.MutationFunction<CreatePostMutation, C
  * const [createPostMutation, { data, loading, error }] = useCreatePostMutation({
  *   variables: {
  *      options: // value for 'options'
- *      file: // value for 'file'
+ *      files: // value for 'files'
  *   },
  * });
  */
