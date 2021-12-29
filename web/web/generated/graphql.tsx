@@ -1,275 +1,406 @@
-import { gql } from '@apollo/client';
-import * as Apollo from '@apollo/client';
+import { gql } from "@apollo/client";
+import * as Apollo from "@apollo/client";
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
-export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
-export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
-export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
-const defaultOptions =  {}
+export type Exact<T extends { [key: string]: unknown }> = {
+    [K in keyof T]: T[K];
+};
+export type MakeOptional<T, K extends keyof T> = Omit<T, K> & {
+    [SubKey in K]?: Maybe<T[SubKey]>;
+};
+export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & {
+    [SubKey in K]: Maybe<T[SubKey]>;
+};
+const defaultOptions = {};
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
-  ID: string;
-  String: string;
-  Boolean: boolean;
-  Int: number;
-  Float: number;
-  /** The javascript `Date` as string. Type represents date and time as the ISO Date string. */
-  DateTime: any;
-  /** The `Upload` scalar type represents a file upload. */
-  Upload: any;
+    ID: string;
+    String: string;
+    Boolean: boolean;
+    Int: number;
+    Float: number;
+    /** The javascript `Date` as string. Type represents date and time as the ISO Date string. */
+    DateTime: any;
+    /** The `Upload` scalar type represents a file upload. */
+    Upload: any;
 };
 
 export type ErrorFieldHandler = {
-  __typename?: 'ErrorFieldHandler';
-  detailedMessage: Scalars['String'];
-  field: Scalars['String'];
-  message: Scalars['String'];
-  method: Scalars['String'];
+    __typename?: "ErrorFieldHandler";
+    detailedMessage: Scalars["String"];
+    field: Scalars["String"];
+    message: Scalars["String"];
+    method: Scalars["String"];
 };
 
 export type LoginResponse = {
-  __typename?: 'LoginResponse';
-  errors?: Maybe<Array<ErrorFieldHandler>>;
-  token?: Maybe<Scalars['String']>;
+    __typename?: "LoginResponse";
+    errors?: Maybe<Array<ErrorFieldHandler>>;
+    token?: Maybe<Scalars["String"]>;
 };
 
 export type Mutation = {
-  __typename?: 'Mutation';
-  createPost: PostResponse;
-  createRole: RoleResponse;
-  createUser: UserResponse;
-  deleteRole: Scalars['Boolean'];
-  deleteUser: Scalars['Boolean'];
-  login: LoginResponse;
-  logout: Scalars['Boolean'];
+    __typename?: "Mutation";
+    createPost: PostResponse;
+    createRole: RoleResponse;
+    createUser: UserResponse;
+    deleteRole: Scalars["Boolean"];
+    deleteUser: Scalars["Boolean"];
+    login: LoginResponse;
+    logout: Scalars["Boolean"];
 };
-
 
 export type MutationCreatePostArgs = {
-  files?: InputMaybe<Array<Scalars['Upload']>>;
-  options: PostValidator;
+    files?: InputMaybe<Array<Scalars["Upload"]>>;
+    options: PostValidator;
 };
-
 
 export type MutationCreateRoleArgs = {
-  options: RoleValidator;
+    options: RoleValidator;
 };
-
 
 export type MutationCreateUserArgs = {
-  options: UserValidator;
+    options: UserValidator;
 };
-
 
 export type MutationDeleteRoleArgs = {
-  id: Scalars['String'];
+    id: Scalars["String"];
 };
-
 
 export type MutationDeleteUserArgs = {
-  id: Scalars['String'];
+    id: Scalars["String"];
 };
 
-
 export type MutationLoginArgs = {
-  email: Scalars['String'];
-  password: Scalars['String'];
+    email: Scalars["String"];
+    password: Scalars["String"];
 };
 
 export type Post = {
-  __typename?: 'Post';
-  body: Scalars['String'];
-  createdAt: Scalars['DateTime'];
-  creator: User;
-  files?: Maybe<Array<Scalars['String']>>;
-  id: Scalars['String'];
-  updatedAt: Scalars['DateTime'];
+    __typename?: "Post";
+    body: Scalars["String"];
+    createdAt: Scalars["DateTime"];
+    creator: User;
+    files?: Maybe<Array<Scalars["String"]>>;
+    id: Scalars["String"];
+    updatedAt: Scalars["DateTime"];
 };
 
 export type PostResponse = {
-  __typename?: 'PostResponse';
-  errors?: Maybe<Array<ErrorFieldHandler>>;
-  post?: Maybe<Post>;
+    __typename?: "PostResponse";
+    errors?: Maybe<Array<ErrorFieldHandler>>;
+    post?: Maybe<Post>;
 };
 
 export type PostValidator = {
-  body: Scalars['String'];
-  creator_id: Scalars['String'];
+    body: Scalars["String"];
+    creator_id: Scalars["String"];
 };
 
 export type PostsResponse = {
-  __typename?: 'PostsResponse';
-  errors?: Maybe<Array<ErrorFieldHandler>>;
-  posts?: Maybe<Array<Post>>;
+    __typename?: "PostsResponse";
+    errors?: Maybe<Array<ErrorFieldHandler>>;
+    posts?: Maybe<Array<Post>>;
 };
 
 export type Query = {
-  __typename?: 'Query';
-  getCurrentLoggedUser: UserResponse;
-  getPosts: PostsResponse;
-  getRoleById: RoleResponse;
-  getRoles: RolesResponse;
-  getUserById: UserResponse;
-  getUsers: UsersResponse;
-  loginTest: Scalars['Boolean'];
+    __typename?: "Query";
+    getCurrentLoggedUser: UserResponse;
+    getPosts: PostsResponse;
+    getRoleById: RoleResponse;
+    getRoles: RolesResponse;
+    getUserById: UserResponse;
+    getUsers: UsersResponse;
+    loginTest: Scalars["Boolean"];
 };
-
 
 export type QueryGetPostsArgs = {
-  limit?: InputMaybe<Scalars['Float']>;
-  offset?: InputMaybe<Scalars['Float']>;
+    limit?: InputMaybe<Scalars["Float"]>;
+    offset?: InputMaybe<Scalars["Float"]>;
 };
-
 
 export type QueryGetRoleByIdArgs = {
-  id: Scalars['String'];
+    id: Scalars["String"];
 };
-
 
 export type QueryGetRolesArgs = {
-  limit?: InputMaybe<Scalars['Float']>;
+    limit?: InputMaybe<Scalars["Float"]>;
 };
-
 
 export type QueryGetUserByIdArgs = {
-  id: Scalars['String'];
+    id: Scalars["String"];
 };
 
-
 export type QueryGetUsersArgs = {
-  limit?: InputMaybe<Scalars['Float']>;
-  offset?: InputMaybe<Scalars['Float']>;
+    limit?: InputMaybe<Scalars["Float"]>;
+    offset?: InputMaybe<Scalars["Float"]>;
 };
 
 export type Role = {
-  __typename?: 'Role';
-  code: Scalars['String'];
-  createdAt: Scalars['DateTime'];
-  description: Scalars['String'];
-  id: Scalars['String'];
-  name: Scalars['String'];
-  updatedAt: Scalars['DateTime'];
-  users: Array<User>;
+    __typename?: "Role";
+    code: Scalars["String"];
+    createdAt: Scalars["DateTime"];
+    description: Scalars["String"];
+    id: Scalars["String"];
+    name: Scalars["String"];
+    updatedAt: Scalars["DateTime"];
+    users: Array<User>;
 };
 
 export type RoleResponse = {
-  __typename?: 'RoleResponse';
-  errors?: Maybe<Array<ErrorFieldHandler>>;
-  role?: Maybe<Role>;
+    __typename?: "RoleResponse";
+    errors?: Maybe<Array<ErrorFieldHandler>>;
+    role?: Maybe<Role>;
 };
 
 export type RoleValidator = {
-  code: Scalars['String'];
-  description: Scalars['String'];
-  name: Scalars['String'];
+    code: Scalars["String"];
+    description: Scalars["String"];
+    name: Scalars["String"];
 };
 
 export type RolesResponse = {
-  __typename?: 'RolesResponse';
-  errors?: Maybe<Array<ErrorFieldHandler>>;
-  roles?: Maybe<Array<Role>>;
+    __typename?: "RolesResponse";
+    errors?: Maybe<Array<ErrorFieldHandler>>;
+    roles?: Maybe<Array<Role>>;
 };
 
 export type User = {
-  __typename?: 'User';
-  createdAt: Scalars['DateTime'];
-  email: Scalars['String'];
-  id: Scalars['String'];
-  name: Scalars['String'];
-  password: Scalars['String'];
-  picture?: Maybe<Scalars['String']>;
-  posts?: Maybe<Array<Post>>;
-  role: Role;
-  updatedAt: Scalars['DateTime'];
+    __typename?: "User";
+    createdAt: Scalars["DateTime"];
+    email: Scalars["String"];
+    id: Scalars["String"];
+    name: Scalars["String"];
+    password: Scalars["String"];
+    picture?: Maybe<Scalars["String"]>;
+    posts?: Maybe<Array<Post>>;
+    role: Role;
+    updatedAt: Scalars["DateTime"];
 };
 
 export type UserResponse = {
-  __typename?: 'UserResponse';
-  errors?: Maybe<Array<ErrorFieldHandler>>;
-  user?: Maybe<User>;
+    __typename?: "UserResponse";
+    errors?: Maybe<Array<ErrorFieldHandler>>;
+    user?: Maybe<User>;
 };
 
 export type UserValidator = {
-  email: Scalars['String'];
-  name: Scalars['String'];
-  password: Scalars['String'];
-  picture?: InputMaybe<Scalars['String']>;
-  roleId?: InputMaybe<Scalars['String']>;
+    email: Scalars["String"];
+    name: Scalars["String"];
+    password: Scalars["String"];
+    picture?: InputMaybe<Scalars["String"]>;
+    roleId?: InputMaybe<Scalars["String"]>;
 };
 
 export type UsersResponse = {
-  __typename?: 'UsersResponse';
-  errors?: Maybe<Array<ErrorFieldHandler>>;
-  users?: Maybe<Array<User>>;
+    __typename?: "UsersResponse";
+    errors?: Maybe<Array<ErrorFieldHandler>>;
+    users?: Maybe<Array<User>>;
 };
 
 export type CreatePostMutationVariables = Exact<{
-  options: PostValidator;
-  files?: InputMaybe<Array<Scalars['Upload']> | Scalars['Upload']>;
+    options: PostValidator;
+    files?: InputMaybe<Array<Scalars["Upload"]> | Scalars["Upload"]>;
 }>;
 
-
-export type CreatePostMutation = { __typename?: 'Mutation', createPost: { __typename?: 'PostResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', method: string, message: string, field: string }> | null | undefined, post?: { __typename?: 'Post', id: string, body: string, files?: Array<string> | null | undefined, creator: { __typename?: 'User', id: string, name: string } } | null | undefined } };
+export type CreatePostMutation = {
+    __typename?: "Mutation";
+    createPost: {
+        __typename?: "PostResponse";
+        errors?:
+            | Array<{
+                  __typename?: "ErrorFieldHandler";
+                  method: string;
+                  message: string;
+                  field: string;
+              }>
+            | null
+            | undefined;
+        post?:
+            | {
+                  __typename?: "Post";
+                  id: string;
+                  body: string;
+                  files?: Array<string> | null | undefined;
+                  creator: { __typename?: "User"; id: string; name: string };
+              }
+            | null
+            | undefined;
+    };
+};
 
 export type CreateRoleMutationVariables = Exact<{
-  options: RoleValidator;
+    options: RoleValidator;
 }>;
 
-
-export type CreateRoleMutation = { __typename?: 'Mutation', createRole: { __typename?: 'RoleResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', method: string, message: string, field: string }> | null | undefined, role?: { __typename?: 'Role', id: string, name: string, description: string } | null | undefined } };
+export type CreateRoleMutation = {
+    __typename?: "Mutation";
+    createRole: {
+        __typename?: "RoleResponse";
+        errors?:
+            | Array<{
+                  __typename?: "ErrorFieldHandler";
+                  method: string;
+                  message: string;
+                  field: string;
+              }>
+            | null
+            | undefined;
+        role?:
+            | {
+                  __typename?: "Role";
+                  id: string;
+                  name: string;
+                  description: string;
+              }
+            | null
+            | undefined;
+    };
+};
 
 export type CreateUserMutationVariables = Exact<{
-  options: UserValidator;
+    options: UserValidator;
 }>;
 
-
-export type CreateUserMutation = { __typename?: 'Mutation', createUser: { __typename?: 'UserResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', method: string, message: string, field: string }> | null | undefined, user?: { __typename?: 'User', id: string, name: string, email: string, password: string } | null | undefined } };
+export type CreateUserMutation = {
+    __typename?: "Mutation";
+    createUser: {
+        __typename?: "UserResponse";
+        errors?:
+            | Array<{
+                  __typename?: "ErrorFieldHandler";
+                  method: string;
+                  message: string;
+                  field: string;
+              }>
+            | null
+            | undefined;
+        user?:
+            | {
+                  __typename?: "User";
+                  id: string;
+                  name: string;
+                  email: string;
+                  password: string;
+              }
+            | null
+            | undefined;
+    };
+};
 
 export type LoginMutationVariables = Exact<{
-  email: Scalars['String'];
-  password: Scalars['String'];
+    email: Scalars["String"];
+    password: Scalars["String"];
 }>;
 
+export type LoginMutation = {
+    __typename?: "Mutation";
+    login: {
+        __typename?: "LoginResponse";
+        token?: string | null | undefined;
+        errors?:
+            | Array<{
+                  __typename?: "ErrorFieldHandler";
+                  method: string;
+                  message: string;
+                  field: string;
+              }>
+            | null
+            | undefined;
+    };
+};
 
-export type LoginMutation = { __typename?: 'Mutation', login: { __typename?: 'LoginResponse', token?: string | null | undefined, errors?: Array<{ __typename?: 'ErrorFieldHandler', method: string, message: string, field: string }> | null | undefined } };
+export type LogoutMutationVariables = Exact<{ [key: string]: never }>;
 
-export type LogoutMutationVariables = Exact<{ [key: string]: never; }>;
+export type LogoutMutation = { __typename?: "Mutation"; logout: boolean };
 
+export type GetCurrentLoggedUserQueryVariables = Exact<{
+    [key: string]: never;
+}>;
 
-export type LogoutMutation = { __typename?: 'Mutation', logout: boolean };
+export type GetCurrentLoggedUserQuery = {
+    __typename?: "Query";
+    getCurrentLoggedUser: {
+        __typename?: "UserResponse";
+        errors?:
+            | Array<{
+                  __typename?: "ErrorFieldHandler";
+                  method: string;
+                  field: string;
+                  message: string;
+              }>
+            | null
+            | undefined;
+        user?:
+            | {
+                  __typename?: "User";
+                  id: string;
+                  name: string;
+                  role: { __typename?: "Role"; name: string };
+              }
+            | null
+            | undefined;
+    };
+};
 
-export type GetCurrentLoggedUserQueryVariables = Exact<{ [key: string]: never; }>;
+export type GetPostsQueryVariables = Exact<{
+    offset: Scalars["Float"];
+    limit: Scalars["Float"];
+}>;
 
+export type GetPostsQuery = {
+    __typename?: "Query";
+    getPosts: {
+        __typename?: "PostsResponse";
+        errors?:
+            | Array<{
+                  __typename?: "ErrorFieldHandler";
+                  message: string;
+                  method: string;
+                  field: string;
+              }>
+            | null
+            | undefined;
+        posts?:
+            | Array<{
+                  __typename?: "Post";
+                  id: string;
+                  body: string;
+                  creator: { __typename?: "User"; id: string; name: string };
+              }>
+            | null
+            | undefined;
+    };
+};
 
-export type GetCurrentLoggedUserQuery = { __typename?: 'Query', getCurrentLoggedUser: { __typename?: 'UserResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', method: string, field: string, message: string }> | null | undefined, user?: { __typename?: 'User', id: string, name: string, role: { __typename?: 'Role', name: string } } | null | undefined } };
+export type LoginTestQueryVariables = Exact<{ [key: string]: never }>;
 
-export type LoginTestQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type LoginTestQuery = { __typename?: 'Query', loginTest: boolean };
-
+export type LoginTestQuery = { __typename?: "Query"; loginTest: boolean };
 
 export const CreatePostDocument = gql`
     mutation CreatePost($options: PostValidator!, $files: [Upload!]) {
-  createPost(options: $options, files: $files) {
-    errors {
-      method
-      message
-      field
+        createPost(options: $options, files: $files) {
+            errors {
+                method
+                message
+                field
+            }
+            post {
+                id
+                body
+                files
+                creator {
+                    id
+                    name
+                }
+            }
+        }
     }
-    post {
-      id
-      body
-      files
-      creator {
-        id
-        name
-      }
-    }
-  }
-}
-    `;
-export type CreatePostMutationFn = Apollo.MutationFunction<CreatePostMutation, CreatePostMutationVariables>;
+`;
+export type CreatePostMutationFn = Apollo.MutationFunction<
+    CreatePostMutation,
+    CreatePostMutationVariables
+>;
 
 /**
  * __useCreatePostMutation__
@@ -289,30 +420,47 @@ export type CreatePostMutationFn = Apollo.MutationFunction<CreatePostMutation, C
  *   },
  * });
  */
-export function useCreatePostMutation(baseOptions?: Apollo.MutationHookOptions<CreatePostMutation, CreatePostMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<CreatePostMutation, CreatePostMutationVariables>(CreatePostDocument, options);
-      }
-export type CreatePostMutationHookResult = ReturnType<typeof useCreatePostMutation>;
-export type CreatePostMutationResult = Apollo.MutationResult<CreatePostMutation>;
-export type CreatePostMutationOptions = Apollo.BaseMutationOptions<CreatePostMutation, CreatePostMutationVariables>;
+export function useCreatePostMutation(
+    baseOptions?: Apollo.MutationHookOptions<
+        CreatePostMutation,
+        CreatePostMutationVariables
+    >
+) {
+    const options = { ...defaultOptions, ...baseOptions };
+    return Apollo.useMutation<CreatePostMutation, CreatePostMutationVariables>(
+        CreatePostDocument,
+        options
+    );
+}
+export type CreatePostMutationHookResult = ReturnType<
+    typeof useCreatePostMutation
+>;
+export type CreatePostMutationResult =
+    Apollo.MutationResult<CreatePostMutation>;
+export type CreatePostMutationOptions = Apollo.BaseMutationOptions<
+    CreatePostMutation,
+    CreatePostMutationVariables
+>;
 export const CreateRoleDocument = gql`
     mutation CreateRole($options: RoleValidator!) {
-  createRole(options: $options) {
-    errors {
-      method
-      message
-      field
+        createRole(options: $options) {
+            errors {
+                method
+                message
+                field
+            }
+            role {
+                id
+                name
+                description
+            }
+        }
     }
-    role {
-      id
-      name
-      description
-    }
-  }
-}
-    `;
-export type CreateRoleMutationFn = Apollo.MutationFunction<CreateRoleMutation, CreateRoleMutationVariables>;
+`;
+export type CreateRoleMutationFn = Apollo.MutationFunction<
+    CreateRoleMutation,
+    CreateRoleMutationVariables
+>;
 
 /**
  * __useCreateRoleMutation__
@@ -331,31 +479,48 @@ export type CreateRoleMutationFn = Apollo.MutationFunction<CreateRoleMutation, C
  *   },
  * });
  */
-export function useCreateRoleMutation(baseOptions?: Apollo.MutationHookOptions<CreateRoleMutation, CreateRoleMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<CreateRoleMutation, CreateRoleMutationVariables>(CreateRoleDocument, options);
-      }
-export type CreateRoleMutationHookResult = ReturnType<typeof useCreateRoleMutation>;
-export type CreateRoleMutationResult = Apollo.MutationResult<CreateRoleMutation>;
-export type CreateRoleMutationOptions = Apollo.BaseMutationOptions<CreateRoleMutation, CreateRoleMutationVariables>;
+export function useCreateRoleMutation(
+    baseOptions?: Apollo.MutationHookOptions<
+        CreateRoleMutation,
+        CreateRoleMutationVariables
+    >
+) {
+    const options = { ...defaultOptions, ...baseOptions };
+    return Apollo.useMutation<CreateRoleMutation, CreateRoleMutationVariables>(
+        CreateRoleDocument,
+        options
+    );
+}
+export type CreateRoleMutationHookResult = ReturnType<
+    typeof useCreateRoleMutation
+>;
+export type CreateRoleMutationResult =
+    Apollo.MutationResult<CreateRoleMutation>;
+export type CreateRoleMutationOptions = Apollo.BaseMutationOptions<
+    CreateRoleMutation,
+    CreateRoleMutationVariables
+>;
 export const CreateUserDocument = gql`
     mutation CreateUser($options: UserValidator!) {
-  createUser(options: $options) {
-    errors {
-      method
-      message
-      field
+        createUser(options: $options) {
+            errors {
+                method
+                message
+                field
+            }
+            user {
+                id
+                name
+                email
+                password
+            }
+        }
     }
-    user {
-      id
-      name
-      email
-      password
-    }
-  }
-}
-    `;
-export type CreateUserMutationFn = Apollo.MutationFunction<CreateUserMutation, CreateUserMutationVariables>;
+`;
+export type CreateUserMutationFn = Apollo.MutationFunction<
+    CreateUserMutation,
+    CreateUserMutationVariables
+>;
 
 /**
  * __useCreateUserMutation__
@@ -374,26 +539,43 @@ export type CreateUserMutationFn = Apollo.MutationFunction<CreateUserMutation, C
  *   },
  * });
  */
-export function useCreateUserMutation(baseOptions?: Apollo.MutationHookOptions<CreateUserMutation, CreateUserMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<CreateUserMutation, CreateUserMutationVariables>(CreateUserDocument, options);
-      }
-export type CreateUserMutationHookResult = ReturnType<typeof useCreateUserMutation>;
-export type CreateUserMutationResult = Apollo.MutationResult<CreateUserMutation>;
-export type CreateUserMutationOptions = Apollo.BaseMutationOptions<CreateUserMutation, CreateUserMutationVariables>;
+export function useCreateUserMutation(
+    baseOptions?: Apollo.MutationHookOptions<
+        CreateUserMutation,
+        CreateUserMutationVariables
+    >
+) {
+    const options = { ...defaultOptions, ...baseOptions };
+    return Apollo.useMutation<CreateUserMutation, CreateUserMutationVariables>(
+        CreateUserDocument,
+        options
+    );
+}
+export type CreateUserMutationHookResult = ReturnType<
+    typeof useCreateUserMutation
+>;
+export type CreateUserMutationResult =
+    Apollo.MutationResult<CreateUserMutation>;
+export type CreateUserMutationOptions = Apollo.BaseMutationOptions<
+    CreateUserMutation,
+    CreateUserMutationVariables
+>;
 export const LoginDocument = gql`
     mutation Login($email: String!, $password: String!) {
-  login(email: $email, password: $password) {
-    errors {
-      method
-      message
-      field
+        login(email: $email, password: $password) {
+            errors {
+                method
+                message
+                field
+            }
+            token
+        }
     }
-    token
-  }
-}
-    `;
-export type LoginMutationFn = Apollo.MutationFunction<LoginMutation, LoginMutationVariables>;
+`;
+export type LoginMutationFn = Apollo.MutationFunction<
+    LoginMutation,
+    LoginMutationVariables
+>;
 
 /**
  * __useLoginMutation__
@@ -413,19 +595,33 @@ export type LoginMutationFn = Apollo.MutationFunction<LoginMutation, LoginMutati
  *   },
  * });
  */
-export function useLoginMutation(baseOptions?: Apollo.MutationHookOptions<LoginMutation, LoginMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<LoginMutation, LoginMutationVariables>(LoginDocument, options);
-      }
+export function useLoginMutation(
+    baseOptions?: Apollo.MutationHookOptions<
+        LoginMutation,
+        LoginMutationVariables
+    >
+) {
+    const options = { ...defaultOptions, ...baseOptions };
+    return Apollo.useMutation<LoginMutation, LoginMutationVariables>(
+        LoginDocument,
+        options
+    );
+}
 export type LoginMutationHookResult = ReturnType<typeof useLoginMutation>;
 export type LoginMutationResult = Apollo.MutationResult<LoginMutation>;
-export type LoginMutationOptions = Apollo.BaseMutationOptions<LoginMutation, LoginMutationVariables>;
+export type LoginMutationOptions = Apollo.BaseMutationOptions<
+    LoginMutation,
+    LoginMutationVariables
+>;
 export const LogoutDocument = gql`
     mutation Logout {
-  logout
-}
-    `;
-export type LogoutMutationFn = Apollo.MutationFunction<LogoutMutation, LogoutMutationVariables>;
+        logout
+    }
+`;
+export type LogoutMutationFn = Apollo.MutationFunction<
+    LogoutMutation,
+    LogoutMutationVariables
+>;
 
 /**
  * __useLogoutMutation__
@@ -443,31 +639,42 @@ export type LogoutMutationFn = Apollo.MutationFunction<LogoutMutation, LogoutMut
  *   },
  * });
  */
-export function useLogoutMutation(baseOptions?: Apollo.MutationHookOptions<LogoutMutation, LogoutMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<LogoutMutation, LogoutMutationVariables>(LogoutDocument, options);
-      }
+export function useLogoutMutation(
+    baseOptions?: Apollo.MutationHookOptions<
+        LogoutMutation,
+        LogoutMutationVariables
+    >
+) {
+    const options = { ...defaultOptions, ...baseOptions };
+    return Apollo.useMutation<LogoutMutation, LogoutMutationVariables>(
+        LogoutDocument,
+        options
+    );
+}
 export type LogoutMutationHookResult = ReturnType<typeof useLogoutMutation>;
 export type LogoutMutationResult = Apollo.MutationResult<LogoutMutation>;
-export type LogoutMutationOptions = Apollo.BaseMutationOptions<LogoutMutation, LogoutMutationVariables>;
+export type LogoutMutationOptions = Apollo.BaseMutationOptions<
+    LogoutMutation,
+    LogoutMutationVariables
+>;
 export const GetCurrentLoggedUserDocument = gql`
     query GetCurrentLoggedUser {
-  getCurrentLoggedUser {
-    errors {
-      method
-      field
-      message
+        getCurrentLoggedUser {
+            errors {
+                method
+                field
+                message
+            }
+            user {
+                id
+                name
+                role {
+                    name
+                }
+            }
+        }
     }
-    user {
-      id
-      name
-      role {
-        name
-      }
-    }
-  }
-}
-    `;
+`;
 
 /**
  * __useGetCurrentLoggedUserQuery__
@@ -484,22 +691,111 @@ export const GetCurrentLoggedUserDocument = gql`
  *   },
  * });
  */
-export function useGetCurrentLoggedUserQuery(baseOptions?: Apollo.QueryHookOptions<GetCurrentLoggedUserQuery, GetCurrentLoggedUserQueryVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<GetCurrentLoggedUserQuery, GetCurrentLoggedUserQueryVariables>(GetCurrentLoggedUserDocument, options);
-      }
-export function useGetCurrentLoggedUserLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetCurrentLoggedUserQuery, GetCurrentLoggedUserQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<GetCurrentLoggedUserQuery, GetCurrentLoggedUserQueryVariables>(GetCurrentLoggedUserDocument, options);
+export function useGetCurrentLoggedUserQuery(
+    baseOptions?: Apollo.QueryHookOptions<
+        GetCurrentLoggedUserQuery,
+        GetCurrentLoggedUserQueryVariables
+    >
+) {
+    const options = { ...defaultOptions, ...baseOptions };
+    return Apollo.useQuery<
+        GetCurrentLoggedUserQuery,
+        GetCurrentLoggedUserQueryVariables
+    >(GetCurrentLoggedUserDocument, options);
+}
+export function useGetCurrentLoggedUserLazyQuery(
+    baseOptions?: Apollo.LazyQueryHookOptions<
+        GetCurrentLoggedUserQuery,
+        GetCurrentLoggedUserQueryVariables
+    >
+) {
+    const options = { ...defaultOptions, ...baseOptions };
+    return Apollo.useLazyQuery<
+        GetCurrentLoggedUserQuery,
+        GetCurrentLoggedUserQueryVariables
+    >(GetCurrentLoggedUserDocument, options);
+}
+export type GetCurrentLoggedUserQueryHookResult = ReturnType<
+    typeof useGetCurrentLoggedUserQuery
+>;
+export type GetCurrentLoggedUserLazyQueryHookResult = ReturnType<
+    typeof useGetCurrentLoggedUserLazyQuery
+>;
+export type GetCurrentLoggedUserQueryResult = Apollo.QueryResult<
+    GetCurrentLoggedUserQuery,
+    GetCurrentLoggedUserQueryVariables
+>;
+export const GetPostsDocument = gql`
+    query GetPosts($offset: Float!, $limit: Float!) {
+        getPosts(offset: $offset, limit: $limit) {
+            errors {
+                message
+                method
+                field
+            }
+            posts {
+                id
+                body
+                creator {
+                    id
+                    name
+                }
+            }
         }
-export type GetCurrentLoggedUserQueryHookResult = ReturnType<typeof useGetCurrentLoggedUserQuery>;
-export type GetCurrentLoggedUserLazyQueryHookResult = ReturnType<typeof useGetCurrentLoggedUserLazyQuery>;
-export type GetCurrentLoggedUserQueryResult = Apollo.QueryResult<GetCurrentLoggedUserQuery, GetCurrentLoggedUserQueryVariables>;
+    }
+`;
+
+/**
+ * __useGetPostsQuery__
+ *
+ * To run a query within a React component, call `useGetPostsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetPostsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetPostsQuery({
+ *   variables: {
+ *      offset: // value for 'offset'
+ *      limit: // value for 'limit'
+ *   },
+ * });
+ */
+export function useGetPostsQuery(
+    baseOptions: Apollo.QueryHookOptions<GetPostsQuery, GetPostsQueryVariables>
+) {
+    const options = { ...defaultOptions, ...baseOptions };
+    return Apollo.useQuery<GetPostsQuery, GetPostsQueryVariables>(
+        GetPostsDocument,
+        options
+    );
+}
+export function useGetPostsLazyQuery(
+    baseOptions?: Apollo.LazyQueryHookOptions<
+        GetPostsQuery,
+        GetPostsQueryVariables
+    >
+) {
+    const options = { ...defaultOptions, ...baseOptions };
+    return Apollo.useLazyQuery<GetPostsQuery, GetPostsQueryVariables>(
+        GetPostsDocument,
+        options
+    );
+}
+export type GetPostsQueryHookResult = ReturnType<typeof useGetPostsQuery>;
+export type GetPostsLazyQueryHookResult = ReturnType<
+    typeof useGetPostsLazyQuery
+>;
+export type GetPostsQueryResult = Apollo.QueryResult<
+    GetPostsQuery,
+    GetPostsQueryVariables
+>;
 export const LoginTestDocument = gql`
     query LoginTest {
-  loginTest
-}
-    `;
+        loginTest
+    }
+`;
 
 /**
  * __useLoginTestQuery__
@@ -516,25 +812,45 @@ export const LoginTestDocument = gql`
  *   },
  * });
  */
-export function useLoginTestQuery(baseOptions?: Apollo.QueryHookOptions<LoginTestQuery, LoginTestQueryVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<LoginTestQuery, LoginTestQueryVariables>(LoginTestDocument, options);
-      }
-export function useLoginTestLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<LoginTestQuery, LoginTestQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<LoginTestQuery, LoginTestQueryVariables>(LoginTestDocument, options);
-        }
+export function useLoginTestQuery(
+    baseOptions?: Apollo.QueryHookOptions<
+        LoginTestQuery,
+        LoginTestQueryVariables
+    >
+) {
+    const options = { ...defaultOptions, ...baseOptions };
+    return Apollo.useQuery<LoginTestQuery, LoginTestQueryVariables>(
+        LoginTestDocument,
+        options
+    );
+}
+export function useLoginTestLazyQuery(
+    baseOptions?: Apollo.LazyQueryHookOptions<
+        LoginTestQuery,
+        LoginTestQueryVariables
+    >
+) {
+    const options = { ...defaultOptions, ...baseOptions };
+    return Apollo.useLazyQuery<LoginTestQuery, LoginTestQueryVariables>(
+        LoginTestDocument,
+        options
+    );
+}
 export type LoginTestQueryHookResult = ReturnType<typeof useLoginTestQuery>;
-export type LoginTestLazyQueryHookResult = ReturnType<typeof useLoginTestLazyQuery>;
-export type LoginTestQueryResult = Apollo.QueryResult<LoginTestQuery, LoginTestQueryVariables>;
+export type LoginTestLazyQueryHookResult = ReturnType<
+    typeof useLoginTestLazyQuery
+>;
+export type LoginTestQueryResult = Apollo.QueryResult<
+    LoginTestQuery,
+    LoginTestQueryVariables
+>;
 
-      export interface PossibleTypesResultData {
-        possibleTypes: {
-          [key: string]: string[]
-        }
-      }
-      const result: PossibleTypesResultData = {
-  "possibleTypes": {}
+export interface PossibleTypesResultData {
+    possibleTypes: {
+        [key: string]: string[];
+    };
+}
+const result: PossibleTypesResultData = {
+    possibleTypes: {},
 };
-      export default result;
-    
+export default result;

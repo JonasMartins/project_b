@@ -1,0 +1,17 @@
+query GetPosts($offset: Float!, $limit: Float!) {
+    getPosts(offset: $offset, limit: $limit) {
+        errors {
+            message
+            method
+            field
+        }
+        posts {
+            id
+            body
+            creator {
+                id
+                name
+            }
+        }
+    }
+}

@@ -1,6 +1,6 @@
 import { Base } from "./base.entity";
 import { User } from "./user.entity";
-import { Column, Entity, ManyToOne } from "typeorm";
+import { Column, Entity, JoinTable, ManyToOne } from "typeorm";
 import { ObjectType, Field } from "type-graphql";
 import { PostValidator } from "../validators/post.validator";
 
@@ -16,7 +16,8 @@ export class Post extends Base {
     files: string[];
 
     @Field(() => User)
-    @ManyToOne(() => User, (user) => user.posts)
+    @ManyToOne(() => User, (user) => user.posts, { eager: true })
+    @JoinTable()
     creator: User;
 
     constructor(body?: PostValidator) {

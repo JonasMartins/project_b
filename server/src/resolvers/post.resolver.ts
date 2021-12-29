@@ -46,9 +46,11 @@ export class PostResolver {
             const qb = await em
                 .getRepository(Post)
                 .createQueryBuilder("post")
-                .where("1 = 1")
+                .leftJoinAndSelect("post.creator", "user")
                 .limit(max)
                 .offset(maxOffset);
+
+            // console.log("query: ", qb.getQuery());
 
             const posts = await qb.getMany();
 
@@ -90,7 +92,7 @@ export class PostResolver {
                 body: options.body,
             });
 
-            if (files) {
+            if (files && files.length) {
                 let result = await manageUploadFile(
                     files,
                     "file",

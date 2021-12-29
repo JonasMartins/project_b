@@ -63,7 +63,6 @@ export default class Application {
             resolvers: [UserResolver, RoleResolver, PostResolver],
             validate: false,
         });
-
         const apolloServer = new ApolloServer({
             schema,
             context: ({ req, res }): Context => ({
@@ -75,11 +74,11 @@ export default class Application {
             plugins: [ApolloServerPluginLandingPageGraphQLPlayground()],
         });
 
-        this.app.use(
-            graphqlUploadExpress({ maxFileSize: 10000000, maxFiles: 5 })
-        );
-
         await apolloServer.start();
+
+        this.app.use(
+            graphqlUploadExpress({ maxFileSize: 10000000, maxFiles: 10 })
+        );
 
         apolloServer.applyMiddleware({
             app: this.app,

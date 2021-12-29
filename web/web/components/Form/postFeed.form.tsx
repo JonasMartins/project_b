@@ -57,7 +57,6 @@ const PostFeed: NextPage = () => {
         body: "",
     };
     const { colorMode } = useColorMode();
-
     const user = useUser();
 
     const [createPost, { error }] =
@@ -65,7 +64,7 @@ const PostFeed: NextPage = () => {
 
     const handleOnDrop = useCallback((acceptedFiles: File[]) => {
         // Do something with the files
-        console.log("files ", acceptedFiles);
+        //console.log("files ", acceptedFiles);
     }, []);
 
     const handleCreatePostMutation = async (
@@ -76,9 +75,9 @@ const PostFeed: NextPage = () => {
             variables: {
                 options: {
                     body,
-                    creatorId: "?",
-                    files,
+                    creator_id: user?.id,
                 },
+                files,
                 onError: () => {
                     console.error(error);
                 },
@@ -93,7 +92,6 @@ const PostFeed: NextPage = () => {
 
     useEffect(() => {
         if (!user) return;
-        console.log("user: ", user);
     }, [user]);
 
     const {
@@ -125,9 +123,8 @@ const PostFeed: NextPage = () => {
         <Formik
             initialValues={initialValues}
             onSubmit={(values) => {
-                console.log(values);
-                console.log("files ", acceptedFiles);
-                console.log("user: ", user?.id);
+                //handleCreatePostMutation(values.body, acceptedFiles);
+                console.log("values ", values);
             }}
             validationSchema={PostFeedSchema}
         >
@@ -159,6 +156,7 @@ const PostFeed: NextPage = () => {
                         <FormControl>
                             <div {...getRootProps({ style: style })}>
                                 <input
+                                    type="file"
                                     id="_files"
                                     name="files"
                                     {...getInputProps()}
@@ -220,6 +218,18 @@ const PostFeed: NextPage = () => {
                                 ))}
                             </Flex>
                         </FormControl>
+
+                        <input
+                            type="file"
+                            name="test"
+                            accept="image/*"
+                            multiple={true}
+                            onChange={({ target: { validity, files } }) => {
+                                if (validity.valid && files) {
+                                    props.setFieldValue("files", files);
+                                }
+                            }}
+                        />
 
                         <Flex justifyContent="flex-end">
                             <Button
