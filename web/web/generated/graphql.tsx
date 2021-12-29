@@ -105,6 +105,7 @@ export type PostsResponse = {
 
 export type Query = {
   __typename?: 'Query';
+  getCurrentLoggedUser: UserResponse;
   getPosts: PostsResponse;
   getRoleById: RoleResponse;
   getRoles: RolesResponse;
@@ -236,6 +237,11 @@ export type LogoutMutationVariables = Exact<{ [key: string]: never; }>;
 
 
 export type LogoutMutation = { __typename?: 'Mutation', logout: boolean };
+
+export type GetCurrentLoggedUserQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetCurrentLoggedUserQuery = { __typename?: 'Query', getCurrentLoggedUser: { __typename?: 'UserResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', method: string, field: string, message: string }> | null | undefined, user?: { __typename?: 'User', id: string, name: string, role: { __typename?: 'Role', name: string } } | null | undefined } };
 
 export type LoginTestQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -444,6 +450,51 @@ export function useLogoutMutation(baseOptions?: Apollo.MutationHookOptions<Logou
 export type LogoutMutationHookResult = ReturnType<typeof useLogoutMutation>;
 export type LogoutMutationResult = Apollo.MutationResult<LogoutMutation>;
 export type LogoutMutationOptions = Apollo.BaseMutationOptions<LogoutMutation, LogoutMutationVariables>;
+export const GetCurrentLoggedUserDocument = gql`
+    query GetCurrentLoggedUser {
+  getCurrentLoggedUser {
+    errors {
+      method
+      field
+      message
+    }
+    user {
+      id
+      name
+      role {
+        name
+      }
+    }
+  }
+}
+    `;
+
+/**
+ * __useGetCurrentLoggedUserQuery__
+ *
+ * To run a query within a React component, call `useGetCurrentLoggedUserQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetCurrentLoggedUserQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetCurrentLoggedUserQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useGetCurrentLoggedUserQuery(baseOptions?: Apollo.QueryHookOptions<GetCurrentLoggedUserQuery, GetCurrentLoggedUserQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetCurrentLoggedUserQuery, GetCurrentLoggedUserQueryVariables>(GetCurrentLoggedUserDocument, options);
+      }
+export function useGetCurrentLoggedUserLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetCurrentLoggedUserQuery, GetCurrentLoggedUserQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetCurrentLoggedUserQuery, GetCurrentLoggedUserQueryVariables>(GetCurrentLoggedUserDocument, options);
+        }
+export type GetCurrentLoggedUserQueryHookResult = ReturnType<typeof useGetCurrentLoggedUserQuery>;
+export type GetCurrentLoggedUserLazyQueryHookResult = ReturnType<typeof useGetCurrentLoggedUserLazyQuery>;
+export type GetCurrentLoggedUserQueryResult = Apollo.QueryResult<GetCurrentLoggedUserQuery, GetCurrentLoggedUserQueryVariables>;
 export const LoginTestDocument = gql`
     query LoginTest {
   loginTest

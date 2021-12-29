@@ -1,0 +1,16 @@
+query GetCurrentLoggedUser {
+    getCurrentLoggedUser {
+        errors {
+            method
+            field
+            message
+        }
+        user {
+            id
+            name
+            role {
+                name
+            }
+        }
+    }
+}

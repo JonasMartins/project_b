@@ -10,7 +10,7 @@ import {
     useColorMode,
     Text,
 } from "@chakra-ui/react";
-import React, { ComponentProps, useCallback, useMemo } from "react";
+import React, { ComponentProps, useCallback, useEffect, useMemo } from "react";
 import { Field, Form, Formik, FormikProps } from "formik";
 import { css } from "@emotion/react";
 import { customPostFeedInput } from "utils/custom/customStyles";
@@ -28,6 +28,7 @@ import {
 import { truncateString } from "utils/generalAuxFunctions";
 import { CreatePostDocument, CreatePostMutation } from "generated/graphql";
 import { useMutation } from "@apollo/client";
+import { useUser } from "utils/hooks/useUser";
 
 const PostFeedSchema = Yup.object().shape({
     body: Yup.string().required("Required"),
@@ -56,6 +57,8 @@ const PostFeed: NextPage = () => {
         body: "",
     };
     const { colorMode } = useColorMode();
+
+    const user = useUser();
 
     const [createPost, { error }] =
         useMutation<CreatePostMutation>(CreatePostDocument);
@@ -88,6 +91,11 @@ const PostFeed: NextPage = () => {
         return result.data;
     };
 
+    useEffect(() => {
+        if (!user) return;
+        console.log("user: ", user);
+    }, [user]);
+
     const {
         getRootProps,
         getInputProps,
@@ -119,6 +127,7 @@ const PostFeed: NextPage = () => {
             onSubmit={(values) => {
                 console.log(values);
                 console.log("files ", acceptedFiles);
+                console.log("user: ", user?.id);
             }}
             validationSchema={PostFeedSchema}
         >
@@ -153,13 +162,6 @@ const PostFeed: NextPage = () => {
                                     id="_files"
                                     name="files"
                                     {...getInputProps()}
-                                    // onChange={({
-                                    //     target: { validity, files },
-                                    // }) => {
-                                    //     if (validity.valid && files) {
-                                    //         props.setFieldValue("files", files);
-                                    //     }
-                                    // }}
                                 />
                                 <p>
                                     Drag 'n' drop some files here, or click to

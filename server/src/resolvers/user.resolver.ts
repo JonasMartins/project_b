@@ -20,7 +20,7 @@ class LoginResponse {
     @Field(() => [ErrorFieldHandler], { nullable: true })
     errors?: ErrorFieldHandler[];
     @Field(() => String, { nullable: true })
-    token?: string;
+    token?: String;
 }
 
 @ObjectType()
@@ -206,6 +206,37 @@ export class UserResolver {
                 resolve(true);
             });
         }
+    }
+
+    @Query(() => UserResponse)
+    async getCurrentLoggedUser(
+        @Ctx() { req, em }: Context
+    ): Promise<UserResponse> {
+        if (!req.session.userId) {
+            return {
+                errors: genericError(
+                    "-",
+                    "getCurrentLoggedUser",
+                    __filename,
+                    `Could not find user id on request info, not a user logged right now.`
+                ),
+            };
+        }
+
+        const user = await em.findOne(User, { id: req.session.userId });
+
+        if (!user) {
+            return {
+                errors: genericError(
+                    "id",
+                    "getCurrentLoggedUser",
+                    __filename,
+                    `Could not find user with id: ${req.session.userId}`
+                ),
+            };
+        }
+
+        return { user };
     }
 
     @Mutation(() => Boolean)
