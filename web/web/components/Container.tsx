@@ -1,4 +1,4 @@
-import { useLazyQuery, useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client";
 import { Flex } from "@chakra-ui/layout";
 import { useToast } from "@chakra-ui/react";
 import { LoginTestDocument, LoginTestQuery } from "generated/graphql";

@@ -1,7 +1,6 @@
 import { FileUpload } from "graphql-upload";
 import { ErrorFieldHandler } from "./errorFieldHandler";
 import { ObjectType, Field } from "type-graphql";
-import { existsSync, mkdirSync } from "fs";
 import {
     BlobServiceClient,
     StorageSharedKeyCredential,
@@ -70,24 +69,13 @@ export class HandleUpload {
             path = "";
             await Promise.all(
                 this.files.map(async (file) => {
-                    /*
-                    const { createReadStream, filename } = await file;
-                    return new Promise(async (resolve, reject) => {
-                        createReadStream()
-                            .pipe(createWriteStream(path + "/" + filename))
-                            .on("finish", () => {
-                                resolve(true);
-                                paths.push(path + "/" + filename);
-                            })
-                            .on("error", () => reject(false));
-                    }); */
-
                     const { createReadStream, filename } = await file;
                     const blobName = this.getBlobName(filename);
                     const containerClient =
                         blobServiceClient.getContainerClient(containerName);
                     const blockBlobClient =
                         containerClient.getBlockBlobClient(blobName);
+
                     try {
                         return new Promise(async (resolve, reject) => {
                             const result = await blockBlobClient.uploadStream(
@@ -102,12 +90,10 @@ export class HandleUpload {
                             );
 
                             if (!result.errorCode) {
-                                () => {
-                                    resolve(true);
-                                    paths.push(path + "/" + filename);
-                                };
+                                resolve(true);
+                                paths.push(blockBlobClient.url);
                             } else {
-                                () => reject(false);
+                                reject(false);
                             }
                         });
                     } catch (e) {

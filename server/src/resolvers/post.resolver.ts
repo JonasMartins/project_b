@@ -12,7 +12,7 @@ import { Post } from "../database/entity/post.entity";
 import { User } from "../database/entity/user.entity";
 import { ErrorFieldHandler } from "../helpers/errorFieldHandler";
 import { Context } from "./../context";
-import { genericError, manageUploadFile } from "./../helpers/generalAuxMethods";
+import { genericError } from "./../helpers/generalAuxMethods";
 import { FileUpload, GraphQLUpload } from "graphql-upload";
 import { HandleUpload } from "./../helpers/handleUpload.helper";
 
@@ -49,9 +49,8 @@ export class PostResolver {
                 .createQueryBuilder("post")
                 .leftJoinAndSelect("post.creator", "user")
                 .limit(max)
-                .offset(maxOffset);
-
-            // console.log("query: ", qb.getQuery());
+                .offset(maxOffset)
+                .orderBy("post.createdAt", "DESC");
 
             const posts = await qb.getMany();
 

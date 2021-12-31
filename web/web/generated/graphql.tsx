@@ -249,7 +249,7 @@ export type GetPostsQueryVariables = Exact<{
 }>;
 
 
-export type GetPostsQuery = { __typename?: 'Query', getPosts: { __typename?: 'PostsResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', message: string, method: string, field: string }> | null | undefined, posts?: Array<{ __typename?: 'Post', id: string, body: string, creator: { __typename?: 'User', id: string, name: string } }> | null | undefined } };
+export type GetPostsQuery = { __typename?: 'Query', getPosts: { __typename?: 'PostsResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', message: string, method: string, field: string }> | null | undefined, posts?: Array<{ __typename?: 'Post', id: string, body: string, files?: Array<string> | null | undefined, creator: { __typename?: 'User', id: string, name: string } }> | null | undefined } };
 
 export type LoginTestQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -514,6 +514,7 @@ export const GetPostsDocument = gql`
     posts {
       id
       body
+      files
       creator {
         id
         name

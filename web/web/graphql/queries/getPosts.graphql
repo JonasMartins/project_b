@@ -8,6 +8,7 @@ query GetPosts($offset: Float!, $limit: Float!) {
         posts {
             id
             body
+            files
             creator {
                 id
                 name
