@@ -14,6 +14,7 @@ import { ErrorFieldHandler } from "../helpers/errorFieldHandler";
 import { Context } from "./../context";
 import { genericError, manageUploadFile } from "./../helpers/generalAuxMethods";
 import { FileUpload, GraphQLUpload } from "graphql-upload";
+import { HandleUpload } from "./../helpers/handleUpload.helper";
 
 @ObjectType()
 class PostsResponse {
@@ -93,12 +94,14 @@ export class PostResolver {
             });
 
             if (files && files.length) {
-                let result = await manageUploadFile(
+                const uploader = new HandleUpload(
                     files,
                     "file",
                     "getUniqueFolderName",
                     __filename
                 );
+
+                let result = await uploader.upload();
 
                 // throw an error if the file could note been uploaded
                 if (result.paths?.length) {

@@ -2,6 +2,11 @@ import { ErrorFieldHandler } from "./errorFieldHandler";
 import { FileUpload } from "graphql-upload";
 import { ObjectType, Field } from "type-graphql";
 import { createWriteStream, existsSync, mkdirSync } from "fs";
+import {
+    BlobServiceClient,
+    StorageSharedKeyCredential,
+    newPipeline,
+} from "@azure/storage-blob";
 
 @ObjectType()
 export class FileResponse {
@@ -53,6 +58,16 @@ export const validateEmail = (email: string): boolean => {
     return re.test(String(email).toLowerCase());
 };
 
+const getBlobName = (originalName: string) => {
+    // Use a random number to generate a unique file name,
+    // removing "0." from the start of the string.
+    const identifier = Math.random().toString().replace(/0\./, "");
+    return `${identifier}-${originalName}`;
+};
+
+const ONE_MEGABYTE = 1024 * 1024;
+const uploadOptions = { bufferSize: 4 * ONE_MEGABYTE, maxBuffers: 20 };
+
 export const manageUploadFile = async (
     files: FileUpload[],
     field: string,
@@ -63,6 +78,17 @@ export const manageUploadFile = async (
     let path: string = "";
 
     try {
+        const sharedKeyCredential = new StorageSharedKeyCredential(
+            process.env.AZURE_STORAGE_ACCOUNT_NAME!,
+            process.env.AZURE_STORAGE_ACCOUNT_ACCESS_KEY!
+        );
+        const pipeline = newPipeline(sharedKeyCredential);
+
+        const blobServiceClient = new BlobServiceClient(
+            `https://${process.env.AZURE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net`,
+            pipeline
+        );
+
         path = process.cwd() + `/images/${new Date().getTime()}`;
 
         if (!existsSync(path)) {

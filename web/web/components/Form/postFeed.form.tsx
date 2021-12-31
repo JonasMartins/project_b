@@ -73,7 +73,6 @@ const PostFeed: NextPage = () => {
         body: string,
         files?: File[] | undefined
     ): Promise<CreatePostMutation> => {
-        console.log("files ", files);
         const result = await createPost({
             variables: {
                 options: {
@@ -126,7 +125,7 @@ const PostFeed: NextPage = () => {
         <Formik
             initialValues={initialValues}
             onSubmit={(values) => {
-                handleCreatePostMutation(values.body, values.files);
+                handleCreatePostMutation(values.body, acceptedFiles);
             }}
             validationSchema={PostFeedSchema}
         >
@@ -154,7 +153,7 @@ const PostFeed: NextPage = () => {
                                 {props.errors.body}
                             </FormErrorMessage>
                         </FormControl>
-                        {/* 
+
                         <FormControl>
                             <div {...getRootProps({ style: style })}>
                                 <input
@@ -219,8 +218,9 @@ const PostFeed: NextPage = () => {
                                     </Flex>
                                 ))}
                             </Flex>
-                        </FormControl> */}
+                        </FormControl>
 
+                        {/*
                         <input
                             type="file"
                             name="files"
@@ -231,7 +231,7 @@ const PostFeed: NextPage = () => {
                                     props.setFieldValue("files", files);
                                 }
                             }}
-                        />
+                        /> */}
 
                         <Flex justifyContent="flex-end">
                             <Button
