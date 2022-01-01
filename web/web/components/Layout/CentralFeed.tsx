@@ -26,11 +26,11 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
             limit: 10,
             offset: 0,
         },
+        fetchPolicy: "cache-and-network",
     });
 
     useEffect(() => {
         if (loading) return;
-        console.log("data ", data?.getPosts.posts);
     }, [loading]);
 
     return (
@@ -61,6 +61,7 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
                     ))
                 )}
             </Box>
+
             <ModalCreatePost
                 isOpen={modalCreatePostDisclousure.isOpen}
                 onClose={modalCreatePostDisclousure.onClose}

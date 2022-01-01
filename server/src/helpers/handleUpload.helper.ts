@@ -5,6 +5,7 @@ import {
     BlobServiceClient,
     StorageSharedKeyCredential,
     newPipeline,
+    BlobClient,
 } from "@azure/storage-blob";
 import { genericError } from "./generalAuxMethods";
 // const multer = require("multer");
@@ -21,18 +22,27 @@ class FileResponse {
 
 const containerName = "images";
 const ONE_MEGABYTE = 1024 * 1024;
-// const inMemoryStorage = multer.memoryStorage();
 const uploadOptions = { bufferSize: 4 * ONE_MEGABYTE, maxBuffers: 20 };
-// const uploadStrategy = multer({ storage: inMemoryStorage }).single("image");
 
 export class HandleUpload {
-    public files: FileUpload[];
+    public files: FileUpload[] | null | undefined;
     public field: string;
     public method: string;
     public callerFile: string;
 
+    private sharedKeyCredential = new StorageSharedKeyCredential(
+        process.env.AZURE_STORAGE_ACCOUNT_NAME!,
+        process.env.AZURE_STORAGE_ACCOUNT_ACCESS_KEY!
+    );
+    private pipeline = newPipeline(this.sharedKeyCredential);
+
+    private blobServiceClient = new BlobServiceClient(
+        `https://${process.env.AZURE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net`,
+        this.pipeline
+    );
+
     constructor(
-        files: FileUpload[],
+        files: FileUpload[] | null,
         field: string,
         method: string,
         callerFile: string
@@ -54,25 +64,27 @@ export class HandleUpload {
         let paths: string[] = [];
         let path: string = "";
 
+        if (!this.files) {
+            return {
+                errors: genericError(
+                    this.field,
+                    this.method,
+                    this.callerFile,
+                    "Files required to this method."
+                ),
+            };
+        }
+
         try {
-            const sharedKeyCredential = new StorageSharedKeyCredential(
-                process.env.AZURE_STORAGE_ACCOUNT_NAME!,
-                process.env.AZURE_STORAGE_ACCOUNT_ACCESS_KEY!
-            );
-            const pipeline = newPipeline(sharedKeyCredential);
-
-            const blobServiceClient = new BlobServiceClient(
-                `https://${process.env.AZURE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net`,
-                pipeline
-            );
-
             path = "";
             await Promise.all(
                 this.files.map(async (file) => {
                     const { createReadStream, filename } = await file;
                     const blobName = this.getBlobName(filename);
                     const containerClient =
-                        blobServiceClient.getContainerClient(containerName);
+                        this.blobServiceClient.getContainerClient(
+                            containerName
+                        );
                     const blockBlobClient =
                         containerClient.getBlockBlobClient(blobName);
 
@@ -120,5 +132,22 @@ export class HandleUpload {
         }
 
         return { paths };
+    };
+
+    public getImages = async (urls: string[]): Promise<BlobClient[]> => {
+        let blobsArray: BlobClient[] = [];
+        const containerClient =
+            this.blobServiceClient.getContainerClient(containerName);
+
+        if (urls.length) {
+            urls.forEach(async (url) => {
+                try {
+                    blobsArray.push(await containerClient.getBlobClient(url));
+                } catch (err) {
+                    console.log("Error ", err);
+                }
+            });
+        }
+        return blobsArray;
     };
 }
