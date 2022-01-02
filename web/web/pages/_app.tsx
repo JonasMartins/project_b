@@ -4,6 +4,8 @@ import theme from "./../utils/theme/theme";
 import { ColorModeScript } from "@chakra-ui/react";
 import { ApolloClient, InMemoryCache, ApolloProvider } from "@apollo/client";
 import { createUploadLink } from "apollo-upload-client";
+import { Provider } from "react-redux";
+import { store } from "Redux/store";
 
 const httpLink = createUploadLink({
     uri: "http://localhost:4001/graphql",
@@ -19,12 +21,14 @@ const client = new ApolloClient({
 function MyApp({ Component, pageProps }: AppProps) {
     return (
         <ApolloProvider client={client}>
-            <ChakraProvider theme={theme}>
-                <ColorModeScript
-                    initialColorMode={theme.config.initialColorMode}
-                />
-                <Component {...pageProps} />
-            </ChakraProvider>
+            <Provider store={store}>
+                <ChakraProvider theme={theme}>
+                    <ColorModeScript
+                        initialColorMode={theme.config.initialColorMode}
+                    />
+                    <Component {...pageProps} />
+                </ChakraProvider>
+            </Provider>
         </ApolloProvider>
     );
 }

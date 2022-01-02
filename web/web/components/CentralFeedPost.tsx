@@ -2,6 +2,7 @@ import type { NextPage } from "next";
 import { Box, Flex, Text, useColorMode } from "@chakra-ui/react";
 import { getPostsType } from "utils/types/post/post.types";
 import Image from "next/image";
+
 interface CentralFeedPostProps {
     post: getPostsType;
 }
@@ -22,7 +23,7 @@ const CentralFeedPost: NextPage<CentralFeedPostProps> = ({ post }) => {
             <Flex>
                 {post.files?.length ? (
                     post.files.map((file) => (
-                        <Box p={1} m={2}>
+                        <Box p={1} m={0}>
                             <Image src={file} width="52px" height="52px" />
                         </Box>
                     ))

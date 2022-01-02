@@ -6,7 +6,6 @@ import { Flex, Grid, GridItem, useColorMode } from "@chakra-ui/react";
 import LeftPanel from "components/Layout/LeftPanel";
 import RightPanel from "components/Layout/RightPanel";
 import CentralFeed from "components/Layout/CentralFeed";
-import Footer from "components/Layout/Footer";
 
 interface BasicLayoutProps {}
 
@@ -41,9 +40,7 @@ const BasicLayout: NextPage<BasicLayoutProps> = ({ children }) => {
                     </GridItem>
                     <GridItem />
                 </Grid>
-                {children}
             </Flex>
-            <Footer />
         </Container>
     );
 };

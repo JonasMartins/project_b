@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useCallback, memo, useState } from "react";
 import type { NextPage } from "next";
 import {
     Box,
@@ -14,6 +14,8 @@ import { GetPostsDocument, GetPostsQuery } from "generated/graphql";
 import { useQuery } from "@apollo/client";
 import Spinner from "components/Layout/Spinner";
 import CentralFeedPost from "components/CentralFeedPost";
+import { useSelector } from "react-redux";
+import { globalState } from "Redux/Global/GlobalReducer";
 
 interface CentralFeedProps {}
 
@@ -21,17 +23,36 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
     const { colorMode } = useColorMode();
     const modalCreatePostDisclousure = useDisclosure();
 
-    const { data, loading } = useQuery<GetPostsQuery>(GetPostsDocument, {
-        variables: {
-            limit: 10,
-            offset: 0,
-        },
-        fetchPolicy: "cache-and-network",
-    });
+    const hasSubmittedPost = useSelector<
+        globalState,
+        globalState["hasSubmittedPost"]
+    >((state) => state.hasSubmittedPost);
+
+    const [count, setCount] = useState(0);
+
+    const { data, loading, refetch } = useQuery<GetPostsQuery>(
+        GetPostsDocument,
+        {
+            variables: {
+                limit: 10,
+                offset: 0,
+            },
+            fetchPolicy: "cache-and-network",
+        }
+    );
+
+    const handleRefetchPosts = useCallback(() => {
+        if (hasSubmittedPost) {
+            modalCreatePostDisclousure.onClose();
+            refetch();
+        }
+    }, [hasSubmittedPost]);
 
     useEffect(() => {
-        if (loading) return;
-    }, [loading]);
+        setCount(count + 1);
+        console.log("times rendered: ", count);
+        handleRefetchPosts();
+    }, [hasSubmittedPost]);
 
     return (
         <Flex flexGrow={1} flexDir="column" m={5}>
@@ -69,4 +90,4 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
         </Flex>
     );
 };
-export default CentralFeed;
+export default memo(CentralFeed);

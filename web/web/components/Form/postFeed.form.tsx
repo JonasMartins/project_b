@@ -10,7 +10,13 @@ import {
     useColorMode,
     Text,
 } from "@chakra-ui/react";
-import React, { ComponentProps, useCallback, useEffect, useMemo } from "react";
+import React, {
+    ComponentProps,
+    useCallback,
+    useEffect,
+    useMemo,
+    useState,
+} from "react";
 import { Field, Form, Formik, FormikProps } from "formik";
 import { css } from "@emotion/react";
 import { customPostFeedInput } from "utils/custom/customStyles";
@@ -29,6 +35,9 @@ import { truncateString } from "utils/generalAuxFunctions";
 import { CreatePostDocument, CreatePostMutation } from "generated/graphql";
 import { useMutation } from "@apollo/client";
 import { useUser } from "utils/hooks/useUser";
+import Spinner from "components/Layout/Spinner";
+import { setHasSubmittedPost } from "Redux/actions";
+import { useDispatch } from "react-redux";
 
 const PostFeedSchema = Yup.object().shape({
     body: Yup.string().required("Required"),
@@ -59,7 +68,16 @@ const PostFeed: NextPage = () => {
         files: undefined,
     };
     const { colorMode } = useColorMode();
+
     const user = useUser();
+
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const dispatch = useDispatch();
+
+    const onSetHasSubmittedPost = (hasSubmitted: boolean) => {
+        dispatch(setHasSubmittedPost(hasSubmitted));
+    };
 
     const [createPost, { error }] =
         useMutation<CreatePostMutation>(CreatePostDocument);
@@ -89,12 +107,20 @@ const PostFeed: NextPage = () => {
         if (!result.data) {
             throw new Error(error?.message);
         }
+        onSetHasSubmittedPost(true);
         return result.data;
     };
 
     useEffect(() => {
         if (!user) return;
+        //
     }, [user]);
+
+    useEffect(() => {
+        return () => {
+            onSetHasSubmittedPost(false);
+        };
+    }, []);
 
     const {
         getRootProps,
@@ -121,10 +147,11 @@ const PostFeed: NextPage = () => {
         [isDragActive, isDragReject, isDragAccept]
     );
 
-    return (
+    const content = (
         <Formik
             initialValues={initialValues}
             onSubmit={(values) => {
+                setIsSubmitting(true);
                 handleCreatePostMutation(values.body, acceptedFiles);
             }}
             validationSchema={PostFeedSchema}
@@ -220,19 +247,6 @@ const PostFeed: NextPage = () => {
                             </Flex>
                         </FormControl>
 
-                        {/*
-                        <input
-                            type="file"
-                            name="files"
-                            accept="image/*"
-                            multiple={true}
-                            onChange={({ target: { validity, files } }) => {
-                                if (validity.valid && files) {
-                                    props.setFieldValue("files", files);
-                                }
-                            }}
-                        /> */}
-
                         <Flex justifyContent="flex-end">
                             <Button
                                 type="submit"
@@ -250,6 +264,8 @@ const PostFeed: NextPage = () => {
             )}
         </Formik>
     );
+
+    return isSubmitting ? <Spinner /> : content;
 };
 
 export default PostFeed;

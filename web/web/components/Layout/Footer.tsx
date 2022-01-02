@@ -22,15 +22,14 @@ const Footer: NextPage<FooterProps> = ({}) => {
         <Flex
             flexGrow={1}
             bgGradient={`linear(to-l, ${shades[0]}, ${shades[1]} )`}
-            m={0}
-            boxShadow="lg"
-            height="20em"
+            height="15em"
             bottom={0}
             left={0}
             width="100%"
             position="fixed"
             alignItems="center"
             justifyContent="center"
+            mt="200px"
         >
             <Image src={Logo} alt="TechBlog" width={"150px"} height={"150px"} />
         </Flex>
