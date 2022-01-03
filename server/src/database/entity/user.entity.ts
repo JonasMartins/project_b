@@ -11,6 +11,7 @@ import { UserValidator } from "../validators/user.validator";
 import { Base } from "./base.entity";
 import { Role } from "./role.entity";
 import { Post } from "./post.entity";
+import { Comment } from "./comment.entity";
 import argon2 from "argon2";
 
 @ObjectType()
@@ -40,6 +41,10 @@ export class User extends Base {
     @Field(() => [Post], { nullable: true })
     @OneToMany(() => Post, (post) => post.creator)
     public posts: Post[];
+
+    @Field(() => [Comment], { nullable: true })
+    @OneToMany(() => Comment, (comment) => comment.author)
+    public comments: Comment[];
 
     @BeforeInsert()
     async hashPassword() {

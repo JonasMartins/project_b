@@ -15,7 +15,6 @@ import { Context } from "./../context";
 import { genericError } from "./../helpers/generalAuxMethods";
 import { FileUpload, GraphQLUpload } from "graphql-upload";
 import { HandleUpload } from "./../helpers/handleUpload.helper";
-import { BlobClient } from "@azure/storage-blob";
 
 @ObjectType()
 class PostsResponse {
