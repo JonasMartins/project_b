@@ -18,19 +18,19 @@ export class Comment extends Base {
     public author: User;
 
     @Field(() => Post)
-    @ManyToOne(() => Post, (post) => post.comments)
+    @ManyToOne(() => Post, (post) => post.comments, { onDelete: "CASCADE" })
     @JoinTable()
     public post: Post;
 
     @Field(() => Comment, { nullable: true })
-    @ManyToOne(() => Comment, { nullable: true })
+    @ManyToOne(() => Comment, { nullable: true, onDelete: "CASCADE" })
     public parent: Comment;
 
     @Field(() => [Comment])
     @OneToMany(() => Comment, (replies: Comment) => replies.parent, {
         nullable: true,
         eager: true,
-        orphanedRowAction: "delete",
+        cascade: true,
     })
     public replies: [Comment];
 

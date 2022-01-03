@@ -22,7 +22,10 @@ export class Post extends Base {
     creator: User;
 
     @Field(() => [Comment], { nullable: true })
-    @OneToMany(() => Comment, (comment) => comment.author)
+    @OneToMany(() => Comment, (comment) => comment.author, {
+        nullable: true,
+        cascade: true,
+    })
     public comments: Comment[];
 
     constructor(body?: PostValidator) {

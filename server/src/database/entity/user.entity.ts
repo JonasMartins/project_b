@@ -43,7 +43,10 @@ export class User extends Base {
     public posts: Post[];
 
     @Field(() => [Comment], { nullable: true })
-    @OneToMany(() => Comment, (comment) => comment.author)
+    @OneToMany(() => Comment, (comment) => comment.author, {
+        nullable: true,
+        cascade: true,
+    })
     public comments: Comment[];
 
     @BeforeInsert()
