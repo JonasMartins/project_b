@@ -2,10 +2,18 @@ import React from "react";
 import type { NextPage } from "next";
 import NavBar from "components/Layout/NavBar";
 import Container from "components/Container";
-import { Flex, Grid, GridItem, useColorMode } from "@chakra-ui/react";
+import {
+    Box,
+    Flex,
+    Grid,
+    GridItem,
+    useColorMode,
+    Text,
+} from "@chakra-ui/react";
 import LeftPanel from "components/Layout/LeftPanel";
 import RightPanel from "components/Layout/RightPanel";
 import CentralFeed from "components/Layout/CentralFeed";
+import Footer from "./Footer";
 
 interface BasicLayoutProps {}
 
@@ -19,7 +27,6 @@ const BasicLayout: NextPage<BasicLayoutProps> = ({ children }) => {
                 <NavBar />
                 <Grid
                     mt={10}
-                    h="300px"
                     templateRows="repeat(1, 1fr)"
                     templateColumns="repeat(7, 1fr)"
                     gap={4}
@@ -40,6 +47,9 @@ const BasicLayout: NextPage<BasicLayoutProps> = ({ children }) => {
                     </GridItem>
                     <GridItem />
                 </Grid>
+                <Box>
+                    <Footer />
+                </Box>
             </Flex>
         </Container>
     );
