@@ -12,6 +12,7 @@ import { ApolloServerPluginLandingPageGraphQLPlayground } from "apollo-server-co
 import { RoleResolver } from "./resolvers/role.resolver";
 import { PostResolver } from "./resolvers/post.resolver";
 import { CommentResolver } from "./resolvers/comment.resolver";
+import { EmotionResolver } from "./resolvers/emotion.resolver";
 import session from "express-session";
 import connectRedis from "connect-redis";
 import Redis from "ioredis";
@@ -66,6 +67,7 @@ export default class Application {
                 RoleResolver,
                 PostResolver,
                 CommentResolver,
+                EmotionResolver,
             ],
             validate: false,
         });

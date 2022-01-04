@@ -6,11 +6,14 @@ import {
     JoinColumn,
     ManyToOne,
     OneToMany,
+    ManyToMany,
+    JoinTable,
 } from "typeorm";
 import { UserValidator } from "../validators/user.validator";
 import { Base } from "./base.entity";
 import { Role } from "./role.entity";
 import { Post } from "./post.entity";
+import { Emotion } from "./emotion.entity";
 import { Comment } from "./comment.entity";
 import argon2 from "argon2";
 
@@ -48,6 +51,11 @@ export class User extends Base {
         cascade: true,
     })
     public comments: Comment[];
+
+    @Field(() => [Emotion], { nullable: true })
+    @ManyToMany(() => Emotion, { nullable: true, onDelete: "CASCADE" })
+    @JoinTable()
+    public emotions: Emotion[];
 
     @BeforeInsert()
     async hashPassword() {
