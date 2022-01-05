@@ -10,6 +10,7 @@ import {
 } from "type-graphql";
 import { Post } from "../database/entity/post.entity";
 import { User } from "../database/entity/user.entity";
+import { Emotion } from "../database/entity/emotion.entity";
 import { ErrorFieldHandler } from "../helpers/errorFieldHandler";
 import { Context } from "./../context";
 import { genericError } from "./../helpers/generalAuxMethods";
@@ -47,10 +48,23 @@ export class PostResolver {
             const qb = await em
                 .getRepository(Post)
                 .createQueryBuilder("post")
-                .leftJoinAndSelect("post.creator", "user")
+                .innerJoinAndSelect("post.creator", "u1")
+                .leftJoinAndSelect("post.emotions", "e")
+                .leftJoinAndSelect("e.creator", "u2")
+                .select([
+                    "post.id",
+                    "post.body",
+                    "post.files",
+                    "u1.id",
+                    "u1.name",
+                    "e.type",
+                    "u2.name",
+                ])
                 .limit(max)
                 .offset(maxOffset)
                 .orderBy("post.createdAt", "DESC");
+
+            //console.log("query ", qb.getQuery());
 
             const posts = await qb.getMany();
 
