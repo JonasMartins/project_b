@@ -13,6 +13,12 @@ query GetPosts($offset: Float!, $limit: Float!) {
                 id
                 name
             }
+            emotions {
+                type
+                creator {
+                    name
+                }
+            }
         }
     }
 }

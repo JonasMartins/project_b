@@ -10,7 +10,6 @@ import {
 } from "type-graphql";
 import { Post } from "../database/entity/post.entity";
 import { User } from "../database/entity/user.entity";
-import { Emotion } from "../database/entity/emotion.entity";
 import { ErrorFieldHandler } from "../helpers/errorFieldHandler";
 import { Context } from "./../context";
 import { genericError } from "./../helpers/generalAuxMethods";

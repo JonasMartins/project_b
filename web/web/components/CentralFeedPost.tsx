@@ -2,6 +2,7 @@ import type { NextPage } from "next";
 import { Box, Flex, Text, useColorMode } from "@chakra-ui/react";
 import { getPostsType } from "utils/types/post/post.types";
 import Image from "next/image";
+import { getEmotionListCount } from "utils/posts/postsUtils";
 
 interface CentralFeedPostProps {
     post: getPostsType;
@@ -20,6 +21,8 @@ const CentralFeedPost: NextPage<CentralFeedPostProps> = ({ post }) => {
             flexDir="column"
         >
             <Text>{post.body}</Text>
+
+            <Box>{getEmotionListCount(post.emotions)}</Box>
             <Flex>
                 {post.files?.length ? (
                     post.files.map((file) => (

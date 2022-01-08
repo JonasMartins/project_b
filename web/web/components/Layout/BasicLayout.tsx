@@ -2,14 +2,7 @@ import React from "react";
 import type { NextPage } from "next";
 import NavBar from "components/Layout/NavBar";
 import Container from "components/Container";
-import {
-    Box,
-    Flex,
-    Grid,
-    GridItem,
-    useColorMode,
-    Text,
-} from "@chakra-ui/react";
+import { Box, Flex, Grid, GridItem, useColorMode } from "@chakra-ui/react";
 import LeftPanel from "components/Layout/LeftPanel";
 import RightPanel from "components/Layout/RightPanel";
 import CentralFeed from "components/Layout/CentralFeed";
@@ -23,30 +16,37 @@ const BasicLayout: NextPage<BasicLayoutProps> = ({ children }) => {
 
     return (
         <Container>
-            <Flex flexDir="column" flexGrow={1}>
-                <NavBar />
-                <Grid
-                    mt={10}
-                    templateRows="repeat(1, 1fr)"
-                    templateColumns="repeat(7, 1fr)"
-                    gap={4}
-                >
-                    <GridItem />
-                    <GridItem bg={bgColor[colorMode]} boxShadow="lg">
-                        <LeftPanel />{" "}
-                    </GridItem>
-                    <GridItem
-                        colSpan={3}
-                        bg={bgColor[colorMode]}
-                        boxShadow="lg"
+            <Flex
+                flexDir="column"
+                flexGrow={1}
+                justifyContent="space-between"
+                height="100vh"
+            >
+                <Box>
+                    <NavBar />
+                    <Grid
+                        mt={10}
+                        templateRows="repeat(1, 1fr)"
+                        templateColumns="repeat(7, 1fr)"
+                        gap={4}
                     >
-                        <CentralFeed />{" "}
-                    </GridItem>
-                    <GridItem bg={bgColor[colorMode]} boxShadow="lg">
-                        <RightPanel />
-                    </GridItem>
-                    <GridItem />
-                </Grid>
+                        <GridItem />
+                        <GridItem bg={bgColor[colorMode]} boxShadow="lg">
+                            <LeftPanel />{" "}
+                        </GridItem>
+                        <GridItem
+                            colSpan={3}
+                            bg={bgColor[colorMode]}
+                            boxShadow="lg"
+                        >
+                            <CentralFeed />{" "}
+                        </GridItem>
+                        <GridItem bg={bgColor[colorMode]} boxShadow="lg">
+                            <RightPanel />
+                        </GridItem>
+                        <GridItem />
+                    </Grid>
+                </Box>
                 <Box>
                     <Footer />
                 </Box>

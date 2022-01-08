@@ -19,6 +19,80 @@ export type Scalars = {
   Upload: any;
 };
 
+export type Comment = {
+  __typename?: 'Comment';
+  author: User;
+  body: Scalars['String'];
+  createdAt: Scalars['DateTime'];
+  id: Scalars['String'];
+  parent?: Maybe<Comment>;
+  post: Post;
+  replies: Array<Comment>;
+  updatedAt: Scalars['DateTime'];
+};
+
+export type CommentResponse = {
+  __typename?: 'CommentResponse';
+  comment?: Maybe<Comment>;
+  errors?: Maybe<Array<ErrorFieldHandler>>;
+};
+
+export type CommentValidator = {
+  authorId: Scalars['String'];
+  body: Scalars['String'];
+  postId: Scalars['String'];
+};
+
+export type CommentsResponse = {
+  __typename?: 'CommentsResponse';
+  comments?: Maybe<Array<Comment>>;
+  errors?: Maybe<Array<ErrorFieldHandler>>;
+};
+
+export type Emotion = {
+  __typename?: 'Emotion';
+  createdAt: Scalars['DateTime'];
+  creator: User;
+  id: Scalars['String'];
+  post: Post;
+  type: EmotionType;
+  updatedAt: Scalars['DateTime'];
+};
+
+export type EmotionDeletion = {
+  __typename?: 'EmotionDeletion';
+  deleted?: Maybe<Scalars['Boolean']>;
+  errors?: Maybe<Array<ErrorFieldHandler>>;
+};
+
+export type EmotionResponse = {
+  __typename?: 'EmotionResponse';
+  emotion?: Maybe<Emotion>;
+  errors?: Maybe<Array<ErrorFieldHandler>>;
+};
+
+/** The basic directions */
+export enum EmotionType {
+  Angry = 'ANGRY',
+  Fire = 'FIRE',
+  Heart = 'HEART',
+  HeartEye = 'HEART_EYE',
+  Prey = 'PREY',
+  Sad = 'SAD',
+  Smile = 'SMILE',
+  SunGlass = 'SUN_GLASS',
+  Surprise = 'SURPRISE',
+  Thumbsdown = 'THUMBSDOWN',
+  Thumbsup = 'THUMBSUP',
+  Vomit = 'VOMIT'
+}
+
+export type EmotionsResponse = {
+  __typename?: 'EmotionsResponse';
+  emotions?: Maybe<Array<Emotion>>;
+  errors?: Maybe<Array<ErrorFieldHandler>>;
+};
+
 export type ErrorFieldHandler = {
   __typename?: 'ErrorFieldHandler';
   detailedMessage: Scalars['String'];
@@ -35,13 +109,29 @@ export type LoginResponse = {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  createComment: CommentResponse;
+  createEmotion: EmotionResponse;
   createPost: PostResponse;
   createRole: RoleResponse;
   createUser: UserResponse;
+  deleteEmotion: EmotionDeletion;
   deleteRole: Scalars['Boolean'];
   deleteUser: Scalars['Boolean'];
   login: LoginResponse;
   logout: Scalars['Boolean'];
+  updateEmotion: EmotionResponse;
+};
+
+
+export type MutationCreateCommentArgs = {
+  options: CommentValidator;
+};
+
+
+export type MutationCreateEmotionArgs = {
+  postId: Scalars['String'];
+  type: EmotionType;
+  userId: Scalars['String'];
 };
 
 
@@ -61,6 +151,11 @@ export type MutationCreateUserArgs = {
 };
 
 
+export type MutationDeleteEmotionArgs = {
+  emotionId: Scalars['String'];
+};
+
+
 export type MutationDeleteRoleArgs = {
   id: Scalars['String'];
 };
@@ -76,11 +171,19 @@ export type MutationLoginArgs = {
   password: Scalars['String'];
 };
 
+
+export type MutationUpdateEmotionArgs = {
+  emotionId: Scalars['String'];
+  newType: EmotionType;
+};
+
 export type Post = {
   __typename?: 'Post';
   body: Scalars['String'];
+  comments?: Maybe<Array<Comment>>;
   createdAt: Scalars['DateTime'];
   creator: User;
+  emotions?: Maybe<Array<Emotion>>;
   files?: Maybe<Array<Scalars['String']>>;
   id: Scalars['String'];
   updatedAt: Scalars['DateTime'];
@@ -106,12 +209,30 @@ export type PostsResponse = {
 export type Query = {
   __typename?: 'Query';
   getCurrentLoggedUser: UserResponse;
+  getEmotionsFromPost: EmotionsResponse;
+  getEmotionsFromUser: EmotionsResponse;
+  getPostComments: CommentsResponse;
   getPosts: PostsResponse;
   getRoleById: RoleResponse;
   getRoles: RolesResponse;
   getUserById: UserResponse;
   getUsers: UsersResponse;
   loginTest: Scalars['Boolean'];
+};
+
+
+export type QueryGetEmotionsFromPostArgs = {
+  postId: Scalars['String'];
+};
+
+
+export type QueryGetEmotionsFromUserArgs = {
+  userId: Scalars['String'];
+};
+
+
+export type QueryGetPostCommentsArgs = {
+  postId: Scalars['String'];
 };
 
 
@@ -172,8 +293,10 @@ export type RolesResponse = {
 
 export type User = {
   __typename?: 'User';
+  comments?: Maybe<Array<Comment>>;
   createdAt: Scalars['DateTime'];
   email: Scalars['String'];
+  emotions?: Maybe<Array<Emotion>>;
   id: Scalars['String'];
   name: Scalars['String'];
   password: Scalars['String'];
@@ -249,7 +372,7 @@ export type GetPostsQueryVariables = Exact<{
 }>;
 
 
-export type GetPostsQuery = { __typename?: 'Query', getPosts: { __typename?: 'PostsResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', message: string, method: string, field: string }> | null | undefined, posts?: Array<{ __typename?: 'Post', id: string, body: string, files?: Array<string> | null | undefined, creator: { __typename?: 'User', id: string, name: string } }> | null | undefined } };
+export type GetPostsQuery = { __typename?: 'Query', getPosts: { __typename?: 'PostsResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', message: string, method: string, field: string }> | null | undefined, posts?: Array<{ __typename?: 'Post', id: string, body: string, files?: Array<string> | null | undefined, creator: { __typename?: 'User', id: string, name: string }, emotions?: Array<{ __typename?: 'Emotion', type: EmotionType, creator: { __typename?: 'User', name: string } }> | null | undefined }> | null | undefined } };
 
 export type LoginTestQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -518,6 +641,12 @@ export const GetPostsDocument = gql`
       creator {
         id
         name
+      }
+      emotions {
+        type
+        creator {
+          name
+        }
       }
     }
   }
