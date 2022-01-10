@@ -59,45 +59,58 @@ export const getEmotionListCount = (
     return componentType;
 };
 
+export const AngryFace = <Emoji symbol="😡" label="Angry" />;
+export const SunGlasses = <Emoji symbol="😎" label="Sunglasses" />;
+export const SurpriseFace = <Emoji symbol="😮" label="Surprise" />;
+export const ThumbsUp = <Emoji symbol="👍 " label="Thumbsup" />;
+export const ThumbsDown = <Emoji symbol="👎" label="Thumbsdown" />;
+export const VomitFace = <Emoji symbol="🤮" label="Vomit" />;
+export const SmileFace = <Emoji symbol="😀" label="Smile" />;
+export const SadFace = <Emoji symbol="😢" label="Sad" />;
+export const HeartEyeFace = <Emoji symbol="😍" label="HeartEye" />;
+export const HeartEmoji = <Emoji symbol="❤️" label="Heart" />;
+export const FireEmoji = <Emoji symbol="🔥" label="Fire" />;
+export const PreyingHands = <Emoji symbol="🙏" label="Prey" />;
+
 export const getEmotionTypeIcon = (type: EmotionType): JSX.Element => {
     let componentType: JSX.Element | null = null;
 
     switch (type) {
         case EmotionType.Angry:
-            componentType = <Emoji symbol="😡" label="Angry" />;
+            componentType = AngryFace;
             break;
         case EmotionType.SunGlass:
-            componentType = <Emoji symbol="😎" label="Sunglasses" />;
+            componentType = SunGlasses;
             break;
         case EmotionType.Surprise:
-            componentType = <Emoji symbol="😮" label="Surprise" />;
+            componentType = SurpriseFace;
             break;
         case EmotionType.Thumbsdown:
-            componentType = <Emoji symbol="👎" label="Thumbsdown" />;
+            componentType = ThumbsDown;
             break;
         case EmotionType.Thumbsup:
-            componentType = <Emoji symbol="👍 " label="Thumbsup" />;
+            componentType = ThumbsUp;
             break;
         case EmotionType.Vomit:
-            componentType = <Emoji symbol="🤮" label="Vomit" />;
+            componentType = VomitFace;
             break;
         case EmotionType.Smile:
-            componentType = <Emoji symbol="😀" label="Smile" />;
+            componentType = SmileFace;
             break;
         case EmotionType.Sad:
-            componentType = <Emoji symbol="😢" label="Sad" />;
+            componentType = SadFace;
             break;
         case EmotionType.HeartEye:
-            componentType = <Emoji symbol="😍" label="HearEye" />;
+            componentType = HeartEyeFace;
             break;
         case EmotionType.Heart:
-            componentType = <Emoji symbol="❤️" label="Heart" />;
+            componentType = HeartEmoji;
             break;
         case EmotionType.Fire:
-            componentType = <Emoji symbol="🔥" label="Fire" />;
+            componentType = FireEmoji;
             break;
         case EmotionType.Prey:
-            componentType = <Emoji symbol="🙏" label="Prey" />;
+            componentType = PreyingHands;
             break;
         default:
             componentType = <Emoji symbol="🔥" label="Fire" />;
