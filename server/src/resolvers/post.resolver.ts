@@ -57,6 +57,7 @@ export class PostResolver {
                     "u1.id",
                     "u1.name",
                     "e.type",
+                    "u2.id",
                     "u2.name",
                 ])
                 .limit(max)
@@ -66,6 +67,8 @@ export class PostResolver {
             //console.log("query ", qb.getQuery());
 
             const posts = await qb.getMany();
+
+            // console.log("posts ", posts);
 
             return { posts };
         } catch (e) {

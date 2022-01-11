@@ -3,7 +3,7 @@ import { EmotionType } from "generated/graphql";
 export type emotion = {
     __typename?: "Emotion";
     type: EmotionType;
-    creator: { __typename?: "User"; name: string };
+    creator: { __typename?: "User"; id: string; name: string };
 };
 
 export type getPostsType = {
@@ -15,7 +15,7 @@ export type getPostsType = {
         | Array<{
               __typename?: "Emotion";
               type: EmotionType;
-              creator: { __typename?: "User"; name: string };
+              creator: { __typename?: "User"; id: string; name: string };
           }>
         | null
         | undefined;

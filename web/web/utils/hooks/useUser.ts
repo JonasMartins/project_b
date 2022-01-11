@@ -5,7 +5,7 @@ import {
 import { useState, useEffect } from "react";
 import { useQuery } from "@apollo/client";
 
-type User =
+export type UserType =
     | {
           __typename?: "User";
           id: string;
@@ -21,7 +21,7 @@ export const useUser = () => {
         { fetchPolicy: "cache-and-network" }
     );
 
-    const [user, setUser] = useState<User | null>(null);
+    const [user, setUser] = useState<UserType | null>(null);
 
     useEffect(() => {
         if (loading) return;

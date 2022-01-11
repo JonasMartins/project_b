@@ -16,6 +16,7 @@ query GetPosts($offset: Float!, $limit: Float!) {
             emotions {
                 type
                 creator {
+                    id
                     name
                 }
             }

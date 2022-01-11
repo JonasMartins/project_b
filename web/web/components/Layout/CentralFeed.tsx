@@ -16,6 +16,7 @@ import Spinner from "components/Layout/Spinner";
 import CentralFeedPost from "components/CentralFeedPost";
 import { useSelector } from "react-redux";
 import { globalState } from "Redux/Global/GlobalReducer";
+import { FiRefreshCcw } from "react-icons/fi";
 
 interface CentralFeedProps {}
 
@@ -48,15 +49,35 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
         }
     }, [hasSubmittedPost]);
 
+    useEffect(() => {}, [loading, data]);
+
     useEffect(() => {
         setCount(count + 1);
         console.log("times rendered: ", count);
+        console.log("data ", data);
         handleRefetchPosts();
     }, [hasSubmittedPost]);
 
     return (
         <Flex flexGrow={1} flexDir="column" m={5}>
-            <Flex justifyContent="flex-end">
+            <Flex justifyContent="space-between">
+                <Tooltip
+                    hasArrow
+                    aria-label="refresh posts"
+                    label="Refresh"
+                    colorScheme="white"
+                >
+                    <IconButton
+                        isRound={true}
+                        aria-label="Refresh"
+                        size="lg"
+                        icon={<FiRefreshCcw />}
+                        color={colorMode === "dark" ? "#b1becd" : "#E10DFF"}
+                        onClick={() => {
+                            refetch();
+                        }}
+                    />
+                </Tooltip>
                 <Tooltip
                     hasArrow
                     aria-label="item's responsible"
