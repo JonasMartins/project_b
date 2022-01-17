@@ -1,0 +1,10 @@
+mutation DeleteEmotion($emotionId: String!) {
+    deleteEmotion(emotionId: $emotionId) {
+        errors {
+            method
+            field
+            message
+        }
+        deleted
+    }
+}

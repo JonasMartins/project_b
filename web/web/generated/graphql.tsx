@@ -115,6 +115,7 @@ export type Mutation = {
   createRole: RoleResponse;
   createUser: UserResponse;
   deleteEmotion: EmotionDeletion;
+  deleteEmotionFromPostByUser: EmotionDeletion;
   deleteRole: Scalars['Boolean'];
   deleteUser: Scalars['Boolean'];
   login: LoginResponse;
@@ -153,6 +154,12 @@ export type MutationCreateUserArgs = {
 
 export type MutationDeleteEmotionArgs = {
   emotionId: Scalars['String'];
+};
+
+
+export type MutationDeleteEmotionFromPostByUserArgs = {
+  postId: Scalars['String'];
+  userId: Scalars['String'];
 };
 
 
@@ -357,6 +364,13 @@ export type CreateUserMutationVariables = Exact<{
 
 export type CreateUserMutation = { __typename?: 'Mutation', createUser: { __typename?: 'UserResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', method: string, message: string, field: string }> | null | undefined, user?: { __typename?: 'User', id: string, name: string, email: string, password: string } | null | undefined } };
 
+export type DeleteEmotionMutationVariables = Exact<{
+  emotionId: Scalars['String'];
+}>;
+
+
+export type DeleteEmotionMutation = { __typename?: 'Mutation', deleteEmotion: { __typename?: 'EmotionDeletion', deleted?: boolean | null | undefined, errors?: Array<{ __typename?: 'ErrorFieldHandler', method: string, field: string, message: string }> | null | undefined } };
+
 export type LoginMutationVariables = Exact<{
   email: Scalars['String'];
   password: Scalars['String'];
@@ -381,7 +395,7 @@ export type GetPostsQueryVariables = Exact<{
 }>;
 
 
-export type GetPostsQuery = { __typename?: 'Query', getPosts: { __typename?: 'PostsResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', message: string, method: string, field: string }> | null | undefined, posts?: Array<{ __typename?: 'Post', id: string, body: string, files?: Array<string> | null | undefined, creator: { __typename?: 'User', id: string, name: string }, emotions?: Array<{ __typename?: 'Emotion', type: EmotionType, creator: { __typename?: 'User', id: string, name: string } }> | null | undefined }> | null | undefined } };
+export type GetPostsQuery = { __typename?: 'Query', getPosts: { __typename?: 'PostsResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', message: string, method: string, field: string }> | null | undefined, posts?: Array<{ __typename?: 'Post', id: string, body: string, files?: Array<string> | null | undefined, creator: { __typename?: 'User', id: string, name: string }, emotions?: Array<{ __typename?: 'Emotion', id: string, type: EmotionType, creator: { __typename?: 'User', id: string, name: string } }> | null | undefined }> | null | undefined } };
 
 export type LoginTestQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -572,6 +586,44 @@ export function useCreateUserMutation(baseOptions?: Apollo.MutationHookOptions<C
 export type CreateUserMutationHookResult = ReturnType<typeof useCreateUserMutation>;
 export type CreateUserMutationResult = Apollo.MutationResult<CreateUserMutation>;
 export type CreateUserMutationOptions = Apollo.BaseMutationOptions<CreateUserMutation, CreateUserMutationVariables>;
+export const DeleteEmotionDocument = gql`
+    mutation DeleteEmotion($emotionId: String!) {
+  deleteEmotion(emotionId: $emotionId) {
+    errors {
+      method
+      field
+      message
+    }
+    deleted
+  }
+}
+    `;
+export type DeleteEmotionMutationFn = Apollo.MutationFunction<DeleteEmotionMutation, DeleteEmotionMutationVariables>;
+
+/**
+ * __useDeleteEmotionMutation__
+ *
+ * To run a mutation, you first call `useDeleteEmotionMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDeleteEmotionMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [deleteEmotionMutation, { data, loading, error }] = useDeleteEmotionMutation({
+ *   variables: {
+ *      emotionId: // value for 'emotionId'
+ *   },
+ * });
+ */
+export function useDeleteEmotionMutation(baseOptions?: Apollo.MutationHookOptions<DeleteEmotionMutation, DeleteEmotionMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<DeleteEmotionMutation, DeleteEmotionMutationVariables>(DeleteEmotionDocument, options);
+      }
+export type DeleteEmotionMutationHookResult = ReturnType<typeof useDeleteEmotionMutation>;
+export type DeleteEmotionMutationResult = Apollo.MutationResult<DeleteEmotionMutation>;
+export type DeleteEmotionMutationOptions = Apollo.BaseMutationOptions<DeleteEmotionMutation, DeleteEmotionMutationVariables>;
 export const LoginDocument = gql`
     mutation Login($email: String!, $password: String!) {
   login(email: $email, password: $password) {
@@ -703,6 +755,7 @@ export const GetPostsDocument = gql`
         name
       }
       emotions {
+        id
         type
         creator {
           id

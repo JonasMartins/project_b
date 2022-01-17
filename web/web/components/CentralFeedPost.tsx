@@ -1,7 +1,7 @@
 import { Box, Flex, Text, useColorMode } from "@chakra-ui/react";
 import type { NextPage } from "next";
 import Image from "next/image";
-import { getEmotionListCount } from "utils/posts/postsUtils";
+import { PostEmotionsRecord } from "utils/posts/postsUtils";
 import { getPostsType } from "utils/types/post/post.types";
 import PostEmotion from "components/Form/postEmotion.form";
 import { useUser } from "utils/hooks/useUser";
@@ -37,7 +37,9 @@ const CentralFeedPost: NextPage<CentralFeedPostProps> = ({ post }) => {
                 )}
             </Flex>
             <Flex justifyContent="space-between">
-                <Box mt={3}>{getEmotionListCount(post.emotions)}</Box>
+                <Box mt={3}>
+                    <PostEmotionsRecord emotions={post.emotions} />
+                </Box>
                 <PostEmotion
                     postEmotions={post.emotions ? post.emotions : []}
                     user={user}

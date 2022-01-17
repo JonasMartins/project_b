@@ -272,25 +272,74 @@ export class EmotionResolver {
         @Arg("emotionId", () => String) emotionId: string,
         @Ctx() { em }: Context
     ): Promise<EmotionDeletion> {
-        const emotion = await em.findOne(Emotion, { id: emotionId });
+        try {
+            const qb = await em.connection
+                .createQueryBuilder()
+                .delete()
+                .from(Emotion)
+                .where("id = :id", { id: emotionId });
 
-        if (!emotion) {
+            qb.execute();
+
+            return { deleted: true };
+        } catch (error) {
             return {
                 errors: genericError(
                     "emotionId",
                     "deleteEmotion",
                     __filename,
-                    `Could not find the emotion with id: ${emotionId}`
+                    `Error: ${error.message}`
                 ),
             };
         }
+    }
 
-        const deleted = await em.connection.manager.softRemove(emotion);
+    @Mutation(() => EmotionDeletion)
+    async deleteEmotionFromPostByUser(
+        @Arg("userId", () => String) userId: string,
+        @Arg("postId", () => String) postId: string,
+        @Ctx() { em }: Context
+    ): Promise<EmotionDeletion> {
+        try {
+            const postRepo = em.connection.getRepository(Post);
+            let postEmotions = await postRepo.findOne({
+                relations: ["emotions"],
+                where: { id: postId },
+            });
 
-        if (deleted) {
-            return { deleted: true };
-        } else {
+            let emotionToBeDeleted = "";
+
+            if (postEmotions && postEmotions.emotions.length) {
+                postEmotions?.emotions.forEach((emotion) => {
+                    if (emotion.creator.id === userId) {
+                        emotionToBeDeleted = emotion.id;
+                        return;
+                    }
+                });
+            }
+
+            if (emotionToBeDeleted.length) {
+                const qb = await em.connection
+                    .createQueryBuilder()
+                    .delete()
+                    .from(Emotion)
+                    .where("id = :id", { id: emotionToBeDeleted });
+
+                qb.execute();
+
+                return { deleted: true };
+            }
+
             return { deleted: false };
+        } catch (error) {
+            return {
+                errors: genericError(
+                    "emotionId",
+                    "deleteEmotion",
+                    __filename,
+                    `Error: ${error.message}`
+                ),
+            };
         }
     }
 }

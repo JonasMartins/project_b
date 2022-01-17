@@ -56,6 +56,7 @@ export class PostResolver {
                     "post.files",
                     "u1.id",
                     "u1.name",
+                    "e.id",
                     "e.type",
                     "u2.id",
                     "u2.name",

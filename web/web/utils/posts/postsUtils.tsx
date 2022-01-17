@@ -1,18 +1,67 @@
 import { EmotionType } from "generated/graphql";
 import Emoji from "a11y-react-emoji";
 import { emotion as emotionElement } from "utils/types/post/post.types";
-import { Button } from "@chakra-ui/react";
+import { Button, Text, useColorMode } from "@chakra-ui/react";
+import { NextPage } from "next";
+import {
+    DeleteEmotionMutation,
+    DeleteEmotionDocument,
+} from "generated/graphql";
+import { useUser } from "utils/hooks/useUser";
+
+import { useMutation } from "@apollo/client";
 
 interface EmotionTypesObj {
     [key: string]: number;
 }
 
-export const getEmotionListCount = (
-    list: emotionElement[] | undefined | null
-): JSX.Element => {
-    if (!list) {
+interface EmotionCreator {
+    [key: string]: string[];
+}
+
+interface PostEmotionsRecordProps {
+    emotions: emotionElement[] | undefined | null;
+}
+/**
+ *
+ * @param param0
+ * @returns
+ *      TODO: THIS COMPONENT IS RUNNING SEVERAL TIMES,
+ *      SEE IF THERE IS A CHANCE THAT RUNS IT ONLY ONCE,
+ *      IT IS DOING A GOOD AMOUNT OF PROCESSING!
+ *
+ */
+export const PostEmotionsRecord: NextPage<PostEmotionsRecordProps> = ({
+    emotions,
+}) => {
+    const user = useUser();
+    const { colorMode } = useColorMode();
+    const color = { dark: "#FFFFFF", light: "#16161D" };
+    const [deleteEmotion, deleteResult] = useMutation<DeleteEmotionMutation>(
+        DeleteEmotionDocument
+    );
+
+    const handleRemoveEmotion = async (
+        id: string
+    ): Promise<DeleteEmotionMutation> => {
+        const result = await deleteEmotion({
+            variables: {
+                emotionId: id,
+                onError: () => {
+                    console.error(deleteResult.error?.message);
+                },
+            },
+        });
+        if (!result.data) {
+            throw new Error(deleteResult.error?.message);
+        }
+        return result.data;
+    };
+
+    if (!emotions) {
         return <></>;
     }
+    let mappingEmotionsWithUser: EmotionCreator = {};
     let uniqueEmotions: emotionElement[] = [];
     let singleEmotions: EmotionType[] = [];
     let componentType: JSX.Element | null = null;
@@ -30,11 +79,19 @@ export const getEmotionListCount = (
         FIRE: 0,
         PREY: 0,
     };
-    list.forEach((item) => {
+    emotions.forEach((item) => {
         emotionsCount[item.type] = emotionsCount[item.type] + 1;
+        if (!mappingEmotionsWithUser[item.type]) {
+            mappingEmotionsWithUser[item.type] = [];
+            mappingEmotionsWithUser[item.type].push(item.creator.id);
+        } else {
+            mappingEmotionsWithUser[item.type].push(item.creator.id);
+        }
     });
 
-    list.map((item) => {
+    //console.log("map ", mappingEmotionsWithUser);
+
+    emotions.map((item) => {
         if (!singleEmotions.includes(item.type)) {
             uniqueEmotions.push(item);
             singleEmotions.push(item.type);
@@ -49,8 +106,27 @@ export const getEmotionListCount = (
                     variant="outline"
                     size="sm"
                     borderRadius="1em"
+                    mr={1}
+                    border="3px solid"
+                    borderColor={
+                        mappingEmotionsWithUser[item.type].includes(
+                            user?.id || ""
+                        )
+                            ? "#E10DFF"
+                            : "grey.300"
+                    }
                 >
-                    {emotionsCount[item.type]}
+                    <Text
+                        textColor={
+                            mappingEmotionsWithUser[item.type].includes(
+                                user?.id || ""
+                            )
+                                ? "#E10DFF"
+                                : color[colorMode]
+                        }
+                    >
+                        {emotionsCount[item.type]}
+                    </Text>
                 </Button>
             ))}
         </>
