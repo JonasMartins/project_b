@@ -16,9 +16,7 @@ describe("User tests", async () => {
         application = new Application();
         await application.connect();
         await application.init();
-
         em = application.orm;
-
         request = supertest(application.app);
     });
 

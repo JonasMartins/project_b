@@ -1,9 +1,8 @@
-import { createConnection } from "typeorm";
+import { createConnection, getConnection } from "typeorm";
 
 export const intializeDB = async (): Promise<void> => {
     try {
         const connection = await createConnection();
-        
         if (process.env.ENV === "development") {
             await connection.synchronize();
         }

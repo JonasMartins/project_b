@@ -41,6 +41,7 @@ const CentralFeedPost: NextPage<CentralFeedPostProps> = ({ post }) => {
                 <PostEmotion
                     postEmotions={post.emotions ? post.emotions : []}
                     user={user}
+                    postId={post.id}
                 />
             </Flex>
         </Flex>

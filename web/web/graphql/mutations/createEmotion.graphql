@@ -1,0 +1,25 @@
+mutation CreateEmotion(
+    $userId: String!
+    $postId: String!
+    $type: EmotionType!
+) {
+    createEmotion(userId: $userId, postId: $postId, type: $type) {
+        errors {
+            method
+            message
+            field
+        }
+        emotion {
+            id
+            type
+            creator {
+                id
+                name
+            }
+            post {
+                id
+                body
+            }
+        }
+    }
+}

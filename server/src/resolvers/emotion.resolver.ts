@@ -172,37 +172,42 @@ export class EmotionResolver {
                 where: { id: postId },
             });
 
-            const emotion = em.create(Emotion, {
-                type,
-            });
+            let createEmotion = true;
+            let emotionToBeUpdatedId = "";
 
-            emotion.creator = user;
-            emotion.post = post;
+            if (postEmotions && postEmotions.emotions.length) {
+                postEmotions?.emotions.forEach((emotion) => {
+                    if (emotion.creator.id === userId) {
+                        createEmotion = false;
+                        emotionToBeUpdatedId = emotion.id;
+                        return;
+                    }
+                });
+            }
+
+            let emotion: Emotion;
+
+            if (createEmotion) {
+                emotion = em.create(Emotion, {
+                    type,
+                });
+                emotion.creator = user;
+                emotion.post = post;
+            } else {
+                emotion = await em.findOneOrFail(Emotion, {
+                    id: emotionToBeUpdatedId,
+                });
+                if (emotion) {
+                    emotion.type = type;
+                }
+            }
+            await em.save(emotion);
 
             if (userEmotions && !userEmotions.emotions.length) {
                 let auxUserEmo: Emotion[] = [];
                 auxUserEmo.push(emotion);
                 user.emotions = auxUserEmo;
             } else if (userEmotions && userEmotions.emotions.length) {
-                let userAlreadyHaveReacted = false;
-                userEmotions.emotions.forEach((emotion) => {
-                    if (emotion.creator.id === userId) {
-                        userAlreadyHaveReacted = true;
-                        return;
-                    }
-                });
-
-                if (userAlreadyHaveReacted) {
-                    return {
-                        errors: genericError(
-                            "userId",
-                            "createEmotion",
-                            __filename,
-                            "This user has already reacted to this post."
-                        ),
-                    };
-                }
-
                 let auxUserEmo = userEmotions.emotions;
                 auxUserEmo.push(emotion);
                 user.emotions = auxUserEmo;
@@ -218,7 +223,6 @@ export class EmotionResolver {
                 post.emotions = auxPostEmo;
             }
 
-            await em.save(emotion);
             await em.save(user);
             await em.save(post);
 

@@ -16,7 +16,7 @@ export class Emotion extends Base {
     public type: EmotionType;
 
     @Field(() => User)
-    @OneToOne(() => User, { eager: true })
+    @ManyToOne(() => User, (creator) => creator.emotions, { eager: true })
     @JoinColumn()
     public creator: User;
 

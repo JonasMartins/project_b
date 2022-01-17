@@ -29,18 +29,52 @@ import {
 import { emotion } from "utils/types/post/post.types";
 import { UserType } from "utils/hooks/useUser";
 import { useState, useEffect } from "react";
-import { EmotionType } from "generated/graphql";
+import {
+    EmotionType,
+    CreateEmotionDocument,
+    CreateEmotionMutation,
+} from "generated/graphql";
+import { useMutation } from "@apollo/client";
 
 interface PostEmotionProps {
     postEmotions: emotion[];
     user: UserType;
+    postId: string;
 }
 
-const PostEmotion: NextPage<PostEmotionProps> = ({ postEmotions, user }) => {
+const PostEmotion: NextPage<PostEmotionProps> = ({
+    postEmotions,
+    user,
+    postId,
+}) => {
     const { colorMode } = useColorMode();
     const [userReactState, setUserReactState] = useState<EmotionType | null>(
         null
     );
+
+    const [createEmotion, { error }] = useMutation<CreateEmotionMutation>(
+        CreateEmotionDocument
+    );
+
+    const handleCreateEmotion = async (
+        type: EmotionType
+    ): Promise<CreateEmotionMutation> => {
+        const result = await createEmotion({
+            variables: {
+                userId: user?.id,
+                postId,
+                type,
+                onError: () => {
+                    console.error(error);
+                },
+            },
+        });
+
+        if (!result.data) {
+            throw new Error(error?.message);
+        }
+        return result.data;
+    };
 
     useEffect(() => {
         if (postEmotions.length && user) {
@@ -84,6 +118,7 @@ const PostEmotion: NextPage<PostEmotionProps> = ({ postEmotions, user }) => {
                             icon={AngryFace}
                             isDisabled={userReactState === EmotionType.Angry}
                             onClick={() => {
+                                handleCreateEmotion(EmotionType.Angry);
                                 setUserReactState(EmotionType.Angry);
                             }}
                         />
@@ -95,6 +130,7 @@ const PostEmotion: NextPage<PostEmotionProps> = ({ postEmotions, user }) => {
                             icon={SunGlasses}
                             isDisabled={userReactState === EmotionType.SunGlass}
                             onClick={() => {
+                                handleCreateEmotion(EmotionType.SunGlass);
                                 setUserReactState(EmotionType.SunGlass);
                             }}
                         />
@@ -106,6 +142,7 @@ const PostEmotion: NextPage<PostEmotionProps> = ({ postEmotions, user }) => {
                             icon={SurpriseFace}
                             isDisabled={userReactState === EmotionType.Surprise}
                             onClick={() => {
+                                handleCreateEmotion(EmotionType.Surprise);
                                 setUserReactState(EmotionType.Surprise);
                             }}
                         />
@@ -117,6 +154,7 @@ const PostEmotion: NextPage<PostEmotionProps> = ({ postEmotions, user }) => {
                             icon={ThumbsUp}
                             isDisabled={userReactState === EmotionType.Thumbsup}
                             onClick={() => {
+                                handleCreateEmotion(EmotionType.Thumbsup);
                                 setUserReactState(EmotionType.Thumbsup);
                             }}
                         />
@@ -130,6 +168,7 @@ const PostEmotion: NextPage<PostEmotionProps> = ({ postEmotions, user }) => {
                                 userReactState === EmotionType.Thumbsdown
                             }
                             onClick={() => {
+                                handleCreateEmotion(EmotionType.Thumbsdown);
                                 setUserReactState(EmotionType.Thumbsdown);
                             }}
                         />
@@ -141,6 +180,7 @@ const PostEmotion: NextPage<PostEmotionProps> = ({ postEmotions, user }) => {
                             icon={VomitFace}
                             isDisabled={userReactState === EmotionType.Vomit}
                             onClick={() => {
+                                handleCreateEmotion(EmotionType.Vomit);
                                 setUserReactState(EmotionType.Vomit);
                             }}
                         />
@@ -152,6 +192,7 @@ const PostEmotion: NextPage<PostEmotionProps> = ({ postEmotions, user }) => {
                             icon={SmileFace}
                             isDisabled={userReactState === EmotionType.Smile}
                             onClick={() => {
+                                handleCreateEmotion(EmotionType.Smile);
                                 setUserReactState(EmotionType.Smile);
                             }}
                         />
@@ -163,6 +204,7 @@ const PostEmotion: NextPage<PostEmotionProps> = ({ postEmotions, user }) => {
                             icon={SadFace}
                             isDisabled={userReactState === EmotionType.Sad}
                             onClick={() => {
+                                handleCreateEmotion(EmotionType.Sad);
                                 setUserReactState(EmotionType.Sad);
                             }}
                         />
@@ -174,6 +216,7 @@ const PostEmotion: NextPage<PostEmotionProps> = ({ postEmotions, user }) => {
                             icon={HeartEyeFace}
                             isDisabled={userReactState === EmotionType.HeartEye}
                             onClick={() => {
+                                handleCreateEmotion(EmotionType.HeartEye);
                                 setUserReactState(EmotionType.HeartEye);
                             }}
                         />
@@ -185,6 +228,7 @@ const PostEmotion: NextPage<PostEmotionProps> = ({ postEmotions, user }) => {
                             icon={HeartEmoji}
                             isDisabled={userReactState === EmotionType.Heart}
                             onClick={() => {
+                                handleCreateEmotion(EmotionType.Heart);
                                 setUserReactState(EmotionType.Heart);
                             }}
                         />
@@ -196,6 +240,7 @@ const PostEmotion: NextPage<PostEmotionProps> = ({ postEmotions, user }) => {
                             icon={FireEmoji}
                             isDisabled={userReactState === EmotionType.Fire}
                             onClick={() => {
+                                handleCreateEmotion(EmotionType.Fire);
                                 setUserReactState(EmotionType.Fire);
                             }}
                         />
@@ -207,6 +252,7 @@ const PostEmotion: NextPage<PostEmotionProps> = ({ postEmotions, user }) => {
                             icon={PreyingHands}
                             isDisabled={userReactState === EmotionType.Prey}
                             onClick={() => {
+                                handleCreateEmotion(EmotionType.Prey);
                                 setUserReactState(EmotionType.Prey);
                             }}
                         />

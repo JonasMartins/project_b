@@ -326,6 +326,15 @@ export type UsersResponse = {
   users?: Maybe<Array<User>>;
 };
 
+export type CreateEmotionMutationVariables = Exact<{
+  userId: Scalars['String'];
+  postId: Scalars['String'];
+  type: EmotionType;
+}>;
+
+
+export type CreateEmotionMutation = { __typename?: 'Mutation', createEmotion: { __typename?: 'EmotionResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', method: string, message: string, field: string }> | null | undefined, emotion?: { __typename?: 'Emotion', id: string, type: EmotionType, creator: { __typename?: 'User', id: string, name: string }, post: { __typename?: 'Post', id: string, body: string } } | null | undefined } };
+
 export type CreatePostMutationVariables = Exact<{
   options: PostValidator;
   files?: InputMaybe<Array<Scalars['Upload']> | Scalars['Upload']>;
@@ -380,6 +389,57 @@ export type LoginTestQueryVariables = Exact<{ [key: string]: never; }>;
 export type LoginTestQuery = { __typename?: 'Query', loginTest: boolean };
 
 
+export const CreateEmotionDocument = gql`
+    mutation CreateEmotion($userId: String!, $postId: String!, $type: EmotionType!) {
+  createEmotion(userId: $userId, postId: $postId, type: $type) {
+    errors {
+      method
+      message
+      field
+    }
+    emotion {
+      id
+      type
+      creator {
+        id
+        name
+      }
+      post {
+        id
+        body
+      }
+    }
+  }
+}
+    `;
+export type CreateEmotionMutationFn = Apollo.MutationFunction<CreateEmotionMutation, CreateEmotionMutationVariables>;
+
+/**
+ * __useCreateEmotionMutation__
+ *
+ * To run a mutation, you first call `useCreateEmotionMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateEmotionMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createEmotionMutation, { data, loading, error }] = useCreateEmotionMutation({
+ *   variables: {
+ *      userId: // value for 'userId'
+ *      postId: // value for 'postId'
+ *      type: // value for 'type'
+ *   },
+ * });
+ */
+export function useCreateEmotionMutation(baseOptions?: Apollo.MutationHookOptions<CreateEmotionMutation, CreateEmotionMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<CreateEmotionMutation, CreateEmotionMutationVariables>(CreateEmotionDocument, options);
+      }
+export type CreateEmotionMutationHookResult = ReturnType<typeof useCreateEmotionMutation>;
+export type CreateEmotionMutationResult = Apollo.MutationResult<CreateEmotionMutation>;
+export type CreateEmotionMutationOptions = Apollo.BaseMutationOptions<CreateEmotionMutation, CreateEmotionMutationVariables>;
 export const CreatePostDocument = gql`
     mutation CreatePost($options: PostValidator!, $files: [Upload!]) {
   createPost(options: $options, files: $files) {
