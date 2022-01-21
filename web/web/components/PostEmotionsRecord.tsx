@@ -1,5 +1,5 @@
 import { useMutation } from "@apollo/client";
-import { useColorMode, Text, Button } from "@chakra-ui/react";
+import { useColorMode, Text, Button, Tooltip } from "@chakra-ui/react";
 import {
     DeleteEmotionDocument,
     DeleteEmotionMutation,
@@ -11,20 +11,12 @@ import { useUser } from "utils/hooks/useUser";
 import { getEmotionTypeIcon } from "utils/posts/postsUtils";
 import { emotion as emotionElement } from "utils/types/post/post.types";
 
-interface usersReactions {
-    [key: string]: boolean;
-}
-
 interface PostEmotionsRecordProps {
     emotions: emotionElement[] | undefined | null;
 }
 
 interface EmotionCreator {
     [key: string]: Set<string>;
-}
-
-interface EmotionTypesObj {
-    [key: string]: number;
 }
 
 const PostEmotionsRecord: NextPage<PostEmotionsRecordProps> = ({
@@ -59,115 +51,95 @@ const PostEmotionsRecord: NextPage<PostEmotionsRecordProps> = ({
         return <></>;
     }
 
-    let mappingEmotionsWithUser: EmotionCreator = {};
     let uniqueEmotions: emotionElement[] = [];
     let singleEmotions: EmotionType[] = [];
-    let componentType: JSX.Element | null = null;
 
-    let emotionsCount: EmotionTypesObj = {
-        ANGRY: 0,
-        SUN_GLASS: 0,
-        SURPRISE: 0,
-        THUMBSDOWN: 0,
-        THUMBSUP: 0,
-        VOMIT: 0,
-        SMILE: 0,
-        SAD: 0,
-        HEART_EYE: 0,
-        HEART: 0,
-        FIRE: 0,
-        PREY: 0,
-    };
-    emotions.forEach((item) => {
-        emotionsCount[item.type] = emotionsCount[item.type] + 1;
-        if (!mappingEmotionsWithUser[item.type]) {
-            mappingEmotionsWithUser[item.type] = new Set<string>();
-            mappingEmotionsWithUser[item.type].add(item.creator.id);
-        } else {
-            mappingEmotionsWithUser[item.type].add(item.creator.id);
-        }
+    const [userReactions, setUserReactions] = useState<EmotionCreator>({
+        ANGRY: new Set([]),
+        FIRE: new Set([]),
+        HEART: new Set([]),
+        HEART_EYE: new Set([]),
+        PREY: new Set([]),
+        SAD: new Set([]),
+        SMILE: new Set([]),
+        SUN_GLASS: new Set([]),
+        SURPRISE: new Set([]),
+        THUMBSDOWN: new Set([]),
+        THUMBSUP: new Set([]),
+        VOMIT: new Set([]),
     });
 
-    emotions.map((item) => {
+    emotions.forEach((item) => {
         if (!singleEmotions.includes(item.type)) {
             uniqueEmotions.push(item);
             singleEmotions.push(item.type);
         }
     });
 
-    const handleUserReaction = (type: EmotionType): boolean => {
-        return mappingEmotionsWithUser[type].has(user?.id || "");
-    };
-
-    const [userReactions, setUserReactions] = useState<usersReactions>({
-        ANGRY: false,
-        FIRE: false,
-        HEART: false,
-        HEART_EYE: false,
-        PREY: false,
-        SAD: false,
-        SMILE: false,
-        SUN_GLASS: false,
-        SURPRISE: false,
-        THUMBSDOWN: false,
-        THUMBSUP: false,
-        VOMIT: false,
-    });
-
     const toggleUserReaction = (type: EmotionType) => {
-        setUserReactions((prevReactions) => ({
-            ...prevReactions,
-            [type]: !prevReactions[type],
-        }));
+        if (!user) return;
+
+        if (userReactions[type].has(user.id)) {
+            userReactions[type].delete(user.id);
+            let aux = userReactions[type];
+            setUserReactions((prevReactions) => ({
+                ...prevReactions,
+                [type]: aux,
+            }));
+        } else {
+            setUserReactions((prevReactions) => ({
+                ...prevReactions,
+                [type]: prevReactions[type].add(user.id),
+            }));
+        }
     };
 
     useEffect(() => {
         if (!user) return;
-        let key = "";
-        for (key in mappingEmotionsWithUser) {
-            if (mappingEmotionsWithUser[key].has(user.id)) {
-                setUserReactions((prevReactions) => ({
-                    ...prevReactions,
-                    [key]: true,
-                }));
-            }
-        }
+        emotions.forEach((item) => {
+            setUserReactions((prevReactions) => ({
+                ...prevReactions,
+                [item.type]: prevReactions[item.type].add(item.creator.id),
+            }));
+        });
     }, [user]);
 
-    useEffect(() => {}, []);
-
-    componentType = (
+    return (
         <>
             {uniqueEmotions.map((item) => (
-                <Button
-                    leftIcon={getEmotionTypeIcon(item.type)}
-                    variant="outline"
-                    size="sm"
-                    borderRadius="1em"
-                    mr={1}
-                    border="3px solid"
-                    borderColor={
-                        userReactions[item.type] ? "#E10DFF" : "grey.300"
+                <Tooltip
+                    hasArrow
+                    aria-label="react to post"
+                    label={
+                        userReactions[item.type].has(user?.id || "")
+                            ? "Cancel Reaction"
+                            : "React to Post"
                     }
-                    onClick={() => {
-                        toggleUserReaction(item.type);
-                    }}
+                    colorScheme="white"
                 >
-                    <Text
-                        textColor={
-                            userReactions[item.type]
-                                ? "#E10DFF"
-                                : color[colorMode]
-                        }
+                    <Button
+                        leftIcon={getEmotionTypeIcon(item.type)}
+                        variant="outline"
+                        size="sm"
+                        mr={1}
+                        onClick={() => {
+                            toggleUserReaction(item.type);
+                        }}
                     >
-                        {emotionsCount[item.type]}
-                    </Text>
-                </Button>
+                        <Text
+                            textColor={
+                                userReactions[item.type].has(user?.id || "")
+                                    ? "#E10DFF"
+                                    : color[colorMode]
+                            }
+                        >
+                            {userReactions[item.type].size}
+                        </Text>
+                    </Button>
+                </Tooltip>
             ))}
         </>
     );
-
-    return componentType;
 };
 
 export default memo(PostEmotionsRecord);
