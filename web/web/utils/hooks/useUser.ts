@@ -10,6 +10,8 @@ export type UserType =
           __typename?: "User";
           id: string;
           name: string;
+          email: string;
+          password: string;
           role: { __typename?: "Role"; name: string };
       }
     | null

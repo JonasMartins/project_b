@@ -387,7 +387,7 @@ export type LogoutMutation = { __typename?: 'Mutation', logout: boolean };
 export type GetCurrentLoggedUserQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetCurrentLoggedUserQuery = { __typename?: 'Query', getCurrentLoggedUser: { __typename?: 'UserResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', method: string, field: string, message: string }> | null | undefined, user?: { __typename?: 'User', id: string, name: string, role: { __typename?: 'Role', name: string } } | null | undefined } };
+export type GetCurrentLoggedUserQuery = { __typename?: 'Query', getCurrentLoggedUser: { __typename?: 'UserResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', method: string, field: string, message: string }> | null | undefined, user?: { __typename?: 'User', id: string, name: string, email: string, password: string, role: { __typename?: 'Role', name: string } } | null | undefined } };
 
 export type GetPostsQueryVariables = Exact<{
   offset: Scalars['Float'];
@@ -704,6 +704,8 @@ export const GetCurrentLoggedUserDocument = gql`
     user {
       id
       name
+      email
+      password
       role {
         name
       }

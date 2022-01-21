@@ -8,6 +8,8 @@ query GetCurrentLoggedUser {
         user {
             id
             name
+            email
+            password
             role {
                 name
             }
