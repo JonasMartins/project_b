@@ -1,0 +1,2 @@
+Run ts files locally:
+npx ts-node file.ts

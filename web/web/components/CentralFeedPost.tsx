@@ -1,7 +1,7 @@
 import { Box, Flex, Text, useColorMode } from "@chakra-ui/react";
 import type { NextPage } from "next";
 import Image from "next/image";
-import { PostEmotionsRecord } from "utils/posts/postsUtils";
+import PostEmotionsRecord from "components/PostEmotionsRecord";
 import { getPostsType } from "utils/types/post/post.types";
 import PostEmotion from "components/Form/postEmotion.form";
 import { useUser } from "utils/hooks/useUser";
