@@ -14,6 +14,8 @@ import { ErrorFieldHandler } from "./../helpers/errorFieldHandler";
 import { genericError, validateEmail } from "./../helpers/generalAuxMethods";
 import { UserValidator } from "../database/validators/user.validator";
 import { Role } from "../database/entity/role.entity";
+import { FileUpload, GraphQLUpload } from "graphql-upload";
+import { HandleUpload } from "./../helpers/handleUpload.helper";
 
 @ObjectType()
 class LoginResponse {
@@ -288,7 +290,6 @@ export class UserResolver {
         req.session.userId = user.id;
         req.session.userRole = user.role.name;
 
-        // MOST IMPORTANT EVER
         res.cookie("pbTechBlog", req.sessionID, {
             httpOnly: true,
             maxAge: this.cookieLife,
@@ -318,6 +319,105 @@ export class UserResolver {
             return new Promise((resolve, _) => {
                 resolve(false);
             });
+        }
+    }
+
+    @Mutation(() => UserResponse)
+    async updateUserSettings(
+        @Arg("id") id: string,
+        @Arg("file", () => GraphQLUpload, { nullable: true })
+        file: FileUpload,
+        @Arg("options") options: UserValidator,
+        @Ctx() { em }: Context
+    ): Promise<UserResponse> {
+        try {
+            const user = await em.findOne(User, id);
+            if (!user) {
+                return {
+                    errors: genericError(
+                        "-",
+                        "createUser",
+                        __filename,
+                        `Could not found the user with id: ${id}`
+                    ),
+                };
+            }
+
+            if (options.password.length < 6) {
+                return {
+                    errors: genericError(
+                        "password",
+                        "createUser",
+                        __filename,
+                        "Password must be at least length 6."
+                    ),
+                };
+            }
+
+            if (!validateEmail(options.email)) {
+                return {
+                    errors: genericError(
+                        "email",
+                        "createUser",
+                        __filename,
+                        `Email ${options.email} wrong email format.`
+                    ),
+                };
+            }
+
+            const userEmail = await em.findOne(User, { email: options.email });
+
+            if (userEmail) {
+                return {
+                    errors: genericError(
+                        "email",
+                        "createUser",
+                        __filename,
+                        `Email ${options.email} already takken.`
+                    ),
+                };
+            }
+
+            const validPass = user.password === options.password;
+
+            if (!validPass) {
+                user.password = await argon2.hash(options.password);
+            }
+
+            if (file) {
+                let files: FileUpload[] = [];
+                files.push(file);
+
+                const uploader = new HandleUpload(
+                    files,
+                    "file",
+                    "updateUserSettings",
+                    __filename
+                );
+
+                let result = await uploader.upload();
+
+                if (result.paths?.length) {
+                    user.picture = result.paths[0];
+                }
+            }
+
+            user.name = options.name;
+            user.email = options.email;
+            user.password = options.password;
+
+            await user.save();
+
+            return { user };
+        } catch (e) {
+            return {
+                errors: genericError(
+                    "-",
+                    "createUser",
+                    __filename,
+                    `Could not create the user, details: ${e.message}`
+                ),
+            };
         }
     }
 }

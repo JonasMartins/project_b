@@ -9,7 +9,23 @@ type HasSubmittedPostAction = {
     payload: boolean;
 };
 
-export type Action = AddNote | IsSubmittingPostAction | HasSubmittedPostAction;
+type HasUpdateUserSettingsAction = {
+    type: "HAS_UPDATED_USER_SETTINGS";
+    payload: boolean;
+};
+
+export type Action =
+    | AddNote
+    | IsSubmittingPostAction
+    | HasSubmittedPostAction
+    | HasUpdateUserSettingsAction;
+
+export const setHasUpdateUserSettings = (
+    hasUpdated: boolean
+): HasUpdateUserSettingsAction => ({
+    type: "HAS_UPDATED_USER_SETTINGS",
+    payload: hasUpdated,
+});
 
 export const addNote = (note: string): AddNote => ({
     type: "ADD_NOTE",

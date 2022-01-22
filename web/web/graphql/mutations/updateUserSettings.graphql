@@ -1,0 +1,18 @@
+mutation UpdateUserSettings(
+    $id: String!
+    $options: UserValidator!
+    $file: Upload
+) {
+    updateUserSettings(id: $id, options: $options, file: $file) {
+        errors {
+            method
+            message
+            field
+        }
+        user {
+            id
+            name
+            email
+        }
+    }
+}

@@ -1,14 +1,31 @@
-import React from "react";
+import React, { useCallback, useEffect } from "react";
 import type { NextPage } from "next";
 import { Flex, Tooltip, IconButton, useDisclosure } from "@chakra-ui/react";
 import { IoIosSettings } from "react-icons/io";
 import { IoHome } from "react-icons/io5";
 import ModalSettings from "components/Modal/modalSettings";
+import { useSelector } from "react-redux";
+import { globalState } from "Redux/Global/GlobalReducer";
 
 interface LeftPanelProps {}
 
 const LeftPanel: NextPage<LeftPanelProps> = ({}) => {
     const modalSettings = useDisclosure();
+
+    const hasUpdateUserSettings = useSelector<
+        globalState,
+        globalState["hasUpdateUserSettings"]
+    >((state) => state.hasUpdateUserSettings);
+
+    const handleCloseModalSettings = () => {
+        if (hasUpdateUserSettings) {
+            modalSettings.onClose();
+        }
+    };
+
+    useEffect(() => {
+        handleCloseModalSettings();
+    }, [hasUpdateUserSettings]);
 
     return (
         <Flex flexGrow={1} flexDir="column" m={5} alignItems="center">

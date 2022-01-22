@@ -121,6 +121,7 @@ export type Mutation = {
   login: LoginResponse;
   logout: Scalars['Boolean'];
   updateEmotion: EmotionResponse;
+  updateUserSettings: UserResponse;
 };
 
 
@@ -182,6 +183,13 @@ export type MutationLoginArgs = {
 export type MutationUpdateEmotionArgs = {
   emotionId: Scalars['String'];
   newType: EmotionType;
+};
+
+
+export type MutationUpdateUserSettingsArgs = {
+  file?: InputMaybe<Scalars['Upload']>;
+  id: Scalars['String'];
+  options: UserValidator;
 };
 
 export type Post = {
@@ -383,6 +391,15 @@ export type LogoutMutationVariables = Exact<{ [key: string]: never; }>;
 
 
 export type LogoutMutation = { __typename?: 'Mutation', logout: boolean };
+
+export type UpdateUserSettingsMutationVariables = Exact<{
+  id: Scalars['String'];
+  options: UserValidator;
+  file?: InputMaybe<Scalars['Upload']>;
+}>;
+
+
+export type UpdateUserSettingsMutation = { __typename?: 'Mutation', updateUserSettings: { __typename?: 'UserResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', method: string, message: string, field: string }> | null | undefined, user?: { __typename?: 'User', id: string, name: string, email: string } | null | undefined } };
 
 export type GetCurrentLoggedUserQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -693,6 +710,50 @@ export function useLogoutMutation(baseOptions?: Apollo.MutationHookOptions<Logou
 export type LogoutMutationHookResult = ReturnType<typeof useLogoutMutation>;
 export type LogoutMutationResult = Apollo.MutationResult<LogoutMutation>;
 export type LogoutMutationOptions = Apollo.BaseMutationOptions<LogoutMutation, LogoutMutationVariables>;
+export const UpdateUserSettingsDocument = gql`
+    mutation UpdateUserSettings($id: String!, $options: UserValidator!, $file: Upload) {
+  updateUserSettings(id: $id, options: $options, file: $file) {
+    errors {
+      method
+      message
+      field
+    }
+    user {
+      id
+      name
+      email
+    }
+  }
+}
+    `;
+export type UpdateUserSettingsMutationFn = Apollo.MutationFunction<UpdateUserSettingsMutation, UpdateUserSettingsMutationVariables>;
+
+/**
+ * __useUpdateUserSettingsMutation__
+ *
+ * To run a mutation, you first call `useUpdateUserSettingsMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateUserSettingsMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateUserSettingsMutation, { data, loading, error }] = useUpdateUserSettingsMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *      options: // value for 'options'
+ *      file: // value for 'file'
+ *   },
+ * });
+ */
+export function useUpdateUserSettingsMutation(baseOptions?: Apollo.MutationHookOptions<UpdateUserSettingsMutation, UpdateUserSettingsMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpdateUserSettingsMutation, UpdateUserSettingsMutationVariables>(UpdateUserSettingsDocument, options);
+      }
+export type UpdateUserSettingsMutationHookResult = ReturnType<typeof useUpdateUserSettingsMutation>;
+export type UpdateUserSettingsMutationResult = Apollo.MutationResult<UpdateUserSettingsMutation>;
+export type UpdateUserSettingsMutationOptions = Apollo.BaseMutationOptions<UpdateUserSettingsMutation, UpdateUserSettingsMutationVariables>;
 export const GetCurrentLoggedUserDocument = gql`
     query GetCurrentLoggedUser {
   getCurrentLoggedUser {

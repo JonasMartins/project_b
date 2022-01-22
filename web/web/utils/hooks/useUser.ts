@@ -18,10 +18,10 @@ export type UserType =
     | undefined;
 
 export const useUser = () => {
-    const { loading, data, error } = useQuery<GetCurrentLoggedUserQuery>(
-        GetCurrentLoggedUserDocument,
-        { fetchPolicy: "cache-and-network" }
-    );
+    const { loading, data, error, refetch } =
+        useQuery<GetCurrentLoggedUserQuery>(GetCurrentLoggedUserDocument, {
+            fetchPolicy: "cache-and-network",
+        });
 
     const [user, setUser] = useState<UserType | null>(null);
 

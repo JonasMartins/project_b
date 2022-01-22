@@ -1,5 +1,5 @@
 import type { NextPage } from "next";
-import React, { ComponentProps, useMemo } from "react";
+import React, { ComponentProps, useEffect, useMemo, useState } from "react";
 import * as Yup from "yup";
 import { css } from "@emotion/react";
 import { Formik, FormikProps, Form, Field } from "formik";
@@ -14,6 +14,7 @@ import {
     Flex,
     Text,
     useColorMode,
+    useToast,
 } from "@chakra-ui/react";
 import { customPostFeedInput } from "utils/custom/customStyles";
 import { useDropzone } from "react-dropzone";
@@ -28,13 +29,21 @@ import {
     img,
 } from "utils/dropzone/dropzoneStyles";
 import { truncateString } from "utils/generalAuxFunctions";
+import {
+    UpdateUserSettingsDocument,
+    UpdateUserSettingsMutation,
+} from "generated/graphql";
+import { useMutation } from "@apollo/client";
+import { setHasUpdateUserSettings } from "Redux/actions";
+import { useDispatch } from "react-redux";
+import Spinner from "components/Layout/Spinner";
 
 const SeetingsSchema = Yup.object().shape({
     name: Yup.string().required("Required"),
     email: Yup.string().email("Invalid email").required("Required"),
     password: Yup.string()
         .min(6, "Too Short!")
-        .max(50, "Too Long!")
+        .max(1000, "Too Long!")
         .required("Required"),
 });
 
@@ -57,12 +66,61 @@ const ChakraInput = (props: InputProps) => {
 
 const Settings: NextPage<SettingsProps> = ({ user }) => {
     const { colorMode } = useColorMode();
-
+    const toast = useToast();
     const initialValues: inputValues = {
         email: user!.email,
         name: user!.name,
-        password: truncateString(user!.password, 10),
+        password: user!.password,
         file: undefined,
+    };
+
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const [updateUserSettings, { error }] =
+        useMutation<UpdateUserSettingsMutation>(UpdateUserSettingsDocument);
+
+    const dispatch = useDispatch();
+
+    const onSetHasUpdatedUserSettings = (hasUpdated: boolean) => {
+        dispatch(setHasUpdateUserSettings(hasUpdated));
+    };
+
+    const handleUpdateUserSettingsMutation = async (
+        id: string,
+        name: string,
+        email: string,
+        password: string,
+        file?: File | undefined
+    ): Promise<UpdateUserSettingsMutation> => {
+        const result = await updateUserSettings({
+            variables: {
+                id,
+                options: {
+                    name,
+                    email,
+                    password,
+                },
+                file,
+                onError: () => {
+                    console.error(error);
+                },
+            },
+        });
+
+        if (!result.data) {
+            throw new Error(error?.message);
+        }
+        toast({
+            title: "User Updated",
+            description: "User successfully updated",
+            status: "success",
+            duration: 8000,
+            isClosable: true,
+            position: "top",
+        });
+
+        onSetHasUpdatedUserSettings(true);
+        return result.data;
     };
 
     const {
@@ -89,11 +147,24 @@ const Settings: NextPage<SettingsProps> = ({ user }) => {
         [isDragActive, isDragReject, isDragAccept]
     );
 
-    return (
+    useEffect(() => {
+        return () => {
+            onSetHasUpdatedUserSettings(false);
+        };
+    }, []);
+
+    const content = (
         <Formik
             initialValues={initialValues}
             onSubmit={(values) => {
-                console.log(values);
+                setIsSubmitting(true);
+                handleUpdateUserSettingsMutation(
+                    user!.id,
+                    values.name,
+                    values.email,
+                    values.password,
+                    acceptedFiles[0]
+                );
             }}
             validationSchema={SeetingsSchema}
         >
@@ -236,6 +307,8 @@ const Settings: NextPage<SettingsProps> = ({ user }) => {
             )}
         </Formik>
     );
+
+    return isSubmitting || !user ? <Spinner /> : content;
 };
 
 export default Settings;
