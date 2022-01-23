@@ -57,6 +57,11 @@ export class User extends Base {
     @JoinTable()
     public emotions: Emotion[];
 
+    @Field(() => [User], { nullable: true })
+    @ManyToMany(() => User, { nullable: true, onDelete: "SET NULL" })
+    @JoinTable()
+    public connections: User[];
+
     @BeforeInsert()
     async hashPassword() {
         const hashedPasswWord = await argon2.hash(this.password);

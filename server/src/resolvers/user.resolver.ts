@@ -26,6 +26,14 @@ class LoginResponse {
 }
 
 @ObjectType()
+class GeneralResponse {
+    @Field(() => [ErrorFieldHandler], { nullable: true })
+    errors?: ErrorFieldHandler[];
+    @Field(() => Boolean, { nullable: true })
+    done?: Boolean;
+}
+
+@ObjectType()
 class UserResponse {
     @Field(() => [ErrorFieldHandler], { nullable: true })
     errors?: ErrorFieldHandler[];
@@ -58,7 +66,17 @@ export class UserResolver {
             const qb = await em
                 .getRepository(User)
                 .createQueryBuilder("user")
-                .where("1 = 1")
+                .leftJoinAndSelect("user.connections", "u1")
+                .select([
+                    "user.id",
+                    "user.name",
+                    "user.email",
+                    "user.picture",
+                    "u1.id",
+                    "u1.name",
+                    "u1.email",
+                    "u1.picture",
+                ])
                 .limit(max)
                 .offset(maxOffset);
 
@@ -420,6 +438,95 @@ export class UserResolver {
                     "createUser",
                     __filename,
                     `Could not create the user, details: ${e.message}`
+                ),
+            };
+        }
+    }
+
+    @Mutation(() => GeneralResponse)
+    async createConnection(
+        @Arg("userRequestorId") userRequestorId: string,
+        @Arg("userRequestedId") userRequestedId: string,
+        @Ctx() { em }: Context
+    ): Promise<GeneralResponse> {
+        const userRepo = em.connection.getRepository(User);
+
+        let userRequestorConnections = await userRepo.findOne({
+            relations: ["connections"],
+            where: { id: userRequestorId },
+        });
+
+        if (!userRequestorConnections) {
+            return {
+                errors: genericError(
+                    "userRequestorId",
+                    "createConnection",
+                    __filename,
+                    `Could not found the user with id: ${userRequestorId}`
+                ),
+            };
+        }
+
+        let userRequestedConnections = await userRepo.findOne({
+            relations: ["connections"],
+            where: { id: userRequestedId },
+        });
+
+        if (!userRequestedConnections) {
+            return {
+                errors: genericError(
+                    "userRequestedId",
+                    "createConnection",
+                    __filename,
+                    `Could not found the user with id: ${userRequestedId}`
+                ),
+            };
+        }
+
+        try {
+            if (
+                userRequestedConnections &&
+                !userRequestedConnections.connections.length
+            ) {
+                let auxUserConn: User[] = [];
+                auxUserConn.push(userRequestorConnections);
+                userRequestedConnections.connections = auxUserConn;
+            } else if (
+                userRequestedConnections &&
+                userRequestedConnections.connections.length
+            ) {
+                let auxUserConn: User[] = userRequestedConnections.connections;
+                auxUserConn.push(userRequestorConnections);
+                userRequestedConnections.connections = auxUserConn;
+            }
+
+            if (
+                userRequestorConnections &&
+                !userRequestorConnections.connections.length
+            ) {
+                let auxUserConn: User[] = [];
+                auxUserConn.push(userRequestedConnections);
+                userRequestorConnections.connections = auxUserConn;
+            } else if (
+                userRequestorConnections &&
+                userRequestorConnections.connections.length
+            ) {
+                let auxUserConn: User[] = userRequestorConnections.connections;
+                auxUserConn.push(userRequestedConnections);
+                userRequestorConnections.connections = auxUserConn;
+            }
+
+            await em.save(userRequestedConnections);
+            await em.save(userRequestorConnections);
+
+            return { done: true };
+        } catch (e) {
+            return {
+                errors: genericError(
+                    "-",
+                    "createConnection",
+                    __filename,
+                    `${e.message}`
                 ),
             };
         }

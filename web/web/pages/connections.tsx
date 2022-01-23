@@ -1,16 +1,13 @@
-import React from "react";
-import type { NextPage } from "next";
-import NavBar from "components/Layout/NavBar";
-import Container from "components/Container";
 import { Box, Flex, Grid, GridItem, useColorMode } from "@chakra-ui/react";
+import Container from "components/Container";
+import Footer from "components/Layout/Footer";
 import LeftPanel from "components/Layout/LeftPanel";
+import NavBar from "components/Layout/NavBar";
 import RightPanel from "components/Layout/RightPanel";
-import CentralFeed from "components/Layout/CentralFeed";
-import Footer from "./Footer";
+import type { NextPage } from "next";
+import React from "react";
 
-interface BasicLayoutProps {}
-
-const BasicLayout: NextPage<BasicLayoutProps> = () => {
+const Connections: NextPage = () => {
     const { colorMode } = useColorMode();
     const bgColor = { light: "gray.200", dark: "gray.700" };
 
@@ -38,9 +35,7 @@ const BasicLayout: NextPage<BasicLayoutProps> = () => {
                             colSpan={3}
                             bg={bgColor[colorMode]}
                             boxShadow="lg"
-                        >
-                            <CentralFeed />{" "}
-                        </GridItem>
+                        ></GridItem>
                         <GridItem bg={bgColor[colorMode]} boxShadow="lg">
                             <RightPanel />
                         </GridItem>
@@ -54,4 +49,5 @@ const BasicLayout: NextPage<BasicLayoutProps> = () => {
         </Container>
     );
 };
-export default BasicLayout;
+
+export default Connections;

@@ -1,0 +1,19 @@
+query GetUsers($offset: Float!, $limit: Float!) {
+    getUsers(offset: $offset, limit: $limit) {
+        errors {
+            message
+            method
+            field
+        }
+        users {
+            id
+            name
+            email
+            picture
+            role {
+                id
+                name
+            }
+        }
+    }
+}

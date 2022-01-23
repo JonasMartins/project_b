@@ -1,16 +1,23 @@
-import React, { useCallback, useEffect } from "react";
+import React, { useEffect } from "react";
 import type { NextPage } from "next";
 import { Flex, Tooltip, IconButton, useDisclosure } from "@chakra-ui/react";
 import { IoIosSettings } from "react-icons/io";
 import { IoHome } from "react-icons/io5";
+import {
+    BsPeopleFill,
+    BsFillBellFill,
+    BsFillChatDotsFill,
+} from "react-icons/bs";
 import ModalSettings from "components/Modal/modalSettings";
 import { useSelector } from "react-redux";
 import { globalState } from "Redux/Global/GlobalReducer";
+import { useRouter } from "next/dist/client/router";
 
 interface LeftPanelProps {}
 
 const LeftPanel: NextPage<LeftPanelProps> = ({}) => {
     const modalSettings = useDisclosure();
+    const router = useRouter();
 
     const hasUpdateUserSettings = useSelector<
         globalState,
@@ -40,7 +47,9 @@ const LeftPanel: NextPage<LeftPanelProps> = ({}) => {
                     aria-label="Home"
                     size="lg"
                     icon={<IoHome />}
-                    onClick={() => {}}
+                    onClick={() => {
+                        router.push("/");
+                    }}
                     mt={3}
                 />
             </Tooltip>
@@ -59,6 +68,56 @@ const LeftPanel: NextPage<LeftPanelProps> = ({}) => {
                     onClick={() => {
                         modalSettings.onOpen();
                     }}
+                />
+            </Tooltip>
+
+            <Tooltip
+                hasArrow
+                aria-label="connections"
+                label="Connections"
+                colorScheme="white"
+            >
+                <IconButton
+                    mt={3}
+                    isRound={true}
+                    aria-label="Connections"
+                    size="lg"
+                    icon={<BsPeopleFill />}
+                    onClick={() => {
+                        router.push("/connections");
+                    }}
+                />
+            </Tooltip>
+
+            <Tooltip
+                hasArrow
+                aria-label="news"
+                label="News"
+                colorScheme="white"
+            >
+                <IconButton
+                    mt={3}
+                    isRound={true}
+                    aria-label="news"
+                    size="lg"
+                    icon={<BsFillBellFill />}
+                    onClick={() => {}}
+                />
+            </Tooltip>
+
+            <Tooltip
+                hasArrow
+                aria-label="chats"
+                label="Chats"
+                colorScheme="white"
+            >
+                <IconButton
+                    mt={3}
+                    isRound={true}
+                    aria-label="chats"
+                    size="lg"
+                    icon={<BsFillChatDotsFill />}
+                    onClick={() => {}}
                 />
             </Tooltip>
 

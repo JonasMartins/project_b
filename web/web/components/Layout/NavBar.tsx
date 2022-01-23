@@ -11,6 +11,7 @@ import {
     MenuButton,
     MenuItem,
     MenuList,
+    Text,
     Image as ChakraImage,
 } from "@chakra-ui/react";
 import { BsMoon, BsSun } from "react-icons/bs";
@@ -82,9 +83,14 @@ const NavBar: NextPage<NavBarProps> = ({}) => {
                     </Link>
                 </NexLink>
                 <Box ml={2}>
-                    <NexLink href="/">
-                        <Link color={"white"}>Home</Link>
-                    </NexLink>
+                    {user?.name ? (
+                        <Text textColor="white" fontWeight="semibold">
+                            {" "}
+                            Welcome {user.name}
+                        </Text>
+                    ) : (
+                        <></>
+                    )}
                 </Box>
             </Flex>
 
