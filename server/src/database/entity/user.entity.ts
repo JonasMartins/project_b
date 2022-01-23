@@ -16,6 +16,7 @@ import { Post } from "./post.entity";
 import { Emotion } from "./emotion.entity";
 import { Comment } from "./comment.entity";
 import argon2 from "argon2";
+import { Request } from "./request.entity";
 
 @ObjectType()
 @Entity()
@@ -38,12 +39,20 @@ export class User extends Base {
 
     @Field(() => Role)
     @ManyToOne(() => Role, { eager: true })
-    @JoinColumn({ name: "roleId" })
+    @JoinColumn({ name: "role_id" })
     public role: Role;
 
     @Field(() => [Post], { nullable: true })
     @OneToMany(() => Post, (post) => post.creator)
     public posts: Post[];
+
+    @Field(() => [Request], { nullable: true })
+    @OneToMany(() => Request, (request) => request.requestor)
+    public requests: Request[];
+
+    @Field(() => [Request], { nullable: true })
+    @OneToMany(() => Request, (request) => request.requested)
+    public invitations: Request[];
 
     @Field(() => [Comment], { nullable: true })
     @OneToMany(() => Comment, (comment) => comment.author, {

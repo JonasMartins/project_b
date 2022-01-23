@@ -19,3 +19,8 @@ alter role postgres with password 'postgres';
 - Configurar pgAdmin com 
 localhost e a senha para o usuário postgres
 OBS: localhost deve ser 127.0.0.1
+
+
+table details command line:
+
+\d public.user
