@@ -10,6 +10,7 @@ query GetCurrentLoggedUser {
             name
             email
             password
+            picture
             role {
                 name
             }

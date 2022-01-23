@@ -365,17 +365,21 @@ export class UserResolver {
                 };
             }
 
-            const userEmail = await em.findOne(User, { email: options.email });
+            if (options.email !== user.email) {
+                const userEmail = await em.findOne(User, {
+                    email: options.email,
+                });
 
-            if (userEmail) {
-                return {
-                    errors: genericError(
-                        "email",
-                        "createUser",
-                        __filename,
-                        `Email ${options.email} already takken.`
-                    ),
-                };
+                if (userEmail) {
+                    return {
+                        errors: genericError(
+                            "email",
+                            "createUser",
+                            __filename,
+                            `Email ${options.email} already takken.`
+                        ),
+                    };
+                }
             }
 
             const validPass = user.password === options.password;

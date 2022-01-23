@@ -11,6 +11,7 @@ import {
     MenuButton,
     MenuItem,
     MenuList,
+    Image as ChakraImage,
 } from "@chakra-ui/react";
 import { BsMoon, BsSun } from "react-icons/bs";
 import { AiOutlineLogout, AiOutlineMenu } from "react-icons/ai";
@@ -22,15 +23,23 @@ import { css } from "@emotion/react";
 import { useMutation } from "@apollo/client";
 import { LogoutDocument, LogoutMutation } from "generated/graphql";
 import { useRouter } from "next/dist/client/router";
+import { defaultImage } from "utils/consts";
+import { useSelector } from "react-redux";
+import { globalState } from "Redux/Global/GlobalReducer";
+import { useUser } from "utils/hooks/useUser";
 
 interface NavBarProps {}
 
 const NavBar: NextPage<NavBarProps> = ({}) => {
     const { colorMode, toggleColorMode } = useColorMode();
     const [shades, setShades] = useState(["#7928CA", "#FF0080"]);
-
     const [logout, {}] = useMutation<LogoutMutation>(LogoutDocument);
     const router = useRouter();
+    const hasUpdateUserSettings = useSelector<
+        globalState,
+        globalState["hasUpdateUserSettings"]
+    >((state) => state.hasUpdateUserSettings);
+    const user = useUser();
 
     const handleLogout = async () => {
         const result = await logout();
@@ -45,7 +54,7 @@ const NavBar: NextPage<NavBarProps> = ({}) => {
         } else {
             setShades(["#311052", "#890045"]);
         }
-    }, [colorMode]);
+    }, [colorMode, hasUpdateUserSettings]);
 
     return (
         <Flex
@@ -80,6 +89,12 @@ const NavBar: NextPage<NavBarProps> = ({}) => {
             </Flex>
 
             <Flex p={2} alignItems="center">
+                <ChakraImage
+                    mr={2}
+                    borderRadius="full"
+                    boxSize="40px"
+                    src={user?.picture ? user?.picture : defaultImage}
+                />
                 <Flex m={2}>
                     {colorMode === "light" ? (
                         <BsSun color="white" size="40px" />
@@ -95,6 +110,7 @@ const NavBar: NextPage<NavBarProps> = ({}) => {
                     m={2}
                     p={2}
                 />
+
                 <Menu>
                     <MenuButton
                         as={IconButton}

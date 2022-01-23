@@ -13,6 +13,7 @@ mutation UpdateUserSettings(
             id
             name
             email
+            picture
         }
     }
 }

@@ -1,0 +1,42 @@
+
+* Read Query:
+
+const READ_USER = gql`
+    query GetCurrentLoggedUser {
+        getCurrentLoggedUser {
+            user {
+                id
+                name
+                email
+                picture
+            }
+        }
+    }
+`;
+const result = client.readQuery({
+    query: READ_USER,
+});
+console.log("user ", result.getCurrentLoggedUser.user);
+
+
+* Write query:
+
+const UPDATE_LOGGED_USER = gql`
+    query GetCurrentLoggedUser { 
+        user {
+            picture
+        }
+        
+    }
+`;
+
+const result = client.writeQuery({
+    query: UPDATE_LOGGED_USER,
+    data: {
+        user: {
+            __typename: "User",
+            picture: "https://jms7045blob.blob.core.windows.net/images/default-user-image.png"
+
+        }
+    }
+});

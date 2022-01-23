@@ -4,6 +4,8 @@ import {
 } from "generated/graphql";
 import { useState, useEffect } from "react";
 import { useQuery } from "@apollo/client";
+import { useSelector } from "react-redux";
+import { globalState } from "Redux/Global/GlobalReducer";
 
 export type UserType =
     | {
@@ -12,6 +14,7 @@ export type UserType =
           name: string;
           email: string;
           password: string;
+          picture?: string | null | undefined;
           role: { __typename?: "Role"; name: string };
       }
     | null
@@ -22,6 +25,11 @@ export const useUser = () => {
         useQuery<GetCurrentLoggedUserQuery>(GetCurrentLoggedUserDocument, {
             fetchPolicy: "cache-and-network",
         });
+
+    const hasUpdateUserSettings = useSelector<
+        globalState,
+        globalState["hasUpdateUserSettings"]
+    >((state) => state.hasUpdateUserSettings);
 
     const [user, setUser] = useState<UserType | null>(null);
 
@@ -34,6 +42,12 @@ export const useUser = () => {
 
         setUser(data?.getCurrentLoggedUser.user);
     }, [loading]);
+
+    useEffect(() => {
+        if (hasUpdateUserSettings) {
+            refetch();
+        }
+    }, [hasUpdateUserSettings]);
 
     return user;
 };

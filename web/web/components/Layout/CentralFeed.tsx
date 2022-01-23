@@ -53,8 +53,6 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
 
     useEffect(() => {
         setCount(count + 1);
-        console.log("times rendered: ", count);
-        console.log("data ", data);
         handleRefetchPosts();
     }, [hasSubmittedPost]);
 

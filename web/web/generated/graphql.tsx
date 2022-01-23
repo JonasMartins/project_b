@@ -399,12 +399,12 @@ export type UpdateUserSettingsMutationVariables = Exact<{
 }>;
 
 
-export type UpdateUserSettingsMutation = { __typename?: 'Mutation', updateUserSettings: { __typename?: 'UserResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', method: string, message: string, field: string }> | null | undefined, user?: { __typename?: 'User', id: string, name: string, email: string } | null | undefined } };
+export type UpdateUserSettingsMutation = { __typename?: 'Mutation', updateUserSettings: { __typename?: 'UserResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', method: string, message: string, field: string }> | null | undefined, user?: { __typename?: 'User', id: string, name: string, email: string, picture?: string | null | undefined } | null | undefined } };
 
 export type GetCurrentLoggedUserQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetCurrentLoggedUserQuery = { __typename?: 'Query', getCurrentLoggedUser: { __typename?: 'UserResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', method: string, field: string, message: string }> | null | undefined, user?: { __typename?: 'User', id: string, name: string, email: string, password: string, role: { __typename?: 'Role', name: string } } | null | undefined } };
+export type GetCurrentLoggedUserQuery = { __typename?: 'Query', getCurrentLoggedUser: { __typename?: 'UserResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', method: string, field: string, message: string }> | null | undefined, user?: { __typename?: 'User', id: string, name: string, email: string, password: string, picture?: string | null | undefined, role: { __typename?: 'Role', name: string } } | null | undefined } };
 
 export type GetPostsQueryVariables = Exact<{
   offset: Scalars['Float'];
@@ -722,6 +722,7 @@ export const UpdateUserSettingsDocument = gql`
       id
       name
       email
+      picture
     }
   }
 }
@@ -767,6 +768,7 @@ export const GetCurrentLoggedUserDocument = gql`
       name
       email
       password
+      picture
       role {
         name
       }
