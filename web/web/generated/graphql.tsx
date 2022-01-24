@@ -101,6 +101,12 @@ export type ErrorFieldHandler = {
   method: Scalars['String'];
 };
 
+export type GeneralResponse = {
+  __typename?: 'GeneralResponse';
+  done?: Maybe<Scalars['Boolean']>;
+  errors?: Maybe<Array<ErrorFieldHandler>>;
+};
+
 export type LoginResponse = {
   __typename?: 'LoginResponse';
   errors?: Maybe<Array<ErrorFieldHandler>>;
@@ -110,8 +116,10 @@ export type LoginResponse = {
 export type Mutation = {
   __typename?: 'Mutation';
   createComment: CommentResponse;
+  createConnection: GeneralResponse;
   createEmotion: EmotionResponse;
   createPost: PostResponse;
+  createRequest: GeneralResponse;
   createRole: RoleResponse;
   createUser: UserResponse;
   deleteEmotion: EmotionDeletion;
@@ -130,6 +138,12 @@ export type MutationCreateCommentArgs = {
 };
 
 
+export type MutationCreateConnectionArgs = {
+  userRequestedId: Scalars['String'];
+  userRequestorId: Scalars['String'];
+};
+
+
 export type MutationCreateEmotionArgs = {
   postId: Scalars['String'];
   type: EmotionType;
@@ -140,6 +154,11 @@ export type MutationCreateEmotionArgs = {
 export type MutationCreatePostArgs = {
   files?: InputMaybe<Array<Scalars['Upload']>>;
   options: PostValidator;
+};
+
+
+export type MutationCreateRequestArgs = {
+  options: RequestValidator;
 };
 
 
@@ -267,14 +286,24 @@ export type QueryGetRolesArgs = {
 };
 
 
-export type QueryGetUserByIdArgs = {
-  id: Scalars['String'];
-};
-
-
 export type QueryGetUsersArgs = {
   limit?: InputMaybe<Scalars['Float']>;
   offset?: InputMaybe<Scalars['Float']>;
+};
+
+export type Request = {
+  __typename?: 'Request';
+  accepted?: Maybe<Scalars['Boolean']>;
+  createdAt: Scalars['DateTime'];
+  id: Scalars['String'];
+  requested: User;
+  requestor: User;
+  updatedAt: Scalars['DateTime'];
+};
+
+export type RequestValidator = {
+  requestedId: Scalars['String'];
+  requestorId: Scalars['String'];
 };
 
 export type Role = {
@@ -309,14 +338,17 @@ export type RolesResponse = {
 export type User = {
   __typename?: 'User';
   comments?: Maybe<Array<Comment>>;
+  connections?: Maybe<Array<User>>;
   createdAt: Scalars['DateTime'];
   email: Scalars['String'];
   emotions?: Maybe<Array<Emotion>>;
   id: Scalars['String'];
+  invitations?: Maybe<Array<Request>>;
   name: Scalars['String'];
   password: Scalars['String'];
   picture?: Maybe<Scalars['String']>;
   posts?: Maybe<Array<Post>>;
+  requests?: Maybe<Array<Request>>;
   role: Role;
   updatedAt: Scalars['DateTime'];
 };
@@ -404,7 +436,7 @@ export type UpdateUserSettingsMutation = { __typename?: 'Mutation', updateUserSe
 export type GetCurrentLoggedUserQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetCurrentLoggedUserQuery = { __typename?: 'Query', getCurrentLoggedUser: { __typename?: 'UserResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', method: string, field: string, message: string }> | null | undefined, user?: { __typename?: 'User', id: string, name: string, email: string, password: string, picture?: string | null | undefined, role: { __typename?: 'Role', name: string } } | null | undefined } };
+export type GetCurrentLoggedUserQuery = { __typename?: 'Query', getCurrentLoggedUser: { __typename?: 'UserResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', method: string, field: string, message: string }> | null | undefined, user?: { __typename?: 'User', id: string, name: string, email: string, password: string, picture?: string | null | undefined, role: { __typename?: 'Role', id: string, name: string }, invitations?: Array<{ __typename?: 'Request', id: string, requestor: { __typename?: 'User', name: string, picture?: string | null | undefined } }> | null | undefined } | null | undefined } };
 
 export type GetPostsQueryVariables = Exact<{
   offset: Scalars['Float'];
@@ -778,7 +810,15 @@ export const GetCurrentLoggedUserDocument = gql`
       password
       picture
       role {
+        id
         name
+      }
+      invitations {
+        id
+        requestor {
+          name
+          picture
+        }
       }
     }
   }

@@ -1,6 +1,17 @@
 import React, { useEffect } from "react";
 import type { NextPage } from "next";
-import { Flex, Tooltip, IconButton, useDisclosure } from "@chakra-ui/react";
+import {
+    Flex,
+    Tooltip,
+    IconButton,
+    useDisclosure,
+    Button,
+    Circle,
+    Box,
+    Text,
+    Grid,
+    GridItem,
+} from "@chakra-ui/react";
 import { IoIosSettings } from "react-icons/io";
 import { IoHome } from "react-icons/io5";
 import {
@@ -12,13 +23,21 @@ import ModalSettings from "components/Modal/modalSettings";
 import { useSelector } from "react-redux";
 import { globalState } from "Redux/Global/GlobalReducer";
 import { useRouter } from "next/dist/client/router";
+import { useUser } from "utils/hooks/useUser";
+import { css } from "@emotion/react";
 
 interface LeftPanelProps {}
+
+const gridCell = `
+    display: flex;
+    justify-content: center;
+    align-items: center
+`;
 
 const LeftPanel: NextPage<LeftPanelProps> = ({}) => {
     const modalSettings = useDisclosure();
     const router = useRouter();
-
+    const user = useUser();
     const hasUpdateUserSettings = useSelector<
         globalState,
         globalState["hasUpdateUserSettings"]
@@ -32,100 +51,127 @@ const LeftPanel: NextPage<LeftPanelProps> = ({}) => {
 
     useEffect(() => {
         handleCloseModalSettings();
-    }, [hasUpdateUserSettings]);
+    }, [hasUpdateUserSettings, user]);
 
     return (
-        <Flex flexGrow={1} flexDir="column" m={5} alignItems="center">
-            <Tooltip
-                hasArrow
-                aria-label="home"
-                label="Home"
-                colorScheme="white"
-            >
-                <IconButton
-                    isRound={true}
-                    aria-label="Home"
-                    size="lg"
-                    icon={<IoHome />}
-                    onClick={() => {
-                        router.push("/");
-                    }}
-                    mt={3}
-                />
-            </Tooltip>
-            <Tooltip
-                hasArrow
-                aria-label="settings"
-                label="Seetings"
-                colorScheme="white"
-            >
-                <IconButton
-                    mt={3}
-                    isRound={true}
-                    aria-label="Settings"
-                    size="lg"
-                    icon={<IoIosSettings />}
-                    onClick={() => {
-                        modalSettings.onOpen();
-                    }}
-                />
-            </Tooltip>
+        <Box>
+            <Grid templateRows="repeat(5,1fr)" templateColumns="repeat(3,1fr)">
+                <GridItem />
+                <GridItem css={css(gridCell)}>
+                    <Tooltip
+                        hasArrow
+                        aria-label="home"
+                        label="Home"
+                        colorScheme="white"
+                    >
+                        <IconButton
+                            isRound={true}
+                            aria-label="Home"
+                            size="lg"
+                            icon={<IoHome />}
+                            onClick={() => {
+                                router.push("/");
+                            }}
+                            mt={3}
+                        />
+                    </Tooltip>
+                </GridItem>
+                <GridItem css={css(gridCell)} />
 
-            <Tooltip
-                hasArrow
-                aria-label="connections"
-                label="Connections"
-                colorScheme="white"
-            >
-                <IconButton
-                    mt={3}
-                    isRound={true}
-                    aria-label="Connections"
-                    size="lg"
-                    icon={<BsPeopleFill />}
-                    onClick={() => {
-                        router.push("/connections");
-                    }}
-                />
-            </Tooltip>
+                <GridItem />
+                <GridItem css={css(gridCell)}>
+                    <Tooltip
+                        hasArrow
+                        aria-label="settings"
+                        label="Seetings"
+                        colorScheme="white"
+                    >
+                        <IconButton
+                            isRound={true}
+                            aria-label="Settings"
+                            size="lg"
+                            icon={<IoIosSettings />}
+                            onClick={() => {
+                                modalSettings.onOpen();
+                            }}
+                        />
+                    </Tooltip>
+                </GridItem>
+                <GridItem css={css(gridCell)} />
 
-            <Tooltip
-                hasArrow
-                aria-label="news"
-                label="News"
-                colorScheme="white"
-            >
-                <IconButton
-                    mt={3}
-                    isRound={true}
-                    aria-label="news"
-                    size="lg"
-                    icon={<BsFillBellFill />}
-                    onClick={() => {}}
-                />
-            </Tooltip>
+                <GridItem />
+                <GridItem css={css(gridCell)}>
+                    <Tooltip
+                        hasArrow
+                        aria-label="connections"
+                        label="Connections"
+                        colorScheme="white"
+                    >
+                        <IconButton
+                            isRound={true}
+                            aria-label="Connections"
+                            size="lg"
+                            icon={<BsPeopleFill />}
+                            onClick={() => {
+                                router.push("/connections");
+                            }}
+                        />
+                    </Tooltip>
+                </GridItem>
 
-            <Tooltip
-                hasArrow
-                aria-label="chats"
-                label="Chats"
-                colorScheme="white"
-            >
-                <IconButton
-                    mt={3}
-                    isRound={true}
-                    aria-label="chats"
-                    size="lg"
-                    icon={<BsFillChatDotsFill />}
-                    onClick={() => {}}
-                />
-            </Tooltip>
+                <GridItem css={css(gridCell)}>
+                    {user?.invitations?.length ? (
+                        <Circle size="25px" bg="red.400" color="white">
+                            {user.invitations.length}
+                        </Circle>
+                    ) : (
+                        <></>
+                    )}
+                </GridItem>
 
+                <GridItem />
+                <GridItem css={css(gridCell)}>
+                    <Tooltip
+                        hasArrow
+                        aria-label="news"
+                        label="News"
+                        colorScheme="white"
+                    >
+                        <IconButton
+                            isRound={true}
+                            aria-label="news"
+                            size="lg"
+                            icon={<BsFillBellFill />}
+                            onClick={() => {}}
+                        />
+                    </Tooltip>
+                </GridItem>
+                <GridItem css={css(gridCell)} />
+
+                <GridItem />
+                <GridItem css={css(gridCell)}>
+                    <Tooltip
+                        hasArrow
+                        aria-label="chats"
+                        label="Chats"
+                        colorScheme="white"
+                    >
+                        <IconButton
+                            isRound={true}
+                            aria-label="chats"
+                            size="lg"
+                            icon={<BsFillChatDotsFill />}
+                            onClick={() => {}}
+                        />
+                    </Tooltip>
+                </GridItem>
+                <GridItem css={css(gridCell)} />
+            </Grid>
             <ModalSettings
                 isOpen={modalSettings.isOpen}
                 onClose={modalSettings.onClose}
             />
-        </Flex>
+        </Box>
     );
 };
 export default LeftPanel;

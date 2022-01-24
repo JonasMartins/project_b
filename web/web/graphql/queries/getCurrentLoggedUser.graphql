@@ -12,7 +12,15 @@ query GetCurrentLoggedUser {
             password
             picture
             role {
+                id
                 name
+            }
+            invitations {
+                id
+                requestor {
+                    name
+                    picture
+                }
             }
         }
     }

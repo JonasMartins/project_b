@@ -16,6 +16,9 @@ import { UserValidator } from "../database/validators/user.validator";
 import { Role } from "../database/entity/role.entity";
 import { FileUpload, GraphQLUpload } from "graphql-upload";
 import { HandleUpload } from "./../helpers/handleUpload.helper";
+import { Request } from "./../database/entity/request.entity";
+import { RequestValidator } from "./../database/validators/request.validator";
+import { IsNull } from "typeorm";
 
 @ObjectType()
 class LoginResponse {
@@ -96,24 +99,53 @@ export class UserResolver {
     }
 
     @Query(() => UserResponse)
-    async getUserById(
-        @Arg("id") id: string,
-        @Ctx() { em }: Context
-    ): Promise<UserResponse> {
-        const user = await em.findOne(User, { id });
+    async getUserById(@Ctx() { em, req }: Context): Promise<UserResponse> {
+        try {
+            if (!req.session.userId) {
+                return {
+                    errors: genericError(
+                        "id",
+                        "getUserById",
+                        __filename,
+                        "User id required"
+                    ),
+                };
+            }
+            // get the logged user and all his invitations still not accepeted
+            const qb = await em
+                .getRepository(User)
+                .createQueryBuilder("user")
+                .leftJoinAndSelect("user.role", "role")
+                .leftJoinAndSelect("user.invitations", "i")
+                .leftJoinAndSelect("i.requestor", "r")
+                .where("user.id = :id", { id: req.session.userId })
+                .andWhere("i.accepted IS NULL")
+                .select([
+                    "user.id",
+                    "user.name",
+                    "user.picture",
+                    "user.email",
+                    "user.password",
+                    "role.id",
+                    "role.name",
+                    "i.id",
+                    "r.name",
+                    "r.picture",
+                ]);
 
-        if (!user) {
+            const user = await qb.getOne();
+
+            return { user };
+        } catch (e) {
             return {
                 errors: genericError(
-                    "id",
+                    "-",
                     "getUserById",
                     __filename,
-                    `Could not found user with id: ${id}`
+                    `${e.message}`
                 ),
             };
         }
-
-        return { user };
     }
 
     @Mutation(() => UserResponse)
@@ -243,7 +275,28 @@ export class UserResolver {
             };
         }
 
-        const user = await em.findOne(User, { id: req.session.userId });
+        const qb = await em
+            .getRepository(User)
+            .createQueryBuilder("user")
+            .leftJoinAndSelect("user.role", "role")
+            .leftJoinAndSelect("user.invitations", "i")
+            .leftJoinAndSelect("i.requestor", "r")
+            .where("user.id = :id", { id: req.session.userId })
+            .andWhere("i.accepted IS NULL")
+            .select([
+                "user.id",
+                "user.name",
+                "user.picture",
+                "user.email",
+                "user.password",
+                "role.id",
+                "role.name",
+                "i.id",
+                "r.name",
+                "r.picture",
+            ]);
+
+        const user = await qb.getOne();
 
         if (!user) {
             return {
@@ -525,6 +578,32 @@ export class UserResolver {
                 errors: genericError(
                     "-",
                     "createConnection",
+                    __filename,
+                    `${e.message}`
+                ),
+            };
+        }
+    }
+
+    @Mutation(() => GeneralResponse)
+    async createRequest(
+        @Arg("options") options: RequestValidator,
+        @Ctx() { em }: Context
+    ): Promise<GeneralResponse> {
+        try {
+            const request = await em.create(Request, {
+                requestedId: options.requestedId,
+                requestorId: options.requestorId,
+            });
+
+            await em.save(request);
+
+            return { done: true };
+        } catch (e) {
+            return {
+                errors: genericError(
+                    "-",
+                    "createRequest",
                     __filename,
                     `${e.message}`
                 ),

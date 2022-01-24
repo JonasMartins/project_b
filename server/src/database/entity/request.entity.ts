@@ -17,8 +17,8 @@ export class Request extends Base {
     @JoinTable()
     public requested: User;
 
-    @Field(() => Boolean)
-    @Column()
+    @Field(() => Boolean, { nullable: true })
+    @Column({ nullable: true })
     public accepted: Boolean;
 
     @Column({ name: "requestor_id" })
