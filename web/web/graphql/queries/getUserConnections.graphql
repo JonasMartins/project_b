@@ -1,0 +1,27 @@
+query GetUserConnections {
+    getUserConnections {
+        errors {
+            method
+            field
+            message
+        }
+        user {
+            id
+            name
+            email
+            connections {
+                id
+                name
+                picture
+            }
+            invitations {
+                id
+                accepted
+                requestor {
+                    name
+                    picture
+                }
+            }
+        }
+    }
+}

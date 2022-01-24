@@ -18,7 +18,6 @@ import { FileUpload, GraphQLUpload } from "graphql-upload";
 import { HandleUpload } from "./../helpers/handleUpload.helper";
 import { Request } from "./../database/entity/request.entity";
 import { RequestValidator } from "./../database/validators/request.validator";
-import { IsNull } from "typeorm";
 
 @ObjectType()
 class LoginResponse {
@@ -279,10 +278,7 @@ export class UserResolver {
             .getRepository(User)
             .createQueryBuilder("user")
             .leftJoinAndSelect("user.role", "role")
-            .leftJoinAndSelect("user.invitations", "i")
-            .leftJoinAndSelect("i.requestor", "r")
             .where("user.id = :id", { id: req.session.userId })
-            .andWhere("i.accepted IS NULL")
             .select([
                 "user.id",
                 "user.name",
@@ -291,9 +287,6 @@ export class UserResolver {
                 "user.password",
                 "role.id",
                 "role.name",
-                "i.id",
-                "r.name",
-                "r.picture",
             ]);
 
         const user = await qb.getOne();
@@ -604,6 +597,95 @@ export class UserResolver {
                 errors: genericError(
                     "-",
                     "createRequest",
+                    __filename,
+                    `${e.message}`
+                ),
+            };
+        }
+    }
+
+    @Mutation(() => GeneralResponse)
+    async updateRequest(
+        @Arg("requestId", () => String) requestId: string,
+        @Arg("accepted", () => Boolean) accepted: boolean,
+        @Ctx() { em }: Context
+    ): Promise<GeneralResponse> {
+        try {
+            const request = await em.findOne(Request, { id: requestId });
+
+            if (!request) {
+                return {
+                    errors: genericError(
+                        "-",
+                        "updateRequest",
+                        __filename,
+                        `Could not foun the request with id: ${requestId}`
+                    ),
+                };
+            }
+
+            request.accepted = accepted;
+
+            await em.save(request);
+
+            return { done: true };
+        } catch (e) {
+            return {
+                errors: genericError(
+                    "-",
+                    "updateRequest",
+                    __filename,
+                    `${e.message}`
+                ),
+            };
+        }
+    }
+
+    @Query(() => UserResponse)
+    async getUserConnections(
+        @Ctx() { req, em }: Context
+    ): Promise<UserResponse> {
+        try {
+            const qb = await em
+                .getRepository(User)
+                .createQueryBuilder("user")
+                .leftJoinAndSelect("user.connections", "u1")
+                .leftJoinAndSelect("user.invitations", "i")
+                .leftJoinAndSelect("i.requestor", "r")
+                .where("user.id = :id", { id: req.session.userId })
+                .andWhere("i.accepted IS NULL")
+                .select([
+                    "user.id",
+                    "user.name",
+                    "user.picture",
+                    "user.email",
+                    "u1.id",
+                    "u1.name",
+                    "u1.picture",
+                    "i.id",
+                    "i.accepted",
+                    "r.name",
+                    "r.picture",
+                ]);
+            const user = await qb.getOne();
+
+            if (!user) {
+                return {
+                    errors: genericError(
+                        "id",
+                        "getCurrentLoggedUser",
+                        __filename,
+                        `Could not find user with id: ${req.session.userId}`
+                    ),
+                };
+            }
+
+            return { user };
+        } catch (e) {
+            return {
+                errors: genericError(
+                    "-",
+                    "updateRequest",
                     __filename,
                     `${e.message}`
                 ),

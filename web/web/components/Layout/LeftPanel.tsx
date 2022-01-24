@@ -1,14 +1,11 @@
 import React, { useEffect } from "react";
 import type { NextPage } from "next";
 import {
-    Flex,
     Tooltip,
     IconButton,
     useDisclosure,
-    Button,
     Circle,
     Box,
-    Text,
     Grid,
     GridItem,
 } from "@chakra-ui/react";

@@ -16,18 +16,6 @@ export type UserType =
           password: string;
           picture?: string | null | undefined;
           role: { __typename?: "Role"; name: string };
-          invitations?:
-              | Array<{
-                    __typename?: "Request";
-                    id: string;
-                    requestor: {
-                        __typename?: "User";
-                        name: string;
-                        picture?: string | null | undefined;
-                    };
-                }>
-              | null
-              | undefined;
       }
     | null
     | undefined;

@@ -129,6 +129,7 @@ export type Mutation = {
   login: LoginResponse;
   logout: Scalars['Boolean'];
   updateEmotion: EmotionResponse;
+  updateRequest: GeneralResponse;
   updateUserSettings: UserResponse;
 };
 
@@ -205,6 +206,12 @@ export type MutationUpdateEmotionArgs = {
 };
 
 
+export type MutationUpdateRequestArgs = {
+  accepted: Scalars['Boolean'];
+  requestId: Scalars['String'];
+};
+
+
 export type MutationUpdateUserSettingsArgs = {
   file?: InputMaybe<Scalars['Upload']>;
   id: Scalars['String'];
@@ -250,6 +257,7 @@ export type Query = {
   getRoleById: RoleResponse;
   getRoles: RolesResponse;
   getUserById: UserResponse;
+  getUserConnections: UserResponse;
   getUsers: UsersResponse;
   loginTest: Scalars['Boolean'];
 };
@@ -436,7 +444,7 @@ export type UpdateUserSettingsMutation = { __typename?: 'Mutation', updateUserSe
 export type GetCurrentLoggedUserQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetCurrentLoggedUserQuery = { __typename?: 'Query', getCurrentLoggedUser: { __typename?: 'UserResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', method: string, field: string, message: string }> | null | undefined, user?: { __typename?: 'User', id: string, name: string, email: string, password: string, picture?: string | null | undefined, role: { __typename?: 'Role', id: string, name: string }, invitations?: Array<{ __typename?: 'Request', id: string, requestor: { __typename?: 'User', name: string, picture?: string | null | undefined } }> | null | undefined } | null | undefined } };
+export type GetCurrentLoggedUserQuery = { __typename?: 'Query', getCurrentLoggedUser: { __typename?: 'UserResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', method: string, field: string, message: string }> | null | undefined, user?: { __typename?: 'User', id: string, name: string, email: string, password: string, picture?: string | null | undefined, role: { __typename?: 'Role', id: string, name: string } } | null | undefined } };
 
 export type GetPostsQueryVariables = Exact<{
   offset: Scalars['Float'];
@@ -445,6 +453,11 @@ export type GetPostsQueryVariables = Exact<{
 
 
 export type GetPostsQuery = { __typename?: 'Query', getPosts: { __typename?: 'PostsResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', message: string, method: string, field: string }> | null | undefined, posts?: Array<{ __typename?: 'Post', id: string, body: string, files?: Array<string> | null | undefined, creator: { __typename?: 'User', id: string, name: string }, emotions?: Array<{ __typename?: 'Emotion', id: string, type: EmotionType, creator: { __typename?: 'User', id: string, name: string } }> | null | undefined }> | null | undefined } };
+
+export type GetUserConnectionsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetUserConnectionsQuery = { __typename?: 'Query', getUserConnections: { __typename?: 'UserResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', method: string, field: string, message: string }> | null | undefined, user?: { __typename?: 'User', id: string, name: string, email: string, connections?: Array<{ __typename?: 'User', id: string, name: string, picture?: string | null | undefined }> | null | undefined, invitations?: Array<{ __typename?: 'Request', id: string, accepted?: boolean | null | undefined, requestor: { __typename?: 'User', name: string, picture?: string | null | undefined } }> | null | undefined } | null | undefined } };
 
 export type GetUsersQueryVariables = Exact<{
   offset: Scalars['Float'];
@@ -813,13 +826,6 @@ export const GetCurrentLoggedUserDocument = gql`
         id
         name
       }
-      invitations {
-        id
-        requestor {
-          name
-          picture
-        }
-      }
     }
   }
 }
@@ -908,6 +914,62 @@ export function useGetPostsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<G
 export type GetPostsQueryHookResult = ReturnType<typeof useGetPostsQuery>;
 export type GetPostsLazyQueryHookResult = ReturnType<typeof useGetPostsLazyQuery>;
 export type GetPostsQueryResult = Apollo.QueryResult<GetPostsQuery, GetPostsQueryVariables>;
+export const GetUserConnectionsDocument = gql`
+    query GetUserConnections {
+  getUserConnections {
+    errors {
+      method
+      field
+      message
+    }
+    user {
+      id
+      name
+      email
+      connections {
+        id
+        name
+        picture
+      }
+      invitations {
+        id
+        accepted
+        requestor {
+          name
+          picture
+        }
+      }
+    }
+  }
+}
+    `;
+
+/**
+ * __useGetUserConnectionsQuery__
+ *
+ * To run a query within a React component, call `useGetUserConnectionsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetUserConnectionsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetUserConnectionsQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useGetUserConnectionsQuery(baseOptions?: Apollo.QueryHookOptions<GetUserConnectionsQuery, GetUserConnectionsQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetUserConnectionsQuery, GetUserConnectionsQueryVariables>(GetUserConnectionsDocument, options);
+      }
+export function useGetUserConnectionsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetUserConnectionsQuery, GetUserConnectionsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetUserConnectionsQuery, GetUserConnectionsQueryVariables>(GetUserConnectionsDocument, options);
+        }
+export type GetUserConnectionsQueryHookResult = ReturnType<typeof useGetUserConnectionsQuery>;
+export type GetUserConnectionsLazyQueryHookResult = ReturnType<typeof useGetUserConnectionsLazyQuery>;
+export type GetUserConnectionsQueryResult = Apollo.QueryResult<GetUserConnectionsQuery, GetUserConnectionsQueryVariables>;
 export const GetUsersDocument = gql`
     query GetUsers($offset: Float!, $limit: Float!) {
   getUsers(offset: $offset, limit: $limit) {

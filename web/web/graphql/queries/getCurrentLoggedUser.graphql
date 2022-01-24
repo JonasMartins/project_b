@@ -15,13 +15,6 @@ query GetCurrentLoggedUser {
                 id
                 name
             }
-            invitations {
-                id
-                requestor {
-                    name
-                    picture
-                }
-            }
         }
     }
 }

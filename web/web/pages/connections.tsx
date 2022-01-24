@@ -6,10 +6,13 @@ import NavBar from "components/Layout/NavBar";
 import RightPanel from "components/Layout/RightPanel";
 import type { NextPage } from "next";
 import React from "react";
+import Invitations from "components/Invitations";
+import { useUser } from "utils/hooks/useUser";
 
 const Connections: NextPage = () => {
     const { colorMode } = useColorMode();
     const bgColor = { light: "gray.200", dark: "gray.700" };
+    const user = useUser();
 
     return (
         <Container>
@@ -35,7 +38,9 @@ const Connections: NextPage = () => {
                             colSpan={3}
                             bg={bgColor[colorMode]}
                             boxShadow="lg"
-                        ></GridItem>
+                        >
+                            <Invitations invitations={user?.invitations} />
+                        </GridItem>
                         <GridItem bg={bgColor[colorMode]} boxShadow="lg">
                             <RightPanel />
                         </GridItem>
