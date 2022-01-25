@@ -432,6 +432,14 @@ export type LogoutMutationVariables = Exact<{ [key: string]: never; }>;
 
 export type LogoutMutation = { __typename?: 'Mutation', logout: boolean };
 
+export type UpdateRequestMutationVariables = Exact<{
+  requestId: Scalars['String'];
+  accepted: Scalars['Boolean'];
+}>;
+
+
+export type UpdateRequestMutation = { __typename?: 'Mutation', updateRequest: { __typename?: 'GeneralResponse', done?: boolean | null | undefined, errors?: Array<{ __typename?: 'ErrorFieldHandler', field: string, message: string, method: string }> | null | undefined } };
+
 export type UpdateUserSettingsMutationVariables = Exact<{
   id: Scalars['String'];
   options: UserValidator;
@@ -763,6 +771,45 @@ export function useLogoutMutation(baseOptions?: Apollo.MutationHookOptions<Logou
 export type LogoutMutationHookResult = ReturnType<typeof useLogoutMutation>;
 export type LogoutMutationResult = Apollo.MutationResult<LogoutMutation>;
 export type LogoutMutationOptions = Apollo.BaseMutationOptions<LogoutMutation, LogoutMutationVariables>;
+export const UpdateRequestDocument = gql`
+    mutation UpdateRequest($requestId: String!, $accepted: Boolean!) {
+  updateRequest(requestId: $requestId, accepted: $accepted) {
+    errors {
+      field
+      message
+      method
+    }
+    done
+  }
+}
+    `;
+export type UpdateRequestMutationFn = Apollo.MutationFunction<UpdateRequestMutation, UpdateRequestMutationVariables>;
+
+/**
+ * __useUpdateRequestMutation__
+ *
+ * To run a mutation, you first call `useUpdateRequestMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateRequestMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateRequestMutation, { data, loading, error }] = useUpdateRequestMutation({
+ *   variables: {
+ *      requestId: // value for 'requestId'
+ *      accepted: // value for 'accepted'
+ *   },
+ * });
+ */
+export function useUpdateRequestMutation(baseOptions?: Apollo.MutationHookOptions<UpdateRequestMutation, UpdateRequestMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpdateRequestMutation, UpdateRequestMutationVariables>(UpdateRequestDocument, options);
+      }
+export type UpdateRequestMutationHookResult = ReturnType<typeof useUpdateRequestMutation>;
+export type UpdateRequestMutationResult = Apollo.MutationResult<UpdateRequestMutation>;
+export type UpdateRequestMutationOptions = Apollo.BaseMutationOptions<UpdateRequestMutation, UpdateRequestMutationVariables>;
 export const UpdateUserSettingsDocument = gql`
     mutation UpdateUserSettings($id: String!, $options: UserValidator!, $file: Upload) {
   updateUserSettings(id: $id, options: $options, file: $file) {

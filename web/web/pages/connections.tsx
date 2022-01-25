@@ -5,14 +5,20 @@ import LeftPanel from "components/Layout/LeftPanel";
 import NavBar from "components/Layout/NavBar";
 import RightPanel from "components/Layout/RightPanel";
 import type { NextPage } from "next";
-import React from "react";
+import React, { useEffect } from "react";
 import Invitations from "components/Invitations";
-import { useUser } from "utils/hooks/useUser";
+import { useSelector } from "react-redux";
+import { globalState } from "Redux/Global/GlobalReducer";
 
 const Connections: NextPage = () => {
     const { colorMode } = useColorMode();
     const bgColor = { light: "gray.200", dark: "gray.700" };
-    const user = useUser();
+
+    const user = useSelector<globalState, globalState["userConnections"]>(
+        (state) => state.userConnections
+    );
+
+    useEffect(() => {}, [user]);
 
     return (
         <Container>
@@ -39,7 +45,7 @@ const Connections: NextPage = () => {
                             bg={bgColor[colorMode]}
                             boxShadow="lg"
                         >
-                            <Invitations invitations={user?.invitations} />
+                            <Invitations user={user} />
                         </GridItem>
                         <GridItem bg={bgColor[colorMode]} boxShadow="lg">
                             <RightPanel />

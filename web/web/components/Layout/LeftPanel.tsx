@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import type { NextPage } from "next";
 import {
     Tooltip,
@@ -20,8 +20,13 @@ import ModalSettings from "components/Modal/modalSettings";
 import { useSelector } from "react-redux";
 import { globalState } from "Redux/Global/GlobalReducer";
 import { useRouter } from "next/dist/client/router";
-import { useUser } from "utils/hooks/useUser";
+import { setGetUserConnections } from "Redux/actions";
+import { useDispatch } from "react-redux";
 import { css } from "@emotion/react";
+import {
+    useGetUserConnectionsQuery,
+    GetUserConnectionsQuery,
+} from "generated/graphql";
 
 interface LeftPanelProps {}
 
@@ -34,11 +39,23 @@ const gridCell = `
 const LeftPanel: NextPage<LeftPanelProps> = ({}) => {
     const modalSettings = useDisclosure();
     const router = useRouter();
-    const user = useUser();
+    const [userInvitations, setUserInvitatios] = useState(0);
+    const dispatch = useDispatch();
+
+    const onSetUserConnections = (user: GetUserConnectionsQuery | null) => {
+        if (user) {
+            dispatch(setGetUserConnections(user));
+        }
+    };
+
     const hasUpdateUserSettings = useSelector<
         globalState,
         globalState["hasUpdateUserSettings"]
     >((state) => state.hasUpdateUserSettings);
+
+    const userConnections = useGetUserConnectionsQuery({
+        fetchPolicy: "cache-and-network",
+    });
 
     const handleCloseModalSettings = () => {
         if (hasUpdateUserSettings) {
@@ -48,7 +65,20 @@ const LeftPanel: NextPage<LeftPanelProps> = ({}) => {
 
     useEffect(() => {
         handleCloseModalSettings();
-    }, [hasUpdateUserSettings, user]);
+        if (userConnections.data) {
+            onSetUserConnections(userConnections.data);
+            let _invitations = 0;
+
+            userConnections.data?.getUserConnections?.user?.invitations?.forEach(
+                (item) => {
+                    if (item.accepted === null || item.accepted === undefined) {
+                        _invitations++;
+                    }
+                }
+            );
+            setUserInvitatios(_invitations);
+        }
+    }, [hasUpdateUserSettings, userConnections.loading]);
 
     return (
         <Box>
@@ -117,9 +147,9 @@ const LeftPanel: NextPage<LeftPanelProps> = ({}) => {
                 </GridItem>
 
                 <GridItem css={css(gridCell)}>
-                    {user?.invitations?.length ? (
+                    {userInvitations ? (
                         <Circle size="25px" bg="red.400" color="white">
-                            {user.invitations.length}
+                            {userInvitations}
                         </Circle>
                     ) : (
                         <></>

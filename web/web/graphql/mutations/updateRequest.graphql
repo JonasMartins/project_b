@@ -1,0 +1,10 @@
+mutation UpdateRequest($requestId: String!, $accepted: Boolean!) {
+    updateRequest(requestId: $requestId, accepted: $accepted) {
+        errors {
+            field
+            message
+            method
+        }
+        done
+    }
+}

@@ -653,7 +653,6 @@ export class UserResolver {
                 .leftJoinAndSelect("user.invitations", "i")
                 .leftJoinAndSelect("i.requestor", "r")
                 .where("user.id = :id", { id: req.session.userId })
-                .andWhere("i.accepted IS NULL")
                 .select([
                     "user.id",
                     "user.name",
@@ -667,6 +666,7 @@ export class UserResolver {
                     "r.name",
                     "r.picture",
                 ]);
+
             const user = await qb.getOne();
 
             if (!user) {

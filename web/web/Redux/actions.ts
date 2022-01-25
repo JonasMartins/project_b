@@ -1,3 +1,5 @@
+import { GetUserConnectionsQuery } from "generated/graphql";
+
 type AddNote = { type: "ADD_NOTE"; payload: string };
 type IsSubmittingPostAction = {
     type: "IS_SUBMITTING_POST";
@@ -14,11 +16,24 @@ type HasUpdateUserSettingsAction = {
     payload: boolean;
 };
 
+type GetUserConnections = {
+    type: "SET_USER_CONNECTIONS";
+    payload: GetUserConnectionsQuery;
+};
+
 export type Action =
     | AddNote
     | IsSubmittingPostAction
     | HasSubmittedPostAction
-    | HasUpdateUserSettingsAction;
+    | HasUpdateUserSettingsAction
+    | GetUserConnections;
+
+export const setGetUserConnections = (
+    userConnections: GetUserConnectionsQuery
+): GetUserConnections => ({
+    type: "SET_USER_CONNECTIONS",
+    payload: userConnections,
+});
 
 export const setHasUpdateUserSettings = (
     hasUpdated: boolean
