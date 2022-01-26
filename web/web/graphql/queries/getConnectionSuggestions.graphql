@@ -1,0 +1,14 @@
+query GetConnectionSuggestions {
+    getUserSuggestions {
+        errors {
+            field
+            method
+            message
+        }
+        users {
+            id
+            name
+            picture
+        }
+    }
+}

@@ -258,6 +258,7 @@ export type Query = {
   getRoles: RolesResponse;
   getUserById: UserResponse;
   getUserConnections: UserResponse;
+  getUserSuggestions: UsersResponse;
   getUsers: UsersResponse;
   loginTest: Scalars['Boolean'];
 };
@@ -291,6 +292,11 @@ export type QueryGetRoleByIdArgs = {
 
 export type QueryGetRolesArgs = {
   limit?: InputMaybe<Scalars['Float']>;
+};
+
+
+export type QueryGetUserConnectionsArgs = {
+  id: Scalars['String'];
 };
 
 
@@ -381,6 +387,14 @@ export type UsersResponse = {
   users?: Maybe<Array<User>>;
 };
 
+export type CreateConnectionMutationVariables = Exact<{
+  userRequestedId: Scalars['String'];
+  userRequestorId: Scalars['String'];
+}>;
+
+
+export type CreateConnectionMutation = { __typename?: 'Mutation', createConnection: { __typename?: 'GeneralResponse', done?: boolean | null | undefined, errors?: Array<{ __typename?: 'ErrorFieldHandler', message: string, method: string, field: string }> | null | undefined } };
+
 export type CreateEmotionMutationVariables = Exact<{
   userId: Scalars['String'];
   postId: Scalars['String'];
@@ -397,6 +411,13 @@ export type CreatePostMutationVariables = Exact<{
 
 
 export type CreatePostMutation = { __typename?: 'Mutation', createPost: { __typename?: 'PostResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', method: string, message: string, field: string }> | null | undefined, post?: { __typename?: 'Post', id: string, body: string, files?: Array<string> | null | undefined, creator: { __typename?: 'User', id: string, name: string } } | null | undefined } };
+
+export type CreateRequestMutationVariables = Exact<{
+  options: RequestValidator;
+}>;
+
+
+export type CreateRequestMutation = { __typename?: 'Mutation', createRequest: { __typename?: 'GeneralResponse', done?: boolean | null | undefined, errors?: Array<{ __typename?: 'ErrorFieldHandler', message: string, method: string, field: string }> | null | undefined } };
 
 export type CreateRoleMutationVariables = Exact<{
   options: RoleValidator;
@@ -449,6 +470,11 @@ export type UpdateUserSettingsMutationVariables = Exact<{
 
 export type UpdateUserSettingsMutation = { __typename?: 'Mutation', updateUserSettings: { __typename?: 'UserResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', method: string, message: string, field: string }> | null | undefined, user?: { __typename?: 'User', id: string, name: string, email: string, picture?: string | null | undefined } | null | undefined } };
 
+export type GetConnectionSuggestionsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetConnectionSuggestionsQuery = { __typename?: 'Query', getUserSuggestions: { __typename?: 'UsersResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', field: string, method: string, message: string }> | null | undefined, users?: Array<{ __typename?: 'User', id: string, name: string, picture?: string | null | undefined }> | null | undefined } };
+
 export type GetCurrentLoggedUserQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -462,10 +488,12 @@ export type GetPostsQueryVariables = Exact<{
 
 export type GetPostsQuery = { __typename?: 'Query', getPosts: { __typename?: 'PostsResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', message: string, method: string, field: string }> | null | undefined, posts?: Array<{ __typename?: 'Post', id: string, body: string, files?: Array<string> | null | undefined, creator: { __typename?: 'User', id: string, name: string }, emotions?: Array<{ __typename?: 'Emotion', id: string, type: EmotionType, creator: { __typename?: 'User', id: string, name: string } }> | null | undefined }> | null | undefined } };
 
-export type GetUserConnectionsQueryVariables = Exact<{ [key: string]: never; }>;
+export type GetUserConnectionsQueryVariables = Exact<{
+  id: Scalars['String'];
+}>;
 
 
-export type GetUserConnectionsQuery = { __typename?: 'Query', getUserConnections: { __typename?: 'UserResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', method: string, field: string, message: string }> | null | undefined, user?: { __typename?: 'User', id: string, name: string, email: string, connections?: Array<{ __typename?: 'User', id: string, name: string, picture?: string | null | undefined }> | null | undefined, invitations?: Array<{ __typename?: 'Request', id: string, accepted?: boolean | null | undefined, requestor: { __typename?: 'User', name: string, picture?: string | null | undefined } }> | null | undefined } | null | undefined } };
+export type GetUserConnectionsQuery = { __typename?: 'Query', getUserConnections: { __typename?: 'UserResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', method: string, field: string, message: string }> | null | undefined, user?: { __typename?: 'User', id: string, name: string, email: string, connections?: Array<{ __typename?: 'User', id: string, name: string, picture?: string | null | undefined }> | null | undefined, invitations?: Array<{ __typename?: 'Request', id: string, accepted?: boolean | null | undefined, requestor: { __typename?: 'User', id: string, name: string, picture?: string | null | undefined } }> | null | undefined } | null | undefined } };
 
 export type GetUsersQueryVariables = Exact<{
   offset: Scalars['Float'];
@@ -481,6 +509,48 @@ export type LoginTestQueryVariables = Exact<{ [key: string]: never; }>;
 export type LoginTestQuery = { __typename?: 'Query', loginTest: boolean };
 
 
+export const CreateConnectionDocument = gql`
+    mutation CreateConnection($userRequestedId: String!, $userRequestorId: String!) {
+  createConnection(
+    userRequestedId: $userRequestedId
+    userRequestorId: $userRequestorId
+  ) {
+    errors {
+      message
+      method
+      field
+    }
+    done
+  }
+}
+    `;
+export type CreateConnectionMutationFn = Apollo.MutationFunction<CreateConnectionMutation, CreateConnectionMutationVariables>;
+
+/**
+ * __useCreateConnectionMutation__
+ *
+ * To run a mutation, you first call `useCreateConnectionMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateConnectionMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createConnectionMutation, { data, loading, error }] = useCreateConnectionMutation({
+ *   variables: {
+ *      userRequestedId: // value for 'userRequestedId'
+ *      userRequestorId: // value for 'userRequestorId'
+ *   },
+ * });
+ */
+export function useCreateConnectionMutation(baseOptions?: Apollo.MutationHookOptions<CreateConnectionMutation, CreateConnectionMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<CreateConnectionMutation, CreateConnectionMutationVariables>(CreateConnectionDocument, options);
+      }
+export type CreateConnectionMutationHookResult = ReturnType<typeof useCreateConnectionMutation>;
+export type CreateConnectionMutationResult = Apollo.MutationResult<CreateConnectionMutation>;
+export type CreateConnectionMutationOptions = Apollo.BaseMutationOptions<CreateConnectionMutation, CreateConnectionMutationVariables>;
 export const CreateEmotionDocument = gql`
     mutation CreateEmotion($userId: String!, $postId: String!, $type: EmotionType!) {
   createEmotion(userId: $userId, postId: $postId, type: $type) {
@@ -579,6 +649,44 @@ export function useCreatePostMutation(baseOptions?: Apollo.MutationHookOptions<C
 export type CreatePostMutationHookResult = ReturnType<typeof useCreatePostMutation>;
 export type CreatePostMutationResult = Apollo.MutationResult<CreatePostMutation>;
 export type CreatePostMutationOptions = Apollo.BaseMutationOptions<CreatePostMutation, CreatePostMutationVariables>;
+export const CreateRequestDocument = gql`
+    mutation CreateRequest($options: RequestValidator!) {
+  createRequest(options: $options) {
+    errors {
+      message
+      method
+      field
+    }
+    done
+  }
+}
+    `;
+export type CreateRequestMutationFn = Apollo.MutationFunction<CreateRequestMutation, CreateRequestMutationVariables>;
+
+/**
+ * __useCreateRequestMutation__
+ *
+ * To run a mutation, you first call `useCreateRequestMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateRequestMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createRequestMutation, { data, loading, error }] = useCreateRequestMutation({
+ *   variables: {
+ *      options: // value for 'options'
+ *   },
+ * });
+ */
+export function useCreateRequestMutation(baseOptions?: Apollo.MutationHookOptions<CreateRequestMutation, CreateRequestMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<CreateRequestMutation, CreateRequestMutationVariables>(CreateRequestDocument, options);
+      }
+export type CreateRequestMutationHookResult = ReturnType<typeof useCreateRequestMutation>;
+export type CreateRequestMutationResult = Apollo.MutationResult<CreateRequestMutation>;
+export type CreateRequestMutationOptions = Apollo.BaseMutationOptions<CreateRequestMutation, CreateRequestMutationVariables>;
 export const CreateRoleDocument = gql`
     mutation CreateRole($options: RoleValidator!) {
   createRole(options: $options) {
@@ -855,6 +963,49 @@ export function useUpdateUserSettingsMutation(baseOptions?: Apollo.MutationHookO
 export type UpdateUserSettingsMutationHookResult = ReturnType<typeof useUpdateUserSettingsMutation>;
 export type UpdateUserSettingsMutationResult = Apollo.MutationResult<UpdateUserSettingsMutation>;
 export type UpdateUserSettingsMutationOptions = Apollo.BaseMutationOptions<UpdateUserSettingsMutation, UpdateUserSettingsMutationVariables>;
+export const GetConnectionSuggestionsDocument = gql`
+    query GetConnectionSuggestions {
+  getUserSuggestions {
+    errors {
+      field
+      method
+      message
+    }
+    users {
+      id
+      name
+      picture
+    }
+  }
+}
+    `;
+
+/**
+ * __useGetConnectionSuggestionsQuery__
+ *
+ * To run a query within a React component, call `useGetConnectionSuggestionsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetConnectionSuggestionsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetConnectionSuggestionsQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useGetConnectionSuggestionsQuery(baseOptions?: Apollo.QueryHookOptions<GetConnectionSuggestionsQuery, GetConnectionSuggestionsQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetConnectionSuggestionsQuery, GetConnectionSuggestionsQueryVariables>(GetConnectionSuggestionsDocument, options);
+      }
+export function useGetConnectionSuggestionsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetConnectionSuggestionsQuery, GetConnectionSuggestionsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetConnectionSuggestionsQuery, GetConnectionSuggestionsQueryVariables>(GetConnectionSuggestionsDocument, options);
+        }
+export type GetConnectionSuggestionsQueryHookResult = ReturnType<typeof useGetConnectionSuggestionsQuery>;
+export type GetConnectionSuggestionsLazyQueryHookResult = ReturnType<typeof useGetConnectionSuggestionsLazyQuery>;
+export type GetConnectionSuggestionsQueryResult = Apollo.QueryResult<GetConnectionSuggestionsQuery, GetConnectionSuggestionsQueryVariables>;
 export const GetCurrentLoggedUserDocument = gql`
     query GetCurrentLoggedUser {
   getCurrentLoggedUser {
@@ -962,8 +1113,8 @@ export type GetPostsQueryHookResult = ReturnType<typeof useGetPostsQuery>;
 export type GetPostsLazyQueryHookResult = ReturnType<typeof useGetPostsLazyQuery>;
 export type GetPostsQueryResult = Apollo.QueryResult<GetPostsQuery, GetPostsQueryVariables>;
 export const GetUserConnectionsDocument = gql`
-    query GetUserConnections {
-  getUserConnections {
+    query GetUserConnections($id: String!) {
+  getUserConnections(id: $id) {
     errors {
       method
       field
@@ -982,6 +1133,7 @@ export const GetUserConnectionsDocument = gql`
         id
         accepted
         requestor {
+          id
           name
           picture
         }
@@ -1003,10 +1155,11 @@ export const GetUserConnectionsDocument = gql`
  * @example
  * const { data, loading, error } = useGetUserConnectionsQuery({
  *   variables: {
+ *      id: // value for 'id'
  *   },
  * });
  */
-export function useGetUserConnectionsQuery(baseOptions?: Apollo.QueryHookOptions<GetUserConnectionsQuery, GetUserConnectionsQueryVariables>) {
+export function useGetUserConnectionsQuery(baseOptions: Apollo.QueryHookOptions<GetUserConnectionsQuery, GetUserConnectionsQueryVariables>) {
         const options = {...defaultOptions, ...baseOptions}
         return Apollo.useQuery<GetUserConnectionsQuery, GetUserConnectionsQueryVariables>(GetUserConnectionsDocument, options);
       }

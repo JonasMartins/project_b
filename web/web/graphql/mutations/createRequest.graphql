@@ -1,0 +1,10 @@
+mutation CreateRequest($options: RequestValidator!) {
+    createRequest(options: $options) {
+        errors {
+            message
+            method
+            field
+        }
+        done
+    }
+}

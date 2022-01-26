@@ -1,0 +1,16 @@
+mutation CreateConnection(
+    $userRequestedId: String!
+    $userRequestorId: String!
+) {
+    createConnection(
+        userRequestedId: $userRequestedId
+        userRequestorId: $userRequestorId
+    ) {
+        errors {
+            message
+            method
+            field
+        }
+        done
+    }
+}

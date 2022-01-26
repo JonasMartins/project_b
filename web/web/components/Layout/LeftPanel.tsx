@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState, memo } from "react";
 import type { NextPage } from "next";
 import {
     Tooltip,
@@ -24,9 +24,10 @@ import { setGetUserConnections } from "Redux/actions";
 import { useDispatch } from "react-redux";
 import { css } from "@emotion/react";
 import {
-    useGetUserConnectionsQuery,
+    useGetUserConnectionsLazyQuery,
     GetUserConnectionsQuery,
 } from "generated/graphql";
+import { useUser } from "utils/hooks/useUser";
 
 interface LeftPanelProps {}
 
@@ -38,11 +39,13 @@ const gridCell = `
 
 const LeftPanel: NextPage<LeftPanelProps> = ({}) => {
     const modalSettings = useDisclosure();
+    const user = useUser();
     const router = useRouter();
     const [userInvitations, setUserInvitatios] = useState(0);
     const dispatch = useDispatch();
 
     const onSetUserConnections = (user: GetUserConnectionsQuery | null) => {
+        console.log("user ? ", user);
         if (user) {
             dispatch(setGetUserConnections(user));
         }
@@ -53,9 +56,8 @@ const LeftPanel: NextPage<LeftPanelProps> = ({}) => {
         globalState["hasUpdateUserSettings"]
     >((state) => state.hasUpdateUserSettings);
 
-    const userConnections = useGetUserConnectionsQuery({
-        fetchPolicy: "cache-and-network",
-    });
+    const [getUserConnections, resultGetConnectionsLazy] =
+        useGetUserConnectionsLazyQuery({});
 
     const handleCloseModalSettings = () => {
         if (hasUpdateUserSettings) {
@@ -63,22 +65,39 @@ const LeftPanel: NextPage<LeftPanelProps> = ({}) => {
         }
     };
 
+    const handleGetUserConnections = useCallback(async () => {
+        if (user?.id) {
+            const conn = await getUserConnections({
+                variables: {
+                    id: user.id,
+                },
+            });
+
+            if (conn.data?.getUserConnections?.user?.invitations?.length) {
+                onSetUserConnections(conn.data);
+                let _invitations = 0;
+
+                conn.data?.getUserConnections?.user?.invitations?.forEach(
+                    (item) => {
+                        if (
+                            item.accepted === null ||
+                            item.accepted === undefined
+                        ) {
+                            _invitations++;
+                        }
+                    }
+                );
+                setUserInvitatios(_invitations);
+            }
+        }
+    }, [user?.id]);
+
     useEffect(() => {
         handleCloseModalSettings();
-        if (userConnections.data) {
-            onSetUserConnections(userConnections.data);
-            let _invitations = 0;
+        handleGetUserConnections();
+    }, [hasUpdateUserSettings, resultGetConnectionsLazy.loading, user]);
 
-            userConnections.data?.getUserConnections?.user?.invitations?.forEach(
-                (item) => {
-                    if (item.accepted === null || item.accepted === undefined) {
-                        _invitations++;
-                    }
-                }
-            );
-            setUserInvitatios(_invitations);
-        }
-    }, [hasUpdateUserSettings, userConnections.loading]);
+    useEffect(() => {}, [userInvitations]);
 
     return (
         <Box>
@@ -201,4 +220,4 @@ const LeftPanel: NextPage<LeftPanelProps> = ({}) => {
         </Box>
     );
 };
-export default LeftPanel;
+export default memo(LeftPanel);

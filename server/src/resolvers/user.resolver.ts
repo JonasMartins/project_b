@@ -643,16 +643,27 @@ export class UserResolver {
 
     @Query(() => UserResponse)
     async getUserConnections(
-        @Ctx() { req, em }: Context
+        @Arg("id") id: string,
+        @Ctx() { em }: Context
     ): Promise<UserResponse> {
         try {
+            if (!id) {
+                return {
+                    errors: genericError(
+                        "id",
+                        "getUserConnections",
+                        __filename,
+                        "User id required"
+                    ),
+                };
+            }
             const qb = await em
                 .getRepository(User)
                 .createQueryBuilder("user")
                 .leftJoinAndSelect("user.connections", "u1")
                 .leftJoinAndSelect("user.invitations", "i")
                 .leftJoinAndSelect("i.requestor", "r")
-                .where("user.id = :id", { id: req.session.userId })
+                .where("user.id = :id", { id })
                 .select([
                     "user.id",
                     "user.name",
@@ -663,6 +674,7 @@ export class UserResolver {
                     "u1.picture",
                     "i.id",
                     "i.accepted",
+                    "r.id",
                     "r.name",
                     "r.picture",
                 ]);
@@ -675,10 +687,11 @@ export class UserResolver {
                         "id",
                         "getCurrentLoggedUser",
                         __filename,
-                        `Could not find user with id: ${req.session.userId}`
+                        `Could not find user with id: ${id}`
                     ),
                 };
             }
+            // console.log("User: ", user.connections);
 
             return { user };
         } catch (e) {
@@ -686,6 +699,71 @@ export class UserResolver {
                 errors: genericError(
                     "-",
                     "updateRequest",
+                    __filename,
+                    `${e.message}`
+                ),
+            };
+        }
+    }
+
+    @Query(() => UsersResponse)
+    async getUserSuggestions(
+        @Ctx() { req, em }: Context
+    ): Promise<UsersResponse> {
+        try {
+            if (!req.session.userId) {
+                return {
+                    errors: genericError(
+                        "id",
+                        "getUserSuggestions",
+                        __filename,
+                        "User id required"
+                    ),
+                };
+            }
+            let ids: string[] = [];
+            const userRepo = em.connection.getRepository(User);
+
+            const qqb = await userRepo
+                .createQueryBuilder("user")
+                .leftJoinAndSelect("user.connections", "c")
+                .leftJoinAndSelect("user.requests", "r")
+                .leftJoinAndSelect("user.invitations", "i")
+                .where("user.id = :id", { id: req.session.userId })
+                .select(["user.id", "c.id", "r.requestedId", "i.requestorId"]);
+
+            const conn = await qqb.getOne();
+
+            conn?.connections.forEach((x) => {
+                ids.push(x.id);
+            });
+
+            conn?.requests.forEach((x) => {
+                ids.push(x.requestedId);
+            });
+
+            conn?.invitations.forEach((x) => {
+                ids.push(x.requestorId);
+            });
+
+            ids.push(req.session.userId);
+
+            // console.log("ids ", ids);
+
+            const qb = await userRepo
+                .createQueryBuilder("user")
+                .where("user.id NOT IN (:...ids)", { ids })
+                .select(["user.id", "user.name", "user.picture"])
+                .limit(10);
+
+            const users = await qb.getMany();
+
+            return { users };
+        } catch (e) {
+            return {
+                errors: genericError(
+                    "-",
+                    "getUserById",
                     __filename,
                     `${e.message}`
                 ),

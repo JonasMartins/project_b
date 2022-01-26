@@ -5,8 +5,16 @@ import {
     useUpdateRequestMutation,
     UpdateRequestMutation,
     useGetUserConnectionsLazyQuery,
+    useCreateConnectionMutation,
 } from "generated/graphql";
-import { Flex, IconButton, Image, Text, Tooltip } from "@chakra-ui/react";
+import {
+    Flex,
+    IconButton,
+    Image,
+    Text,
+    Tooltip,
+    useToast,
+} from "@chakra-ui/react";
 import { defaultImage } from "utils/consts";
 import Spinner from "components/Layout/Spinner";
 import { useDispatch } from "react-redux";
@@ -14,13 +22,19 @@ import { setGetUserConnections } from "Redux/actions";
 import { BsFillTrashFill } from "react-icons/bs";
 import { AiFillCheckCircle } from "react-icons/ai";
 import { GiCancel } from "react-icons/gi";
+import { useUser } from "utils/hooks/useUser";
 
 interface InvitationsProps {
     user: GetUserConnectionsQuery | null;
 }
 
 const Invitations: NextPage<InvitationsProps> = ({ user }) => {
+    const toast = useToast();
+    const _user = useUser();
+    const [requestedId, setRequestedId] = useState("");
     const [updateRequest, updateRequestResult] = useUpdateRequestMutation({});
+    const [createConnection, resultCreateConnection] =
+        useCreateConnectionMutation({});
     const [userInvitations, setUserInvitatios] = useState(0);
     const dispatch = useDispatch();
     const [getUserConnections, resultGerUserConnections] =
@@ -33,8 +47,50 @@ const Invitations: NextPage<InvitationsProps> = ({ user }) => {
     };
 
     const checkUserConnections = useCallback(async () => {
-        await getUserConnections();
-    }, [userInvitations]);
+        if (_user) {
+            await getUserConnections({
+                variables: {
+                    id: _user?.id,
+                },
+            });
+        }
+    }, [userInvitations, _user]);
+
+    const HandleCreateConnection = async (
+        userRequestedId: string,
+        userRequestorId: string
+    ): Promise<void> => {
+        const result = await createConnection({
+            variables: {
+                userRequestedId,
+                userRequestorId,
+            },
+            onError: () => {
+                console.error(resultCreateConnection.error);
+            },
+        });
+
+        if (result.data?.createConnection?.done) {
+            toast({
+                title: "Connection Added",
+                description: "Connection added",
+                status: "success",
+                duration: 8000,
+                isClosable: true,
+                position: "top",
+            });
+            if (_user) {
+                await getUserConnections({
+                    variables: {
+                        id: _user?.id,
+                    },
+                });
+            }
+            if (resultGerUserConnections.data) {
+                onSetUserConnections(resultGerUserConnections.data);
+            }
+        }
+    };
 
     const HandleUpdateRequest = async (
         requestId: string,
@@ -50,12 +106,16 @@ const Invitations: NextPage<InvitationsProps> = ({ user }) => {
             },
         });
 
-        console.log("result ", result);
-
-        if (!result.data?.updateRequest?.done) {
+        if (!result.data?.updateRequest?.done || !accepted) {
             return null;
         } else {
-            await getUserConnections();
+            if (_user) {
+                await getUserConnections({
+                    variables: {
+                        id: _user?.id,
+                    },
+                });
+            }
             if (resultGerUserConnections.data) {
                 onSetUserConnections(resultGerUserConnections.data);
             }
@@ -65,8 +125,11 @@ const Invitations: NextPage<InvitationsProps> = ({ user }) => {
     };
 
     useEffect(() => {
+        if (user?.getUserConnections?.user) {
+            setRequestedId(user.getUserConnections.user.id);
+        }
         checkUserConnections();
-    }, []);
+    }, [user, _user]);
 
     useEffect(() => {
         if (
@@ -86,25 +149,25 @@ const Invitations: NextPage<InvitationsProps> = ({ user }) => {
         }
     }, [updateRequestResult.loading, resultGerUserConnections.loading]);
 
-    useEffect(() => {
-        console.log(userInvitations);
-    }, [userInvitations]);
+    useEffect(() => {}, [userInvitations]);
 
     const noInvitations = (
-        <Flex>
+        <Flex justifyContent="center" p={2} m={2}>
             <Text fontWeight="semibold" fontSize="2xl">
-                No invitations
+                No invitations Or Connections
             </Text>
         </Flex>
     );
 
     const content =
-        updateRequestResult.loading || resultGerUserConnections.loading ? (
+        updateRequestResult.loading ||
+        resultGerUserConnections.loading ||
+        resultCreateConnection.loading ? (
             <Spinner />
         ) : (
             <Flex flexDir="column">
                 <Flex justifyContent="center" p={2} m={2}>
-                    <Text fontWeight="semibol" fontSize="2xl">
+                    <Text fontWeight="semibold" fontSize="2xl">
                         {userInvitations ? "Pending Invitations" : ""}
                     </Text>
                 </Flex>
@@ -130,7 +193,7 @@ const Invitations: NextPage<InvitationsProps> = ({ user }) => {
                                                 : defaultImage
                                         }
                                     />
-                                    <Text fontWeight="semibold">
+                                    <Text fontWeight="thin">
                                         {invitation?.requestor?.name}
                                     </Text>
                                 </Flex>
@@ -152,6 +215,10 @@ const Invitations: NextPage<InvitationsProps> = ({ user }) => {
                                                 HandleUpdateRequest(
                                                     invitation.id,
                                                     true
+                                                );
+                                                HandleCreateConnection(
+                                                    requestedId,
+                                                    invitation.requestor.id
                                                 );
                                             }}
                                         />
@@ -184,7 +251,7 @@ const Invitations: NextPage<InvitationsProps> = ({ user }) => {
                         )
                 )}
                 <Flex justifyContent="center" p={2} m={2}>
-                    <Text fontWeight="semibol" fontSize="2xl">
+                    <Text fontWeight="semibold" fontSize="2xl">
                         Connections
                     </Text>
                 </Flex>
@@ -209,9 +276,7 @@ const Invitations: NextPage<InvitationsProps> = ({ user }) => {
                                             : defaultImage
                                     }
                                 />
-                                <Text fontWeight="semibold">
-                                    {connection.name}
-                                </Text>
+                                <Text fontWeight="thin">{connection.name}</Text>
                             </Flex>
                             <Flex p={2}>
                                 <Tooltip
@@ -233,7 +298,8 @@ const Invitations: NextPage<InvitationsProps> = ({ user }) => {
             </Flex>
         );
 
-    return user?.getUserConnections?.user?.invitations?.length
+    return user?.getUserConnections?.user?.invitations?.length ||
+        user?.getUserConnections?.user?.connections?.length
         ? content
         : noInvitations;
 };
