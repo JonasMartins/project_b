@@ -1,62 +1,36 @@
 import { GetUserConnectionsQuery } from "generated/graphql";
+import { GlobalTypes } from "Redux/types";
 
-type AddNote = { type: "ADD_NOTE"; payload: string };
-type IsSubmittingPostAction = {
-    type: "IS_SUBMITTING_POST";
+export type IsSubmittingPostAction = {
+    type: typeof GlobalTypes.IS_SUBMITTING_POST;
     payload: boolean;
 };
 
-type HasSubmittedPostAction = {
-    type: "HAS_SUBMITTED_POST";
+export type CountUserInvitations = {
+    type: typeof GlobalTypes.COUNT_USER_INVITATIONS;
+    payload: number;
+};
+
+export type HasSubmittedPostAction = {
+    type: typeof GlobalTypes.HAS_SUBMITTED_POST;
     payload: boolean;
 };
 
-type HasUpdateUserSettingsAction = {
-    type: "HAS_UPDATED_USER_SETTINGS";
+export type HasUpdateUserSettingsAction = {
+    type: typeof GlobalTypes.HAS_UPDATED_USER_SETTINGS;
     payload: boolean;
 };
 
-type GetUserConnections = {
-    type: "SET_USER_CONNECTIONS";
+export type GetUserConnections = {
+    type: typeof GlobalTypes.SET_USER_CONNECTIONS;
     payload: GetUserConnectionsQuery;
 };
 
 export type Action =
-    | AddNote
     | IsSubmittingPostAction
     | HasSubmittedPostAction
     | HasUpdateUserSettingsAction
-    | GetUserConnections;
+    | GetUserConnections
+    | CountUserInvitations;
 
-export const setGetUserConnections = (
-    userConnections: GetUserConnectionsQuery
-): GetUserConnections => ({
-    type: "SET_USER_CONNECTIONS",
-    payload: userConnections,
-});
-
-export const setHasUpdateUserSettings = (
-    hasUpdated: boolean
-): HasUpdateUserSettingsAction => ({
-    type: "HAS_UPDATED_USER_SETTINGS",
-    payload: hasUpdated,
-});
-
-export const addNote = (note: string): AddNote => ({
-    type: "ADD_NOTE",
-    payload: note,
-});
-
-export const setIsSubmittingPost = (
-    isSubmitting: boolean
-): IsSubmittingPostAction => ({
-    type: "IS_SUBMITTING_POST",
-    payload: isSubmitting,
-});
-
-export const setHasSubmittedPost = (
-    hasSbmitted: boolean
-): HasSubmittedPostAction => ({
-    type: "HAS_SUBMITTED_POST",
-    payload: hasSbmitted,
-});
+export * as actionCreators from "Redux/actionCreators";

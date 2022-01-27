@@ -1,10 +1,19 @@
-import { Box, Flex, Text, useColorMode } from "@chakra-ui/react";
+import {
+    Box,
+    Flex,
+    Text,
+    useColorMode,
+    Image as ChakraImage,
+    Tooltip,
+} from "@chakra-ui/react";
 import type { NextPage } from "next";
 import Image from "next/image";
 import PostEmotionsRecord from "components/PostEmotionsRecord";
 import { getPostsType } from "utils/types/post/post.types";
 import PostEmotion from "components/Form/postEmotion.form";
 import { useUser } from "utils/hooks/useUser";
+import { defaultImage } from "utils/consts";
+import { useEffect } from "react";
 
 interface CentralFeedPostProps {
     post: getPostsType;
@@ -13,6 +22,8 @@ interface CentralFeedPostProps {
 const CentralFeedPost: NextPage<CentralFeedPostProps> = ({ post }) => {
     const { colorMode } = useColorMode();
     const user = useUser();
+
+    useEffect(() => {}, [post.creator.picture]);
 
     return (
         <Flex
@@ -40,11 +51,31 @@ const CentralFeedPost: NextPage<CentralFeedPostProps> = ({ post }) => {
                 <Box mt={3}>
                     <PostEmotionsRecord emotions={post.emotions} />
                 </Box>
-                <PostEmotion
-                    postEmotions={post.emotions ? post.emotions : []}
-                    user={user}
-                    postId={post.id}
-                />
+                <Flex alignItems="center">
+                    <Tooltip
+                        hasArrow
+                        aria-label="author"
+                        label={`Author: ${post.creator.name}`}
+                        colorScheme="white"
+                    >
+                        <ChakraImage
+                            mr={1}
+                            borderRadius="full"
+                            boxSize="32px"
+                            src={
+                                post.creator.picture
+                                    ? post.creator.picture
+                                    : defaultImage
+                            }
+                        />
+                    </Tooltip>
+
+                    <PostEmotion
+                        postEmotions={post.emotions ? post.emotions : []}
+                        user={user}
+                        postId={post.id}
+                    />
+                </Flex>
             </Flex>
         </Flex>
     );

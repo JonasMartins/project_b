@@ -1,41 +1,49 @@
 import { Action } from "Redux/actions";
 import { GetUserConnectionsQuery } from "generated/graphql";
+import { GlobalTypes } from "Redux/types";
+import { combineReducers } from "redux";
 
 export interface globalState {
-    notes: string[];
     isSubmittinPost: boolean;
     hasSubmittedPost: boolean;
     hasUpdateUserSettings: boolean;
     userConnections: GetUserConnectionsQuery | null;
+    countUserInvitations: number;
 }
 const initialState = {
-    notes: [],
     isSubmittinPost: false,
     hasSubmittedPost: false,
     hasUpdateUserSettings: false,
     userConnections: null,
+    countUserInvitations: 0,
 };
 export const globalReducer = (
     state: globalState = initialState,
     action: Action
 ) => {
     switch (action.type) {
-        case "ADD_NOTE": {
-            return { ...state, notes: [...state.notes, action.payload] };
-        }
-        case "IS_SUBMITTING_POST": {
+        case GlobalTypes.IS_SUBMITTING_POST: {
             return { ...state, isSubmittinPost: action.payload };
         }
-        case "HAS_SUBMITTED_POST": {
+        case GlobalTypes.HAS_SUBMITTED_POST: {
             return { ...state, hasSubmittedPost: action.payload };
         }
-        case "HAS_UPDATED_USER_SETTINGS": {
+        case GlobalTypes.HAS_UPDATED_USER_SETTINGS: {
             return { ...state, hasUpdateUserSettings: action.payload };
         }
-        case "SET_USER_CONNECTIONS": {
+        case GlobalTypes.SET_USER_CONNECTIONS: {
             return { ...state, userConnections: action.payload };
+        }
+        case GlobalTypes.COUNT_USER_INVITATIONS: {
+            return { ...state, countUserInvitations: action.payload };
         }
         default:
             return state;
     }
 };
+
+export const reducers = combineReducers({
+    globalReducer,
+});
+
+export type RootState = ReturnType<typeof reducers>;

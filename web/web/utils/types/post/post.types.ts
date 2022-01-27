@@ -17,9 +17,18 @@ export type getPostsType = {
               __typename?: "Emotion";
               id: string;
               type: EmotionType;
-              creator: { __typename?: "User"; id: string; name: string };
+              creator: {
+                  __typename?: "User";
+                  id: string;
+                  name: string;
+              };
           }>
         | null
         | undefined;
-    creator: { __typename?: "User"; id: string; name: string };
+    creator: {
+        __typename?: "User";
+        id: string;
+        name: string;
+        picture?: string | null | undefined;
+    };
 };

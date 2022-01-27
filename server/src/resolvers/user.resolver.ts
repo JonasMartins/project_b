@@ -739,7 +739,9 @@ export class UserResolver {
             });
 
             conn?.requests.forEach((x) => {
-                ids.push(x.requestedId);
+                if (x.accepted !== false) {
+                    ids.push(x.requestedId);
+                }
             });
 
             conn?.invitations.forEach((x) => {
@@ -748,13 +750,11 @@ export class UserResolver {
 
             ids.push(req.session.userId);
 
-            // console.log("ids ", ids);
-
             const qb = await userRepo
                 .createQueryBuilder("user")
                 .where("user.id NOT IN (:...ids)", { ids })
                 .select(["user.id", "user.name", "user.picture"])
-                .limit(10);
+                .limit(5);
 
             const users = await qb.getMany();
 

@@ -486,7 +486,7 @@ export type GetPostsQueryVariables = Exact<{
 }>;
 
 
-export type GetPostsQuery = { __typename?: 'Query', getPosts: { __typename?: 'PostsResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', message: string, method: string, field: string }> | null | undefined, posts?: Array<{ __typename?: 'Post', id: string, body: string, files?: Array<string> | null | undefined, creator: { __typename?: 'User', id: string, name: string }, emotions?: Array<{ __typename?: 'Emotion', id: string, type: EmotionType, creator: { __typename?: 'User', id: string, name: string } }> | null | undefined }> | null | undefined } };
+export type GetPostsQuery = { __typename?: 'Query', getPosts: { __typename?: 'PostsResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', message: string, method: string, field: string }> | null | undefined, posts?: Array<{ __typename?: 'Post', id: string, body: string, files?: Array<string> | null | undefined, creator: { __typename?: 'User', id: string, name: string, picture?: string | null | undefined }, emotions?: Array<{ __typename?: 'Emotion', id: string, type: EmotionType, creator: { __typename?: 'User', id: string, name: string } }> | null | undefined }> | null | undefined } };
 
 export type GetUserConnectionsQueryVariables = Exact<{
   id: Scalars['String'];
@@ -1070,6 +1070,7 @@ export const GetPostsDocument = gql`
       creator {
         id
         name
+        picture
       }
       emotions {
         id

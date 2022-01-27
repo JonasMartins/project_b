@@ -5,7 +5,7 @@ import {
 import { useState, useEffect } from "react";
 import { useQuery } from "@apollo/client";
 import { useSelector } from "react-redux";
-import { globalState } from "Redux/Global/GlobalReducer";
+import { RootState } from "Redux/Global/GlobalReducer";
 
 export type UserType =
     | {
@@ -26,10 +26,9 @@ export const useUser = () => {
             fetchPolicy: "cache-and-network",
         });
 
-    const hasUpdateUserSettings = useSelector<
-        globalState,
-        globalState["hasUpdateUserSettings"]
-    >((state) => state.hasUpdateUserSettings);
+    const hasUpdateUserSettings = useSelector(
+        (state: RootState) => state.globalReducer.hasUpdateUserSettings
+    );
 
     const [user, setUser] = useState<UserType | null>(null);
 

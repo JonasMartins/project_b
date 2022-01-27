@@ -1,5 +1,4 @@
-import React, { useEffect, useCallback, memo, useState } from "react";
-import type { NextPage } from "next";
+import { useQuery } from "@apollo/client";
 import {
     Box,
     Flex,
@@ -8,28 +7,79 @@ import {
     useColorMode,
     useDisclosure,
 } from "@chakra-ui/react";
-import { IoAddOutline } from "react-icons/io5";
-import ModalCreatePost from "components/Modal/modalCreatePost";
-import { GetPostsDocument, GetPostsQuery } from "generated/graphql";
-import { useQuery } from "@apollo/client";
-import Spinner from "components/Layout/Spinner";
 import CentralFeedPost from "components/CentralFeedPost";
-import { useSelector } from "react-redux";
-import { globalState } from "Redux/Global/GlobalReducer";
+import Spinner from "components/Layout/Spinner";
+import ModalCreatePost from "components/Modal/modalCreatePost";
+import {
+    GetPostsDocument,
+    GetPostsQuery,
+    GetUserConnectionsQuery,
+    useGetUserConnectionsLazyQuery,
+} from "generated/graphql";
+import type { NextPage } from "next";
+import React, { useCallback, useEffect } from "react";
 import { FiRefreshCcw } from "react-icons/fi";
+import { IoAddOutline } from "react-icons/io5";
+import { useDispatch, useSelector } from "react-redux";
+import { bindActionCreators } from "redux";
+import { actionCreators } from "Redux/actions";
+import { RootState } from "Redux/Global/GlobalReducer";
+import { useUser } from "utils/hooks/useUser";
 
 interface CentralFeedProps {}
 
 const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
     const { colorMode } = useColorMode();
+    const user = useUser();
+    const dispatch = useDispatch();
     const modalCreatePostDisclousure = useDisclosure();
 
-    const hasSubmittedPost = useSelector<
-        globalState,
-        globalState["hasSubmittedPost"]
-    >((state) => state.hasSubmittedPost);
+    const hasSubmittedPost = useSelector(
+        (state: RootState) => state.globalReducer.hasSubmittedPost
+    );
 
-    const [count, setCount] = useState(0);
+    const { setGetUserConnections, setCountUserInvitations } =
+        bindActionCreators(actionCreators, dispatch);
+
+    const onSetUserConnections = (user: GetUserConnectionsQuery | null) => {
+        if (user) {
+            setGetUserConnections(user);
+        }
+    };
+
+    const onSetCountUserInvitations = (count: number) => {
+        setCountUserInvitations(count);
+    };
+
+    const [getUserConnections, resultGetConnectionsLazy] =
+        useGetUserConnectionsLazyQuery({});
+
+    const handleGetUserConnections = useCallback(async () => {
+        if (user?.id) {
+            const conn = await getUserConnections({
+                variables: {
+                    id: user.id,
+                },
+            });
+
+            if (conn.data?.getUserConnections?.user) {
+                onSetUserConnections(conn.data);
+
+                let _count = 0;
+                if (conn.data.getUserConnections.user.invitations?.length) {
+                    conn.data.getUserConnections.user.invitations.forEach(
+                        (x) => {
+                            if (x.accepted === null) {
+                                _count++;
+                            }
+                        }
+                    );
+                }
+                console.log(">> ", _count);
+                onSetCountUserInvitations(_count);
+            }
+        }
+    }, [user?.id]);
 
     const { data, loading, refetch } = useQuery<GetPostsQuery>(
         GetPostsDocument,
@@ -49,12 +99,17 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
         }
     }, [hasSubmittedPost]);
 
-    useEffect(() => {}, [loading, data]);
+    useEffect(() => {
+        handleGetUserConnections();
+    }, [loading, data]);
 
     useEffect(() => {
-        setCount(count + 1);
         handleRefetchPosts();
-    }, [hasSubmittedPost]);
+    }, [
+        hasSubmittedPost,
+        resultGetConnectionsLazy.loading,
+        onSetCountUserInvitations,
+    ]);
 
     return (
         <Flex flexGrow={1} flexDir="column" m={5}>
@@ -109,4 +164,4 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
         </Flex>
     );
 };
-export default memo(CentralFeed);
+export default CentralFeed;

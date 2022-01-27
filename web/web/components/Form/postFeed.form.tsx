@@ -36,7 +36,8 @@ import { CreatePostDocument, CreatePostMutation } from "generated/graphql";
 import { useMutation } from "@apollo/client";
 import { useUser } from "utils/hooks/useUser";
 import Spinner from "components/Layout/Spinner";
-import { setHasSubmittedPost } from "Redux/actions";
+import { bindActionCreators } from "redux";
+import { actionCreators } from "Redux/actions";
 import { useDispatch } from "react-redux";
 
 const PostFeedSchema = Yup.object().shape({
@@ -75,8 +76,13 @@ const PostFeed: NextPage = () => {
 
     const dispatch = useDispatch();
 
+    const { setHasSubmittedPost } = bindActionCreators(
+        actionCreators,
+        dispatch
+    );
+
     const onSetHasSubmittedPost = (hasSubmitted: boolean) => {
-        dispatch(setHasSubmittedPost(hasSubmitted));
+        setHasSubmittedPost(hasSubmitted);
     };
 
     const [createPost, { error }] =

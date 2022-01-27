@@ -17,18 +17,18 @@ import {
 } from "@chakra-ui/react";
 import { defaultImage } from "utils/consts";
 import Spinner from "components/Layout/Spinner";
-import { useDispatch } from "react-redux";
-import { setGetUserConnections } from "Redux/actions";
+import { useDispatch, useSelector } from "react-redux";
+import { bindActionCreators } from "redux";
+import { actionCreators } from "Redux/actions";
 import { BsFillTrashFill } from "react-icons/bs";
 import { AiFillCheckCircle } from "react-icons/ai";
 import { GiCancel } from "react-icons/gi";
 import { useUser } from "utils/hooks/useUser";
+import { RootState } from "Redux/Global/GlobalReducer";
 
-interface InvitationsProps {
-    user: GetUserConnectionsQuery | null;
-}
+interface InvitationsProps {}
 
-const Invitations: NextPage<InvitationsProps> = ({ user }) => {
+const Invitations: NextPage<InvitationsProps> = ({}) => {
     const toast = useToast();
     const _user = useUser();
     const [requestedId, setRequestedId] = useState("");
@@ -40,9 +40,18 @@ const Invitations: NextPage<InvitationsProps> = ({ user }) => {
     const [getUserConnections, resultGerUserConnections] =
         useGetUserConnectionsLazyQuery({});
 
+    const user = useSelector(
+        (state: RootState) => state.globalReducer.userConnections
+    );
+
+    const { setGetUserConnections } = bindActionCreators(
+        actionCreators,
+        dispatch
+    );
+
     const onSetUserConnections = (user: GetUserConnectionsQuery | null) => {
         if (user) {
-            dispatch(setGetUserConnections(user));
+            setGetUserConnections(user);
         }
     };
 
@@ -128,22 +137,18 @@ const Invitations: NextPage<InvitationsProps> = ({ user }) => {
         if (user?.getUserConnections?.user) {
             setRequestedId(user.getUserConnections.user.id);
         }
-        checkUserConnections();
+        //checkUserConnections();
     }, [user, _user]);
 
     useEffect(() => {
-        if (
-            resultGerUserConnections.data?.getUserConnections?.user?.invitations
-        ) {
+        if (user?.getUserConnections?.user?.invitations) {
             let _invitations = 0;
 
-            resultGerUserConnections.data?.getUserConnections?.user?.invitations.forEach(
-                (item) => {
-                    if (item.accepted === null || item.accepted === undefined) {
-                        _invitations++;
-                    }
+            user?.getUserConnections?.user?.invitations.forEach((item) => {
+                if (item.accepted === null || item.accepted === undefined) {
+                    _invitations++;
                 }
-            );
+            });
 
             setUserInvitatios(_invitations);
         }

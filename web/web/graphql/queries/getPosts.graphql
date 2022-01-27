@@ -12,6 +12,7 @@ query GetPosts($offset: Float!, $limit: Float!) {
             creator {
                 id
                 name
+                picture
             }
             emotions {
                 id

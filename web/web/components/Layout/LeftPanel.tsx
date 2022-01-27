@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState, memo } from "react";
+import React, { useEffect, Dispatch, useState } from "react";
 import type { NextPage } from "next";
 import {
     Tooltip,
@@ -8,6 +8,7 @@ import {
     Box,
     Grid,
     GridItem,
+    Button,
 } from "@chakra-ui/react";
 import { IoIosSettings } from "react-icons/io";
 import { IoHome } from "react-icons/io5";
@@ -18,18 +19,13 @@ import {
 } from "react-icons/bs";
 import ModalSettings from "components/Modal/modalSettings";
 import { useSelector } from "react-redux";
-import { globalState } from "Redux/Global/GlobalReducer";
+import { globalState, RootState } from "Redux/Global/GlobalReducer";
 import { useRouter } from "next/dist/client/router";
-import { setGetUserConnections } from "Redux/actions";
-import { useDispatch } from "react-redux";
 import { css } from "@emotion/react";
-import {
-    useGetUserConnectionsLazyQuery,
-    GetUserConnectionsQuery,
-} from "generated/graphql";
-import { useUser } from "utils/hooks/useUser";
-
-interface LeftPanelProps {}
+import { connect, ConnectedProps, useDispatch } from "react-redux";
+import { bindActionCreators } from "redux";
+import { Action, actionCreators } from "Redux/actions";
+import { GlobalTypes } from "Redux/types";
 
 const gridCell = `
     display: flex;
@@ -39,25 +35,30 @@ const gridCell = `
 
 const LeftPanel: NextPage<LeftPanelProps> = ({}) => {
     const modalSettings = useDisclosure();
-    const user = useUser();
     const router = useRouter();
-    const [userInvitations, setUserInvitatios] = useState(0);
+    const [times, setTimes] = useState(0);
+
     const dispatch = useDispatch();
 
-    const onSetUserConnections = (user: GetUserConnectionsQuery | null) => {
-        console.log("user ? ", user);
-        if (user) {
-            dispatch(setGetUserConnections(user));
-        }
+    const userConnections = useSelector(
+        (state: RootState) => state.globalReducer.userConnections
+    );
+    const hasUpdateUserSettings = useSelector(
+        (state: RootState) => state.globalReducer.hasUpdateUserSettings
+    );
+
+    const countUserInvitations = useSelector(
+        (state: RootState) => state.globalReducer.countUserInvitations
+    );
+
+    const { setCountUserInvitations } = bindActionCreators(
+        actionCreators,
+        dispatch
+    );
+
+    const onSetCountUserInvitations = (count: number) => {
+        setCountUserInvitations(count);
     };
-
-    const hasUpdateUserSettings = useSelector<
-        globalState,
-        globalState["hasUpdateUserSettings"]
-    >((state) => state.hasUpdateUserSettings);
-
-    const [getUserConnections, resultGetConnectionsLazy] =
-        useGetUserConnectionsLazyQuery({});
 
     const handleCloseModalSettings = () => {
         if (hasUpdateUserSettings) {
@@ -65,39 +66,9 @@ const LeftPanel: NextPage<LeftPanelProps> = ({}) => {
         }
     };
 
-    const handleGetUserConnections = useCallback(async () => {
-        if (user?.id) {
-            const conn = await getUserConnections({
-                variables: {
-                    id: user.id,
-                },
-            });
-
-            if (conn.data?.getUserConnections?.user?.invitations?.length) {
-                onSetUserConnections(conn.data);
-                let _invitations = 0;
-
-                conn.data?.getUserConnections?.user?.invitations?.forEach(
-                    (item) => {
-                        if (
-                            item.accepted === null ||
-                            item.accepted === undefined
-                        ) {
-                            _invitations++;
-                        }
-                    }
-                );
-                setUserInvitatios(_invitations);
-            }
-        }
-    }, [user?.id]);
-
     useEffect(() => {
         handleCloseModalSettings();
-        handleGetUserConnections();
-    }, [hasUpdateUserSettings, resultGetConnectionsLazy.loading, user]);
-
-    useEffect(() => {}, [userInvitations]);
+    }, [hasUpdateUserSettings, userConnections, countUserInvitations]);
 
     return (
         <Box>
@@ -166,9 +137,9 @@ const LeftPanel: NextPage<LeftPanelProps> = ({}) => {
                 </GridItem>
 
                 <GridItem css={css(gridCell)}>
-                    {userInvitations ? (
+                    {countUserInvitations ? (
                         <Circle size="25px" bg="red.400" color="white">
-                            {userInvitations}
+                            {countUserInvitations}
                         </Circle>
                     ) : (
                         <></>
@@ -220,4 +191,24 @@ const LeftPanel: NextPage<LeftPanelProps> = ({}) => {
         </Box>
     );
 };
-export default memo(LeftPanel);
+
+const mapStateToProps = (state: globalState) => {
+    return {
+        countUserInvitations: state.countUserInvitations,
+    };
+};
+
+const mapDispatchToProps = (dispatch: Dispatch<Action>) => ({
+    CountUserInvitations: () =>
+        dispatch({
+            type: GlobalTypes.COUNT_USER_INVITATIONS,
+            payload: 1,
+        }),
+});
+
+const connector = connect(mapStateToProps);
+
+//type LeftPanelProps = ConnectedProps<typeof connector>;
+interface LeftPanelProps {}
+
+export default LeftPanel;

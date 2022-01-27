@@ -18,7 +18,7 @@ import type { NextPage } from "next";
 import React, { useEffect } from "react";
 import Invitations from "components/Invitations";
 import { useSelector } from "react-redux";
-import { globalState } from "Redux/Global/GlobalReducer";
+import { RootState } from "Redux/Global/GlobalReducer";
 import {
     useGetConnectionSuggestionsQuery,
     useCreateRequestMutation,
@@ -35,6 +35,14 @@ const Connections: NextPage = () => {
     const bgColor = { light: "gray.200", dark: "gray.700" };
 
     const [createRequest, resultCreateRequest] = useCreateRequestMutation({});
+
+    const user = useSelector(
+        (state: RootState) => state.globalReducer.userConnections
+    );
+
+    const suggestions = useGetConnectionSuggestionsQuery({
+        fetchPolicy: "cache-and-network",
+    });
 
     const HandleCreateRequest = async (
         requestedId: string,
@@ -55,6 +63,7 @@ const Connections: NextPage = () => {
         if (!result.data?.createRequest?.done) {
             return null;
         }
+        await suggestions.refetch();
         toast({
             title: "Request Sended",
             description: "Request successfully sended",
@@ -67,17 +76,11 @@ const Connections: NextPage = () => {
         return result.data;
     };
 
-    const user = useSelector<globalState, globalState["userConnections"]>(
-        (state) => state.userConnections
-    );
-
-    const suggestions = useGetConnectionSuggestionsQuery({
-        fetchPolicy: "cache-and-network",
-    });
-
-    useEffect(() => {
-        console.log("user: ", user);
-    }, [user, resultCreateRequest.loading, suggestions.loading]);
+    useEffect(() => {}, [
+        user,
+        resultCreateRequest.loading,
+        suggestions.loading,
+    ]);
 
     const content = (
         <Container>
@@ -97,14 +100,14 @@ const Connections: NextPage = () => {
                     >
                         <GridItem />
                         <GridItem bg={bgColor[colorMode]} boxShadow="lg">
-                            {/* <LeftPanel />{" "} */}
+                            <LeftPanel />
                         </GridItem>
                         <GridItem
                             colSpan={3}
                             bg={bgColor[colorMode]}
                             boxShadow="lg"
                         >
-                            <Invitations user={user} />
+                            <Invitations />
                         </GridItem>
                         <GridItem bg={bgColor[colorMode]} boxShadow="lg">
                             <Flex flexDir="column">

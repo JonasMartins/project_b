@@ -26,7 +26,7 @@ import { LogoutDocument, LogoutMutation } from "generated/graphql";
 import { useRouter } from "next/dist/client/router";
 import { defaultImage } from "utils/consts";
 import { useSelector } from "react-redux";
-import { globalState } from "Redux/Global/GlobalReducer";
+import { RootState } from "Redux/Global/GlobalReducer";
 import { useUser } from "utils/hooks/useUser";
 
 interface NavBarProps {}
@@ -36,10 +36,9 @@ const NavBar: NextPage<NavBarProps> = ({}) => {
     const [shades, setShades] = useState(["#7928CA", "#FF0080"]);
     const [logout, {}] = useMutation<LogoutMutation>(LogoutDocument);
     const router = useRouter();
-    const hasUpdateUserSettings = useSelector<
-        globalState,
-        globalState["hasUpdateUserSettings"]
-    >((state) => state.hasUpdateUserSettings);
+    const hasUpdateUserSettings = useSelector(
+        (state: RootState) => state.globalReducer.hasUpdateUserSettings
+    );
     const user = useUser();
 
     const handleLogout = async () => {
@@ -55,7 +54,7 @@ const NavBar: NextPage<NavBarProps> = ({}) => {
         } else {
             setShades(["#311052", "#890045"]);
         }
-    }, [colorMode, hasUpdateUserSettings]);
+    }, [colorMode, hasUpdateUserSettings, user?.picture]);
 
     return (
         <Flex

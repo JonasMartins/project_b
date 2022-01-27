@@ -1,4 +1,5 @@
-import { createStore } from "redux";
-import { globalReducer } from "Redux/Global/GlobalReducer";
+import { createStore, applyMiddleware } from "redux";
+import thunk from "redux-thunk";
+import { reducers } from "Redux/Global/GlobalReducer";
 
-export const store = createStore(globalReducer);
+export const store = createStore(reducers, {}, applyMiddleware(thunk));
