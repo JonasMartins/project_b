@@ -8,7 +8,7 @@ import {
     useDisclosure,
 } from "@chakra-ui/react";
 import CentralFeedPost from "components/CentralFeedPost";
-import Spinner from "components/Layout/Spinner";
+import SkeletonLines from "components/Layout/SkeletonLines";
 import ModalCreatePost from "components/Modal/modalCreatePost";
 import {
     GetPostsDocument,
@@ -148,7 +148,7 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
             </Flex>
             <Box mt={5}>
                 {loading && !data?.getPosts?.posts ? (
-                    <Spinner />
+                    <SkeletonLines />
                 ) : (
                     data?.getPosts?.posts?.map((post) => (
                         <CentralFeedPost key={post.id} post={post} />

@@ -41,6 +41,7 @@ const Connections: NextPage = () => {
     const toast = useToast();
     const { colorMode } = useColorMode();
     const bgColor = { light: "gray.200", dark: "gray.700" };
+    const [loadEffect, setLoadEffect] = useState(false);
 
     const [createRequest, resultCreateRequest] = useCreateRequestMutation({});
 
@@ -57,9 +58,14 @@ const Connections: NextPage = () => {
     >([]);
 
     const handleRemoveSuggestion = (u: userSuggestionsType) => {
-        if (stateSuggestions.length) {
-            setStateSuggestions(stateSuggestions.filter((x) => x.id !== u.id));
-        }
+        setTimeout(() => {
+            if (stateSuggestions.length) {
+                setStateSuggestions(
+                    stateSuggestions.filter((x) => x.id !== u.id)
+                );
+            }
+            setLoadEffect(false);
+        }, 500);
     };
 
     const HandleCreateRequest = async (
@@ -96,64 +102,76 @@ const Connections: NextPage = () => {
 
     useEffect(() => {
         if (suggestions.data?.getUserSuggestions.users) {
+            setStateSuggestions([]);
             suggestions.data.getUserSuggestions.users.forEach((u) => {
                 setStateSuggestions((prevSugg) => [...prevSugg, u]);
             });
         }
     }, [user, resultCreateRequest.loading, suggestions.loading]);
 
-    useEffect(() => {}, [stateSuggestions]);
+    //useEffect(() => {}, [stateSuggestions]);
+
+    useEffect(() => {
+        return () => {
+            setStateSuggestions([]);
+        };
+    }, []);
 
     const content = (
         <Container>
-            {console.log("sug ", stateSuggestions)}
-            <Skeleton
-                isLoaded={!resultCreateRequest.loading && !suggestions.loading}
+            <Flex
+                flexDir="column"
+                flexGrow={1}
+                justifyContent="space-between"
+                height="100vh"
             >
-                <Flex
-                    flexDir="column"
-                    flexGrow={1}
-                    justifyContent="space-between"
-                    height="100vh"
-                >
-                    <Box>
-                        <NavBar />
-                        <Grid
-                            mt={10}
-                            templateRows="repeat(1, 1fr)"
-                            templateColumns="repeat(7, 1fr)"
-                            gap={4}
+                <Box>
+                    <NavBar />
+                    <Grid
+                        mt={10}
+                        templateRows="repeat(1, 1fr)"
+                        templateColumns="repeat(7, 1fr)"
+                        gap={4}
+                    >
+                        <GridItem />
+                        <GridItem bg={bgColor[colorMode]} boxShadow="lg">
+                            <LeftPanel />
+                        </GridItem>
+                        <GridItem
+                            colSpan={3}
+                            bg={bgColor[colorMode]}
+                            boxShadow="lg"
                         >
-                            <GridItem />
-                            <GridItem bg={bgColor[colorMode]} boxShadow="lg">
-                                <LeftPanel />
-                            </GridItem>
-                            <GridItem
-                                colSpan={3}
-                                bg={bgColor[colorMode]}
-                                boxShadow="lg"
-                            >
-                                <Invitations />
-                            </GridItem>
-                            <GridItem bg={bgColor[colorMode]} boxShadow="lg">
-                                <Flex flexDir="column">
-                                    <Flex justifyContent="center" p={2} m={2}>
-                                        <Text
-                                            fontWeight="semibold"
-                                            fontSize="2xl"
-                                        >
-                                            Suggestions
-                                        </Text>
-                                    </Flex>
+                            <Invitations />
+                        </GridItem>
+                        <GridItem bg={bgColor[colorMode]} boxShadow="lg">
+                            <Flex flexDir="column">
+                                <Flex justifyContent="center" p={2} m={2}>
+                                    <Text fontWeight="semibold" fontSize="2xl">
+                                        Suggestions
+                                    </Text>
+                                </Flex>
 
-                                    {stateSuggestions.map((u) => (
-                                        <Flex
-                                            justifyContent="space-between"
-                                            boxShadow="md"
-                                            p={3}
-                                            m={3}
-                                            alignItems="center"
-                                            key={u.id}
+                                {stateSuggestions.map((u) => (
+                                    <Flex
+                                        justifyContent="space-between"
+                                        bgColor={
+                                            colorMode === "dark"
+                                                ? "grey.800"
+                                                : "white"
+                                        }
+                                        boxShadow="md"
+                                        p={3}
+                                        m={3}
+                                        alignItems="center"
+                                        key={u.id}
+                                    >
+                                        <Skeleton
+                                            isLoaded={
+                                                !resultCreateRequest.loading &&
+                                                !suggestions.loading &&
+                                                !loadEffect
+                                            }
                                         >
                                             <Flex alignItems="center">
                                                 <Image
@@ -170,22 +188,23 @@ const Connections: NextPage = () => {
                                                     {truncateString(u?.name, 8)}
                                                 </Text>
                                             </Flex>
-                                            <Flex p={2}>
-                                                <Tooltip
-                                                    hasArrow
+                                        </Skeleton>
+                                        <Flex p={2}>
+                                            <Tooltip
+                                                hasArrow
+                                                aria-label="connect"
+                                                label="Connect"
+                                                colorScheme="white"
+                                            >
+                                                <IconButton
+                                                    isRound={true}
                                                     aria-label="connect"
-                                                    label="Connect"
-                                                    colorScheme="white"
-                                                >
-                                                    <IconButton
-                                                        isRound={true}
-                                                        aria-label="connect"
-                                                        icon={
-                                                            <HiUserAdd color="teal" />
-                                                        }
-                                                        m={1}
-                                                        onClick={() => {
-                                                            /*
+                                                    icon={
+                                                        <HiUserAdd color="teal" />
+                                                    }
+                                                    m={1}
+                                                    onClick={() => {
+                                                        /*
                                                         if (
                                                             user
                                                                 ?.getUserConnections
@@ -199,25 +218,25 @@ const Connections: NextPage = () => {
                                                             );
                                                         }
                                                         */
-                                                            handleRemoveSuggestion(
-                                                                u
-                                                            );
-                                                        }}
-                                                    />
-                                                </Tooltip>
-                                            </Flex>
+                                                        setLoadEffect(true);
+                                                        handleRemoveSuggestion(
+                                                            u
+                                                        );
+                                                    }}
+                                                />
+                                            </Tooltip>
                                         </Flex>
-                                    ))}
-                                </Flex>
-                            </GridItem>
-                            <GridItem />
-                        </Grid>
-                    </Box>
-                    <Box>
-                        <Footer />
-                    </Box>
-                </Flex>
-            </Skeleton>
+                                    </Flex>
+                                ))}
+                            </Flex>
+                        </GridItem>
+                        <GridItem />
+                    </Grid>
+                </Box>
+                <Box>
+                    <Footer />
+                </Box>
+            </Flex>
         </Container>
     );
 

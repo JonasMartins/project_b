@@ -5,7 +5,7 @@ import { LoginTestDocument, LoginTestQuery } from "generated/graphql";
 import type { NextPage } from "next";
 import { useRouter } from "next/dist/client/router";
 import React, { useEffect, useState } from "react";
-import Spinner from "components/Layout/Spinner";
+import SkeletonLines from "components/Layout/SkeletonLines";
 
 interface ContainerProps {}
 
@@ -42,7 +42,7 @@ const Container: NextPage<ContainerProps> = ({ children }) => {
 
     const content = <Flex direction="column">{children}</Flex>;
 
-    return loading || delay ? <Spinner /> : content;
+    return loading || delay ? <SkeletonLines /> : content;
 };
 
 export default Container;

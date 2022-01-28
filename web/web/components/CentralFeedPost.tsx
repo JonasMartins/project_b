@@ -13,7 +13,8 @@ import { getPostsType } from "utils/types/post/post.types";
 import PostEmotion from "components/Form/postEmotion.form";
 import { useUser } from "utils/hooks/useUser";
 import { defaultImage } from "utils/consts";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import SkeletonLines from "components/Layout/SkeletonLines";
 
 interface CentralFeedPostProps {
     post: getPostsType;
@@ -22,8 +23,13 @@ interface CentralFeedPostProps {
 const CentralFeedPost: NextPage<CentralFeedPostProps> = ({ post }) => {
     const { colorMode } = useColorMode();
     const user = useUser();
+    const [loadEffect, setLoadEffect] = useState(true);
 
-    useEffect(() => {}, [post.creator.picture]);
+    useEffect(() => {
+        setTimeout(() => {
+            setLoadEffect(false);
+        }, 500);
+    }, [post.creator.picture]);
 
     return (
         <Flex
@@ -34,7 +40,7 @@ const CentralFeedPost: NextPage<CentralFeedPostProps> = ({ post }) => {
             mt={3}
             flexDir="column"
         >
-            <Text>{post.body}</Text>
+            {loadEffect ? <SkeletonLines /> : <Text>{post.body}</Text>}
 
             <Flex mt={2}>
                 {post.files?.length ? (

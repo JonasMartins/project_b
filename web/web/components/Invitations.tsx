@@ -14,6 +14,7 @@ import {
     Text,
     Tooltip,
     useToast,
+    useColorMode,
 } from "@chakra-ui/react";
 import { defaultImage } from "utils/consts";
 import Spinner from "components/Layout/Spinner";
@@ -31,6 +32,7 @@ interface InvitationsProps {}
 const Invitations: NextPage<InvitationsProps> = ({}) => {
     const toast = useToast();
     const _user = useUser();
+    const { colorMode } = useColorMode();
     const [requestedId, setRequestedId] = useState("");
     const [updateRequest, updateRequestResult] = useUpdateRequestMutation({});
     const [createConnection, resultCreateConnection] =
@@ -181,6 +183,9 @@ const Invitations: NextPage<InvitationsProps> = ({}) => {
                         invitation.accepted === null ? (
                             <Flex
                                 justifyContent="space-between"
+                                bgColor={
+                                    colorMode === "dark" ? "grey.800" : "white"
+                                }
                                 boxShadow="md"
                                 p={3}
                                 m={3}
