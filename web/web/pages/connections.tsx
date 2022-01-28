@@ -9,13 +9,14 @@ import {
     Tooltip,
     IconButton,
     useToast,
+    Skeleton,
 } from "@chakra-ui/react";
 import Container from "components/Container";
 import Footer from "components/Layout/Footer";
 import LeftPanel from "components/Layout/LeftPanel";
 import NavBar from "components/Layout/NavBar";
 import type { NextPage } from "next";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Invitations from "components/Invitations";
 import { useSelector } from "react-redux";
 import { RootState } from "Redux/Global/GlobalReducer";
@@ -27,7 +28,14 @@ import {
 import { defaultImage } from "utils/consts";
 import { HiUserAdd } from "react-icons/hi";
 import { truncateString } from "utils/generalAuxFunctions";
-import Spinner from "components/Layout/Spinner";
+// import Spinner from "components/Layout/Spinner";
+
+interface userSuggestionsType {
+    __typename?: "User" | undefined;
+    id: string;
+    name: string;
+    picture?: string | null | undefined;
+}
 
 const Connections: NextPage = () => {
     const toast = useToast();
@@ -43,6 +51,16 @@ const Connections: NextPage = () => {
     const suggestions = useGetConnectionSuggestionsQuery({
         fetchPolicy: "cache-and-network",
     });
+
+    const [stateSuggestions, setStateSuggestions] = useState<
+        Array<userSuggestionsType>
+    >([]);
+
+    const handleRemoveSuggestion = (u: userSuggestionsType) => {
+        if (stateSuggestions.length) {
+            setStateSuggestions(stateSuggestions.filter((x) => x.id !== u.id));
+        }
+    };
 
     const HandleCreateRequest = async (
         requestedId: string,
@@ -63,7 +81,7 @@ const Connections: NextPage = () => {
         if (!result.data?.createRequest?.done) {
             return null;
         }
-        await suggestions.refetch();
+        // await suggestions.refetch();
         toast({
             title: "Request Sended",
             description: "Request successfully sended",
@@ -76,49 +94,59 @@ const Connections: NextPage = () => {
         return result.data;
     };
 
-    useEffect(() => {}, [
-        user,
-        resultCreateRequest.loading,
-        suggestions.loading,
-    ]);
+    useEffect(() => {
+        if (suggestions.data?.getUserSuggestions.users) {
+            suggestions.data.getUserSuggestions.users.forEach((u) => {
+                setStateSuggestions((prevSugg) => [...prevSugg, u]);
+            });
+        }
+    }, [user, resultCreateRequest.loading, suggestions.loading]);
+
+    useEffect(() => {}, [stateSuggestions]);
 
     const content = (
         <Container>
-            <Flex
-                flexDir="column"
-                flexGrow={1}
-                justifyContent="space-between"
-                height="100vh"
+            {console.log("sug ", stateSuggestions)}
+            <Skeleton
+                isLoaded={!resultCreateRequest.loading && !suggestions.loading}
             >
-                <Box>
-                    <NavBar />
-                    <Grid
-                        mt={10}
-                        templateRows="repeat(1, 1fr)"
-                        templateColumns="repeat(7, 1fr)"
-                        gap={4}
-                    >
-                        <GridItem />
-                        <GridItem bg={bgColor[colorMode]} boxShadow="lg">
-                            <LeftPanel />
-                        </GridItem>
-                        <GridItem
-                            colSpan={3}
-                            bg={bgColor[colorMode]}
-                            boxShadow="lg"
+                <Flex
+                    flexDir="column"
+                    flexGrow={1}
+                    justifyContent="space-between"
+                    height="100vh"
+                >
+                    <Box>
+                        <NavBar />
+                        <Grid
+                            mt={10}
+                            templateRows="repeat(1, 1fr)"
+                            templateColumns="repeat(7, 1fr)"
+                            gap={4}
                         >
-                            <Invitations />
-                        </GridItem>
-                        <GridItem bg={bgColor[colorMode]} boxShadow="lg">
-                            <Flex flexDir="column">
-                                <Flex justifyContent="center" p={2} m={2}>
-                                    <Text fontWeight="semibold" fontSize="2xl">
-                                        Suggestions
-                                    </Text>
-                                </Flex>
+                            <GridItem />
+                            <GridItem bg={bgColor[colorMode]} boxShadow="lg">
+                                <LeftPanel />
+                            </GridItem>
+                            <GridItem
+                                colSpan={3}
+                                bg={bgColor[colorMode]}
+                                boxShadow="lg"
+                            >
+                                <Invitations />
+                            </GridItem>
+                            <GridItem bg={bgColor[colorMode]} boxShadow="lg">
+                                <Flex flexDir="column">
+                                    <Flex justifyContent="center" p={2} m={2}>
+                                        <Text
+                                            fontWeight="semibold"
+                                            fontSize="2xl"
+                                        >
+                                            Suggestions
+                                        </Text>
+                                    </Flex>
 
-                                {suggestions.data?.getUserSuggestions?.users?.map(
-                                    (u) => (
+                                    {stateSuggestions.map((u) => (
                                         <Flex
                                             justifyContent="space-between"
                                             boxShadow="md"
@@ -157,43 +185,48 @@ const Connections: NextPage = () => {
                                                         }
                                                         m={1}
                                                         onClick={() => {
-                                                            if (
+                                                            /*
+                                                        if (
+                                                            user
+                                                                ?.getUserConnections
+                                                                ?.user?.id
+                                                        ) {
+                                                            HandleCreateRequest(
+                                                                u.id,
                                                                 user
-                                                                    ?.getUserConnections
-                                                                    ?.user?.id
-                                                            ) {
-                                                                HandleCreateRequest(
-                                                                    u.id,
-                                                                    user
-                                                                        .getUserConnections
-                                                                        .user.id
-                                                                );
-                                                                suggestions.refetch();
-                                                            }
+                                                                    .getUserConnections
+                                                                    .user.id
+                                                            );
+                                                        }
+                                                        */
+                                                            handleRemoveSuggestion(
+                                                                u
+                                                            );
                                                         }}
                                                     />
                                                 </Tooltip>
                                             </Flex>
                                         </Flex>
-                                    )
-                                )}
-                            </Flex>
-                        </GridItem>
-                        <GridItem />
-                    </Grid>
-                </Box>
-                <Box>
-                    <Footer />
-                </Box>
-            </Flex>
+                                    ))}
+                                </Flex>
+                            </GridItem>
+                            <GridItem />
+                        </Grid>
+                    </Box>
+                    <Box>
+                        <Footer />
+                    </Box>
+                </Flex>
+            </Skeleton>
         </Container>
     );
 
-    return resultCreateRequest.loading || suggestions.loading ? (
-        <Spinner />
-    ) : (
-        content
-    );
+    // return resultCreateRequest.loading || suggestions.loading ? (
+    //     <Spinner />
+    // ) : (
+    //     content
+    // );
+    return content;
 };
 
 export default Connections;

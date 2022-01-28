@@ -75,7 +75,6 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
                         }
                     );
                 }
-                console.log(">> ", _count);
                 onSetCountUserInvitations(_count);
             }
         }

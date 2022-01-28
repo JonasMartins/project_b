@@ -1,4 +1,4 @@
-import React, { useEffect, Dispatch, useState } from "react";
+import React, { useEffect, useState } from "react";
 import type { NextPage } from "next";
 import {
     Tooltip,
@@ -8,7 +8,6 @@ import {
     Box,
     Grid,
     GridItem,
-    Button,
 } from "@chakra-ui/react";
 import { IoIosSettings } from "react-icons/io";
 import { IoHome } from "react-icons/io5";
@@ -19,13 +18,10 @@ import {
 } from "react-icons/bs";
 import ModalSettings from "components/Modal/modalSettings";
 import { useSelector } from "react-redux";
-import { globalState, RootState } from "Redux/Global/GlobalReducer";
+import { RootState } from "Redux/Global/GlobalReducer";
 import { useRouter } from "next/dist/client/router";
 import { css } from "@emotion/react";
-import { connect, ConnectedProps, useDispatch } from "react-redux";
-import { bindActionCreators } from "redux";
-import { Action, actionCreators } from "Redux/actions";
-import { GlobalTypes } from "Redux/types";
+interface LeftPanelProps {}
 
 const gridCell = `
     display: flex;
@@ -36,9 +32,6 @@ const gridCell = `
 const LeftPanel: NextPage<LeftPanelProps> = ({}) => {
     const modalSettings = useDisclosure();
     const router = useRouter();
-    const [times, setTimes] = useState(0);
-
-    const dispatch = useDispatch();
 
     const userConnections = useSelector(
         (state: RootState) => state.globalReducer.userConnections
@@ -50,15 +43,6 @@ const LeftPanel: NextPage<LeftPanelProps> = ({}) => {
     const countUserInvitations = useSelector(
         (state: RootState) => state.globalReducer.countUserInvitations
     );
-
-    const { setCountUserInvitations } = bindActionCreators(
-        actionCreators,
-        dispatch
-    );
-
-    const onSetCountUserInvitations = (count: number) => {
-        setCountUserInvitations(count);
-    };
 
     const handleCloseModalSettings = () => {
         if (hasUpdateUserSettings) {
@@ -191,24 +175,5 @@ const LeftPanel: NextPage<LeftPanelProps> = ({}) => {
         </Box>
     );
 };
-
-const mapStateToProps = (state: globalState) => {
-    return {
-        countUserInvitations: state.countUserInvitations,
-    };
-};
-
-const mapDispatchToProps = (dispatch: Dispatch<Action>) => ({
-    CountUserInvitations: () =>
-        dispatch({
-            type: GlobalTypes.COUNT_USER_INVITATIONS,
-            payload: 1,
-        }),
-});
-
-const connector = connect(mapStateToProps);
-
-//type LeftPanelProps = ConnectedProps<typeof connector>;
-interface LeftPanelProps {}
 
 export default LeftPanel;
