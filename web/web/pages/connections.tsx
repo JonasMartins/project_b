@@ -28,7 +28,6 @@ import {
 import { defaultImage } from "utils/consts";
 import { HiUserAdd } from "react-icons/hi";
 import { truncateString } from "utils/generalAuxFunctions";
-// import Spinner from "components/Layout/Spinner";
 
 interface userSuggestionsType {
     __typename?: "User" | undefined;
@@ -64,6 +63,14 @@ const Connections: NextPage = () => {
                     stateSuggestions.filter((x) => x.id !== u.id)
                 );
             }
+            toast({
+                title: "Request Sended",
+                description: "Request Successfully Sended",
+                status: "success",
+                duration: 8000,
+                isClosable: true,
+                position: "top",
+            });
             setLoadEffect(false);
         }, 500);
     };
@@ -80,6 +87,14 @@ const Connections: NextPage = () => {
                 },
             },
             onError: () => {
+                toast({
+                    title: "Error",
+                    description: "Something went wrong",
+                    status: "error",
+                    duration: 8000,
+                    isClosable: true,
+                    position: "top",
+                });
                 console.error(resultCreateRequest.error);
             },
         });
@@ -87,15 +102,6 @@ const Connections: NextPage = () => {
         if (!result.data?.createRequest?.done) {
             return null;
         }
-        // await suggestions.refetch();
-        toast({
-            title: "Request Sended",
-            description: "Request successfully sended",
-            status: "success",
-            duration: 8000,
-            isClosable: true,
-            position: "top",
-        });
 
         return result.data;
     };
@@ -107,15 +113,7 @@ const Connections: NextPage = () => {
                 setStateSuggestions((prevSugg) => [...prevSugg, u]);
             });
         }
-    }, [user, resultCreateRequest.loading, suggestions.loading]);
-
-    //useEffect(() => {}, [stateSuggestions]);
-
-    useEffect(() => {
-        return () => {
-            setStateSuggestions([]);
-        };
-    }, []);
+    }, [user, suggestions.loading]);
 
     const content = (
         <Container>
@@ -147,7 +145,7 @@ const Connections: NextPage = () => {
                         <GridItem bg={bgColor[colorMode]} boxShadow="lg">
                             <Flex flexDir="column">
                                 <Flex justifyContent="center" p={2} m={2}>
-                                    <Text fontWeight="semibold" fontSize="2xl">
+                                    <Text fontWeight="thin" fontSize="2xl">
                                         Suggestions
                                     </Text>
                                 </Flex>
@@ -166,13 +164,7 @@ const Connections: NextPage = () => {
                                         alignItems="center"
                                         key={u.id}
                                     >
-                                        <Skeleton
-                                            isLoaded={
-                                                !resultCreateRequest.loading &&
-                                                !suggestions.loading &&
-                                                !loadEffect
-                                            }
-                                        >
+                                        <Skeleton isLoaded={!loadEffect}>
                                             <Flex alignItems="center">
                                                 <Image
                                                     mr={2}
@@ -199,12 +191,12 @@ const Connections: NextPage = () => {
                                                 <IconButton
                                                     isRound={true}
                                                     aria-label="connect"
+                                                    isDisabled={loadEffect}
                                                     icon={
                                                         <HiUserAdd color="teal" />
                                                     }
                                                     m={1}
                                                     onClick={() => {
-                                                        /*
                                                         if (
                                                             user
                                                                 ?.getUserConnections
@@ -217,7 +209,7 @@ const Connections: NextPage = () => {
                                                                     .user.id
                                                             );
                                                         }
-                                                        */
+
                                                         setLoadEffect(true);
                                                         handleRemoveSuggestion(
                                                             u
@@ -240,11 +232,6 @@ const Connections: NextPage = () => {
         </Container>
     );
 
-    // return resultCreateRequest.loading || suggestions.loading ? (
-    //     <Spinner />
-    // ) : (
-    //     content
-    // );
     return content;
 };
 

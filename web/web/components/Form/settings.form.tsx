@@ -35,11 +35,12 @@ import {
     UpdateUserSettingsMutation,
 } from "generated/graphql";
 import { gql, useMutation } from "@apollo/client";
-import { setHasUpdateUserSettings } from "Redux/actions";
 import { useDispatch } from "react-redux";
 import Spinner from "components/Layout/Spinner";
 import { defaultImage } from "utils/consts";
 import { useApolloClient } from "@apollo/client";
+import { bindActionCreators } from "redux";
+import { actionCreators } from "Redux/actions";
 
 const SeetingsSchema = Yup.object().shape({
     name: Yup.string().required("Required"),
@@ -85,8 +86,13 @@ const Settings: NextPage<SettingsProps> = ({ user }) => {
 
     const dispatch = useDispatch();
 
+    const { setHasUpdateUserSettings } = bindActionCreators(
+        actionCreators,
+        dispatch
+    );
+
     const onSetHasUpdatedUserSettings = (hasUpdated: boolean) => {
-        dispatch(setHasUpdateUserSettings(hasUpdated));
+        setHasUpdateUserSettings(hasUpdated);
     };
 
     const handleUpdateUserSettingsMutation = async (

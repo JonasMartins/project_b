@@ -61,23 +61,21 @@ export class UserResolver {
         @Arg("offset", () => Number, { nullable: true }) offset: number,
         @Ctx() { em }: Context
     ): Promise<UsersResponse> {
-        const max = Math.min(20, limit ? limit : 5);
+        const max = Math.min(20, limit ? limit : 10);
         const maxOffset = Math.min(10, offset ? offset : 0);
 
         try {
             const qb = await em
                 .getRepository(User)
                 .createQueryBuilder("user")
-                .leftJoinAndSelect("user.connections", "u1")
+                .leftJoinAndSelect("user.role", "r")
                 .select([
                     "user.id",
                     "user.name",
                     "user.email",
                     "user.picture",
-                    "u1.id",
-                    "u1.name",
-                    "u1.email",
-                    "u1.picture",
+                    "r.id",
+                    "r.name",
                 ])
                 .limit(max)
                 .offset(maxOffset);
@@ -739,13 +737,15 @@ export class UserResolver {
             });
 
             conn?.requests.forEach((x) => {
-                if (x.accepted !== false) {
+                if (x.accepted !== false && !ids.includes(x.requestedId)) {
                     ids.push(x.requestedId);
                 }
             });
 
             conn?.invitations.forEach((x) => {
-                ids.push(x.requestorId);
+                if (!ids.includes(x.requestorId)) {
+                    ids.push(x.requestorId);
+                }
             });
 
             ids.push(req.session.userId);
