@@ -8,7 +8,8 @@ import {
     BlobClient,
 } from "@azure/storage-blob";
 import { genericError } from "./generalAuxMethods";
-import { createWriteStream } from "fs";
+// const multer = require("multer");
+// import intoStream from "into-stream";
 
 @ObjectType()
 class FileResponse {
@@ -60,7 +61,6 @@ export class HandleUpload {
     };
 
     public upload = async (): Promise<FileResponse> => {
-        let success: boolean = false;
         let paths: string[] = [];
         let path: string = "";
 
@@ -76,21 +76,37 @@ export class HandleUpload {
         }
 
         try {
+            path = "";
             await Promise.all(
                 this.files.map(async (file) => {
                     const { createReadStream, filename } = await file;
                     const blobName = this.getBlobName(filename);
-                    path = process.cwd() + "/images";
+                    const containerClient =
+                        this.blobServiceClient.getContainerClient(
+                            containerName
+                        );
+                    const blockBlobClient =
+                        containerClient.getBlockBlobClient(blobName);
 
                     try {
                         return new Promise(async (resolve, reject) => {
-                            createReadStream()
-                                .pipe(createWriteStream(path + "/" + blobName))
-                                .on("finish", () => {
-                                    paths.push(path + "/" + blobName);
-                                    resolve(true);
-                                })
-                                .on("error", () => reject(false));
+                            const result = await blockBlobClient.uploadStream(
+                                createReadStream(),
+                                uploadOptions.bufferSize,
+                                uploadOptions.maxBuffers,
+                                {
+                                    blobHTTPHeaders: {
+                                        blobContentType: "image/jpeg",
+                                    },
+                                }
+                            );
+
+                            if (!result.errorCode) {
+                                resolve(true);
+                                paths.push(blockBlobClient.url);
+                            } else {
+                                reject(false);
+                            }
                         });
                     } catch (e) {
                         return {
@@ -135,3 +151,14 @@ export class HandleUpload {
         return blobsArray;
     };
 }
+
+
+
+ON NEX.CONFIG PUT THE BLOB SERVER DOMAIN:
+
+module.exports = {
+    reactStrictMode: true,
+    images: {
+        domains: ["jms7045blob.blob.core.windows.net"],
+    },
+};

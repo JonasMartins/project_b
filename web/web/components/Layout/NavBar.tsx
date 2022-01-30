@@ -28,6 +28,7 @@ import { defaultImage } from "utils/consts";
 import { useSelector } from "react-redux";
 import { RootState } from "Redux/Global/GlobalReducer";
 import { useUser } from "utils/hooks/useUser";
+import { getServerPathImage } from "utils/generalAuxFunctions";
 
 interface NavBarProps {}
 
@@ -98,7 +99,7 @@ const NavBar: NextPage<NavBarProps> = ({}) => {
                     mr={2}
                     borderRadius="full"
                     boxSize="40px"
-                    src={user?.picture ? user?.picture : defaultImage}
+                    src={getServerPathImage(user?.picture)}
                 />
                 <Flex m={2}>
                     {colorMode === "light" ? (

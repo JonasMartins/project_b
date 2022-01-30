@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import type { NextPage } from "next";
 import {
     useUpdateRequestMutation,
     UpdateRequestMutation,
     useCreateConnectionMutation,
+    useGetUserConnectionsLazyQuery,
 } from "generated/graphql";
 import {
     Flex,
@@ -13,9 +14,9 @@ import {
     Tooltip,
     useToast,
     useColorMode,
+    Link,
     Skeleton,
 } from "@chakra-ui/react";
-import { defaultImage } from "utils/consts";
 import { useSelector } from "react-redux";
 import { BsFillTrashFill } from "react-icons/bs";
 import { AiFillCheckCircle } from "react-icons/ai";
@@ -24,7 +25,9 @@ import { RootState } from "Redux/Global/GlobalReducer";
 import { bindActionCreators } from "redux";
 import { actionCreators } from "Redux/actions";
 import { useDispatch } from "react-redux";
-
+import NexLink from "next/link";
+import { useUser } from "utils/hooks/useUser";
+import { getServerPathImage } from "utils/generalAuxFunctions";
 interface InvitationsProps {}
 
 interface userInvitationsType {
@@ -48,12 +51,16 @@ interface userConnectionType {
 
 const Invitations: NextPage<InvitationsProps> = ({}) => {
     const toast = useToast();
+    const user = useUser();
     const bgColor = { light: "white", dark: "gray.800" };
     const { colorMode } = useColorMode();
     const [requestedId, setRequestedId] = useState("");
     const [updateRequest, updateRequestResult] = useUpdateRequestMutation({});
     const [createConnection, resultCreateConnection] =
         useCreateConnectionMutation({});
+
+    const [getUserConnections, resultGetUserConnectionsLazy] =
+        useGetUserConnectionsLazyQuery({});
 
     const dispatch = useDispatch();
     const { setCountUserInvitations } = bindActionCreators(
@@ -65,10 +72,6 @@ const Invitations: NextPage<InvitationsProps> = ({}) => {
     const onSetCountUserInvitations = (count: number) => {
         setCountUserInvitations(count);
     };
-
-    const user = useSelector(
-        (state: RootState) => state.globalReducer.userConnections
-    );
 
     const countUserInvitations = useSelector(
         (state: RootState) => state.globalReducer.countUserInvitations
@@ -177,23 +180,42 @@ const Invitations: NextPage<InvitationsProps> = ({}) => {
         }, 500);
     };
 
-    useEffect(() => {
-        if (user?.getUserConnections?.user) {
-            setRequestedId(user.getUserConnections.user.id);
-            setConnections([]);
-            user.getUserConnections.user.connections?.forEach((x) => {
-                setConnections((prevConn) => [...prevConn, x]);
+    const handleGetData = useCallback(async () => {
+        if (user?.id) {
+            const conn = await getUserConnections({
+                variables: {
+                    id: user.id,
+                },
             });
-            if (user.getUserConnections.user.invitations) {
-                setInvitations([]);
-                user.getUserConnections.user.invitations.forEach((x) => {
-                    if (x.accepted === null || x.accepted === undefined) {
-                        setInvitations((prevInvi) => [...prevInvi, x]);
+
+            if (conn?.data?.getUserConnections?.user) {
+                setRequestedId(conn?.data?.getUserConnections.user.id);
+                setConnections([]);
+                conn?.data?.getUserConnections.user.connections?.forEach(
+                    (x) => {
+                        setConnections((prevConn) => [...prevConn, x]);
                     }
-                });
+                );
+                if (conn?.data?.getUserConnections.user.invitations) {
+                    setInvitations([]);
+                    conn?.data?.getUserConnections.user.invitations.forEach(
+                        (x) => {
+                            if (
+                                x.accepted === null ||
+                                x.accepted === undefined
+                            ) {
+                                setInvitations((prevInvi) => [...prevInvi, x]);
+                            }
+                        }
+                    );
+                }
             }
         }
-    }, [user]);
+    }, [user?.id]);
+
+    useEffect(() => {
+        handleGetData();
+    }, [user, resultGetUserConnectionsLazy.loading]);
 
     const noInvitations = (
         <Flex justifyContent="center" p={2} m={2}>
@@ -223,19 +245,24 @@ const Invitations: NextPage<InvitationsProps> = ({}) => {
                     >
                         <Skeleton isLoaded={!loadEffect}>
                             <Flex alignItems="center">
-                                <Image
-                                    mr={2}
-                                    borderRadius="full"
-                                    boxSize="50px"
-                                    src={
-                                        invitation?.requestor?.picture
-                                            ? invitation.requestor.picture
-                                            : defaultImage
-                                    }
-                                />
-                                <Text fontWeight="thin">
-                                    {invitation?.requestor?.name}
-                                </Text>
+                                <NexLink href={`/user/${invitation.id}`}>
+                                    <Image
+                                        mr={2}
+                                        borderRadius="full"
+                                        boxSize="50px"
+                                        cursor="pointer"
+                                        src={getServerPathImage(
+                                            invitation?.requestor?.picture
+                                        )}
+                                    />
+                                </NexLink>
+                                <NexLink href={`/user/${invitation.id}`}>
+                                    <Link>
+                                        <Text fontWeight="thin">
+                                            {invitation?.requestor?.name}
+                                        </Text>
+                                    </Link>
+                                </NexLink>
                             </Flex>
                         </Skeleton>
                         <Flex p={2}>
@@ -302,7 +329,7 @@ const Invitations: NextPage<InvitationsProps> = ({}) => {
             )}
             <Flex justifyContent="center" p={2} m={2}>
                 <Text fontWeight="thin" fontSize="2xl">
-                    Connections
+                    Connections ({connections.length})
                 </Text>
             </Flex>
             {connections.map((connection) => (
@@ -317,17 +344,22 @@ const Invitations: NextPage<InvitationsProps> = ({}) => {
                 >
                     <Skeleton isLoaded={!loadEffect}>
                         <Flex alignItems="center">
-                            <Image
-                                mr={2}
-                                borderRadius="full"
-                                boxSize="50px"
-                                src={
-                                    connection.picture
-                                        ? connection.picture
-                                        : defaultImage
-                                }
-                            />
-                            <Text fontWeight="thin">{connection.name}</Text>
+                            <NexLink href={`/user/${connection.id}`}>
+                                <Image
+                                    mr={2}
+                                    borderRadius="full"
+                                    boxSize="50px"
+                                    cursor="pointer"
+                                    src={getServerPathImage(connection.picture)}
+                                />
+                            </NexLink>
+                            <NexLink href={`/user/${connection.id}`}>
+                                <Link>
+                                    <Text fontWeight="thin">
+                                        {connection.name}
+                                    </Text>
+                                </Link>
+                            </NexLink>
                         </Flex>
                     </Skeleton>
                     <Flex p={2}>

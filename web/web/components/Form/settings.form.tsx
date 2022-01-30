@@ -29,7 +29,7 @@ import {
     thumbInner,
     img,
 } from "utils/dropzone/dropzoneStyles";
-import { truncateString } from "utils/generalAuxFunctions";
+import { getServerPathImage, truncateString } from "utils/generalAuxFunctions";
 import {
     UpdateUserSettingsDocument,
     UpdateUserSettingsMutation,
@@ -37,7 +37,6 @@ import {
 import { gql, useMutation } from "@apollo/client";
 import { useDispatch } from "react-redux";
 import Spinner from "components/Layout/Spinner";
-import { defaultImage } from "utils/consts";
 import { useApolloClient } from "@apollo/client";
 import { bindActionCreators } from "redux";
 import { actionCreators } from "Redux/actions";
@@ -192,7 +191,7 @@ const Settings: NextPage<SettingsProps> = ({ user }) => {
                     mr={2}
                     borderRadius="full"
                     boxSize="60px"
-                    src={user?.picture ? user?.picture : defaultImage}
+                    src={getServerPathImage(user?.picture)}
                 />
             </Flex>
             <Formik

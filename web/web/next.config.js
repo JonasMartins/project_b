@@ -2,6 +2,6 @@
 module.exports = {
     reactStrictMode: true,
     images: {
-        domains: ["jms7045blob.blob.core.windows.net"],
+        domains: ["http://127.0.0.1:4001"],
     },
 };

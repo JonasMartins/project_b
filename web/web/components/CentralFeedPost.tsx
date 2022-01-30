@@ -12,9 +12,9 @@ import PostEmotionsRecord from "components/PostEmotionsRecord";
 import { getPostsType } from "utils/types/post/post.types";
 import PostEmotion from "components/Form/postEmotion.form";
 import { useUser } from "utils/hooks/useUser";
-import { defaultImage } from "utils/consts";
 import { useEffect, useState } from "react";
 import SkeletonLines from "components/Layout/SkeletonLines";
+import { getServerPathImage } from "utils/generalAuxFunctions";
 
 interface CentralFeedPostProps {
     post: getPostsType;
@@ -68,11 +68,7 @@ const CentralFeedPost: NextPage<CentralFeedPostProps> = ({ post }) => {
                             mr={1}
                             borderRadius="full"
                             boxSize="32px"
-                            src={
-                                post.creator.picture
-                                    ? post.creator.picture
-                                    : defaultImage
-                            }
+                            src={getServerPathImage(post.creator.picture)}
                         />
                     </Tooltip>
 

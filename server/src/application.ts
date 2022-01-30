@@ -88,6 +88,9 @@ export default class Application {
             graphqlUploadExpress({ maxFileSize: 10000000, maxFiles: 10 })
         );
 
+        // ONLY TO STORE FILES LOCALLY ON IMAGES FOLDER
+        this.app.use("/images", express.static("images"));
+
         apolloServer.applyMiddleware({
             app: this.app,
             cors: false,

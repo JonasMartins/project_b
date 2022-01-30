@@ -1,0 +1,10 @@
+query GetUserPendingInvitationsCount($id: String!) {
+    getUserPendingInvitationsCount(id: $id) {
+        errors {
+            message
+            method
+            field
+        }
+        count
+    }
+}

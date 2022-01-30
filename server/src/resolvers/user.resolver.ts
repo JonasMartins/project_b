@@ -28,6 +28,14 @@ class LoginResponse {
 }
 
 @ObjectType()
+class CountResponse {
+    @Field(() => [ErrorFieldHandler], { nullable: true })
+    errors?: ErrorFieldHandler[];
+    @Field(() => Number, { nullable: true })
+    count?: Number;
+}
+
+@ObjectType()
 class GeneralResponse {
     @Field(() => [ErrorFieldHandler], { nullable: true })
     errors?: ErrorFieldHandler[];
@@ -697,6 +705,35 @@ export class UserResolver {
                 errors: genericError(
                     "-",
                     "updateRequest",
+                    __filename,
+                    `${e.message}`
+                ),
+            };
+        }
+    }
+
+    @Query(() => CountResponse)
+    async getUserPendingInvitationsCount(
+        @Arg("id") id: string,
+        @Ctx() { em }: Context
+    ): Promise<CountResponse> {
+        try {
+            const qb = await em
+                .getRepository(User)
+                .createQueryBuilder("user")
+                .leftJoinAndSelect("user.invitations", "i")
+                .where("user.id = :id", { id })
+                .andWhere("i.accepted is null")
+                .select(["i.id"]);
+
+            const requests = await qb.execute();
+
+            return { count: requests.length };
+        } catch (e) {
+            return {
+                errors: genericError(
+                    "-",
+                    "getUserPendingInvitations",
                     __filename,
                     `${e.message}`
                 ),

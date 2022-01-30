@@ -10,6 +10,7 @@ import {
     IconButton,
     useToast,
     Skeleton,
+    Link,
 } from "@chakra-ui/react";
 import Container from "components/Container";
 import Footer from "components/Layout/Footer";
@@ -18,16 +19,15 @@ import NavBar from "components/Layout/NavBar";
 import type { NextPage } from "next";
 import React, { useEffect, useState } from "react";
 import Invitations from "components/Invitations";
-import { useSelector } from "react-redux";
-import { RootState } from "Redux/Global/GlobalReducer";
+import { useUser } from "utils/hooks/useUser";
 import {
     useGetConnectionSuggestionsQuery,
     useCreateRequestMutation,
     CreateRequestMutation,
 } from "generated/graphql";
-import { defaultImage } from "utils/consts";
 import { HiUserAdd } from "react-icons/hi";
-import { truncateString } from "utils/generalAuxFunctions";
+import { getServerPathImage, truncateString } from "utils/generalAuxFunctions";
+import NexLink from "next/link";
 
 interface userSuggestionsType {
     __typename?: "User" | undefined;
@@ -37,16 +37,12 @@ interface userSuggestionsType {
 }
 
 const Connections: NextPage = () => {
+    const user = useUser();
     const toast = useToast();
     const { colorMode } = useColorMode();
     const bgColor = { light: "gray.200", dark: "gray.700" };
     const [loadEffect, setLoadEffect] = useState(false);
-
     const [createRequest, resultCreateRequest] = useCreateRequestMutation({});
-
-    const user = useSelector(
-        (state: RootState) => state.globalReducer.userConnections
-    );
 
     const suggestions = useGetConnectionSuggestionsQuery({
         fetchPolicy: "cache-and-network",
@@ -166,18 +162,28 @@ const Connections: NextPage = () => {
                                     >
                                         <Skeleton isLoaded={!loadEffect}>
                                             <Flex alignItems="center">
-                                                <Image
-                                                    mr={2}
-                                                    borderRadius="full"
-                                                    boxSize="40px"
-                                                    src={
-                                                        u?.picture
-                                                            ? u.picture
-                                                            : defaultImage
-                                                    }
-                                                />
+                                                <NexLink href={`/user/${u.id}`}>
+                                                    <Image
+                                                        mr={2}
+                                                        borderRadius="full"
+                                                        boxSize="40px"
+                                                        cursor="pointer"
+                                                        src={getServerPathImage(
+                                                            u?.picture
+                                                        )}
+                                                    />
+                                                </NexLink>
                                                 <Text fontWeight="thin">
-                                                    {truncateString(u?.name, 8)}
+                                                    <NexLink
+                                                        href={`/user/${u.id}`}
+                                                    >
+                                                        <Link>
+                                                            {truncateString(
+                                                                u?.name,
+                                                                8
+                                                            )}
+                                                        </Link>
+                                                    </NexLink>
                                                 </Text>
                                             </Flex>
                                         </Skeleton>
@@ -197,16 +203,10 @@ const Connections: NextPage = () => {
                                                     }
                                                     m={1}
                                                     onClick={() => {
-                                                        if (
-                                                            user
-                                                                ?.getUserConnections
-                                                                ?.user?.id
-                                                        ) {
+                                                        if (user?.id) {
                                                             HandleCreateRequest(
                                                                 u.id,
-                                                                user
-                                                                    .getUserConnections
-                                                                    .user.id
+                                                                user.id
                                                             );
                                                         }
 

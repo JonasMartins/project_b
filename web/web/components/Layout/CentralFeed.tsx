@@ -15,6 +15,7 @@ import {
     GetPostsQuery,
     GetUserConnectionsQuery,
     useGetUserConnectionsLazyQuery,
+    useGetUserPendingInvitationsCountLazyQuery,
 } from "generated/graphql";
 import type { NextPage } from "next";
 import React, { useCallback, useEffect } from "react";
@@ -38,44 +39,35 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
         (state: RootState) => state.globalReducer.hasSubmittedPost
     );
 
-    const { setGetUserConnections, setCountUserInvitations } =
-        bindActionCreators(actionCreators, dispatch);
-
-    const onSetUserConnections = (user: GetUserConnectionsQuery | null) => {
-        if (user) {
-            setGetUserConnections(user);
-        }
-    };
+    const { setCountUserInvitations } = bindActionCreators(
+        actionCreators,
+        dispatch
+    );
 
     const onSetCountUserInvitations = (count: number) => {
         setCountUserInvitations(count);
     };
 
-    const [getUserConnections, resultGetConnectionsLazy] =
-        useGetUserConnectionsLazyQuery({});
+    const [getCountPendingInvitations, resultgetCountPendingInvitations] =
+        useGetUserPendingInvitationsCountLazyQuery({});
 
     const handleGetUserConnections = useCallback(async () => {
         if (user?.id) {
-            const conn = await getUserConnections({
+            const countPending = await getCountPendingInvitations({
                 variables: {
                     id: user.id,
                 },
             });
 
-            if (conn.data?.getUserConnections?.user) {
-                onSetUserConnections(conn.data);
-
-                let _count = 0;
-                if (conn.data.getUserConnections.user.invitations?.length) {
-                    conn.data.getUserConnections.user.invitations.forEach(
-                        (x) => {
-                            if (x.accepted === null) {
-                                _count++;
-                            }
-                        }
-                    );
-                }
-                onSetCountUserInvitations(_count);
+            if (countPending.data?.getUserPendingInvitationsCount?.count) {
+                console.log(
+                    countPending.data.getUserPendingInvitationsCount.count
+                );
+                onSetCountUserInvitations(
+                    countPending.data.getUserPendingInvitationsCount.count
+                );
+            } else {
+                onSetCountUserInvitations(0);
             }
         }
     }, [user?.id]);
@@ -106,7 +98,7 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
         handleRefetchPosts();
     }, [
         hasSubmittedPost,
-        resultGetConnectionsLazy.loading,
+        resultgetCountPendingInvitations.loading,
         onSetCountUserInvitations,
     ]);
 
