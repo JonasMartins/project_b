@@ -18,7 +18,6 @@ mutation CreateEmotion(
             }
             post {
                 id
-                body
             }
         }
     }

@@ -1,8 +1,19 @@
 import { GetUserConnectionsQuery } from "generated/graphql";
 import { GlobalTypes } from "Redux/types";
+import { postEmotion } from "utils/types/post/post.types";
 
 export type IsSubmittingPostAction = {
     type: typeof GlobalTypes.IS_SUBMITTING_POST;
+    payload: boolean;
+};
+
+export type SetCreatedEmotion = {
+    type: typeof GlobalTypes.SET_CREATED_EMOTION;
+    payload: postEmotion;
+};
+
+export type GetHasCreatedEmotion = {
+    type: typeof GlobalTypes.HAS_CREATED_EMOTION;
     payload: boolean;
 };
 
@@ -31,6 +42,8 @@ export type Action =
     | HasSubmittedPostAction
     | HasUpdateUserSettingsAction
     | GetUserConnections
-    | CountUserInvitations;
+    | CountUserInvitations
+    | GetHasCreatedEmotion
+    | SetCreatedEmotion;
 
 export * as actionCreators from "Redux/actionCreators";

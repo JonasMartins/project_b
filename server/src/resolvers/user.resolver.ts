@@ -697,8 +697,6 @@ export class UserResolver {
                     ),
                 };
             }
-            // console.log("User: ", user.connections);
-
             return { user };
         } catch (e) {
             return {
@@ -721,7 +719,7 @@ export class UserResolver {
             const qb = await em
                 .getRepository(User)
                 .createQueryBuilder("user")
-                .leftJoinAndSelect("user.invitations", "i")
+                .innerJoinAndSelect("user.invitations", "i")
                 .where("user.id = :id", { id })
                 .andWhere("i.accepted is null")
                 .select(["i.id"]);

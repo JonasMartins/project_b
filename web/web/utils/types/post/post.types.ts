@@ -7,6 +7,14 @@ export type emotion = {
     creator: { __typename?: "User"; id: string; name: string };
 };
 
+export type postEmotion = {
+    __typename?: "PostEmotion";
+    id: string;
+    type: EmotionType;
+    creator: { __typename?: "User"; id: string; name: string };
+    post: { __typename?: "Post"; id: string };
+};
+
 export type getPostsType = {
     __typename?: "Post";
     id: string;

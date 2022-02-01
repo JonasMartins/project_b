@@ -73,6 +73,7 @@ const PostEmotion: NextPage<PostEmotionProps> = ({
         if (!result.data) {
             throw new Error(error?.message);
         }
+
         return result.data;
     };
 

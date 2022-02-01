@@ -1,35 +1,75 @@
-import {
-    Box,
-    Flex,
-    Text,
-    useColorMode,
-    Image as ChakraImage,
-    Tooltip,
-} from "@chakra-ui/react";
+import { Box, Flex, Text, useColorMode } from "@chakra-ui/react";
 import type { NextPage } from "next";
 import Image from "next/image";
 import PostEmotionsRecord from "components/PostEmotionsRecord";
 import { getPostsType } from "utils/types/post/post.types";
-import PostEmotion from "components/Form/postEmotion.form";
 import { useUser } from "utils/hooks/useUser";
 import { useEffect, useState } from "react";
 import SkeletonLines from "components/Layout/SkeletonLines";
-import { getServerPathImage } from "utils/generalAuxFunctions";
+
+import { useSelector } from "react-redux";
+import { RootState } from "Redux/Global/GlobalReducer";
+import { emotion as emotionElement } from "utils/types/post/post.types";
+import { useDispatch } from "react-redux";
+import { bindActionCreators } from "redux";
+import { actionCreators } from "Redux/actions";
 
 interface CentralFeedPostProps {
     post: getPostsType;
 }
 
 const CentralFeedPost: NextPage<CentralFeedPostProps> = ({ post }) => {
-    const { colorMode } = useColorMode();
     const user = useUser();
+    const dispatch = useDispatch();
+    const { colorMode } = useColorMode();
     const [loadEffect, setLoadEffect] = useState(true);
+
+    const createdEmotion = useSelector(
+        (state: RootState) => state.globalReducer.createdEmotion
+    );
+
+    const hasCreatedEmotion = useSelector(
+        (state: RootState) => state.globalReducer.hasCreatedEmotion
+    );
+
+    const { setHasCreatedEmotion } = bindActionCreators(
+        actionCreators,
+        dispatch
+    );
+
+    const onSetHasCreatedEmotion = (hasCreated: boolean) => {
+        setHasCreatedEmotion(hasCreated);
+    };
+
+    useEffect(() => {
+        if (createdEmotion) {
+            if (createdEmotion.post.id === post.id) {
+                console.log("Created Emotion: ", createdEmotion);
+                let emotionObj: emotionElement = {
+                    id: createdEmotion.id,
+                    type: createdEmotion.type,
+                    creator: {
+                        id: createdEmotion.creator.name,
+                        name: createdEmotion.creator.name,
+                    },
+                };
+                if (!post.emotions) {
+                    let emotionsArray: emotionElement[] = [];
+                    post.emotions = emotionsArray;
+                    post.emotions.push(emotionObj);
+                } else {
+                    post.emotions.push(emotionObj);
+                }
+                console.log("emotions ", post.emotions);
+            }
+        }
+    }, [hasCreatedEmotion]);
 
     useEffect(() => {
         setTimeout(() => {
             setLoadEffect(false);
         }, 500);
-    }, [post.creator.picture]);
+    }, [post.creator.picture, user]);
 
     return (
         <Flex
@@ -53,32 +93,7 @@ const CentralFeedPost: NextPage<CentralFeedPostProps> = ({ post }) => {
                     <></>
                 )}
             </Flex>
-            <Flex justifyContent="space-between">
-                <Box mt={3}>
-                    <PostEmotionsRecord emotions={post.emotions} />
-                </Box>
-                <Flex alignItems="center">
-                    <Tooltip
-                        hasArrow
-                        aria-label="author"
-                        label={`Author: ${post.creator.name}`}
-                        colorScheme="white"
-                    >
-                        <ChakraImage
-                            mr={1}
-                            borderRadius="full"
-                            boxSize="32px"
-                            src={getServerPathImage(post.creator.picture)}
-                        />
-                    </Tooltip>
-
-                    <PostEmotion
-                        postEmotions={post.emotions ? post.emotions : []}
-                        user={user}
-                        postId={post.id}
-                    />
-                </Flex>
-            </Flex>
+            {user && <PostEmotionsRecord post={post} user={user} />}
         </Flex>
     );
 };

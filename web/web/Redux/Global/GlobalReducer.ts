@@ -2,6 +2,7 @@ import { Action } from "Redux/actions";
 import { GetUserConnectionsQuery } from "generated/graphql";
 import { GlobalTypes } from "Redux/types";
 import { combineReducers } from "redux";
+import { postEmotion } from "utils/types/post/post.types";
 
 export interface globalState {
     isSubmittinPost: boolean;
@@ -9,6 +10,8 @@ export interface globalState {
     hasUpdateUserSettings: boolean;
     userConnections: GetUserConnectionsQuery | null;
     countUserInvitations: number;
+    hasCreatedEmotion: boolean;
+    createdEmotion: postEmotion | null;
 }
 const initialState = {
     isSubmittinPost: false,
@@ -16,6 +19,8 @@ const initialState = {
     hasUpdateUserSettings: false,
     userConnections: null,
     countUserInvitations: 0,
+    hasCreatedEmotion: false,
+    createdEmotion: null,
 };
 export const globalReducer = (
     state: globalState = initialState,
@@ -36,6 +41,12 @@ export const globalReducer = (
         }
         case GlobalTypes.COUNT_USER_INVITATIONS: {
             return { ...state, countUserInvitations: action.payload };
+        }
+        case GlobalTypes.HAS_CREATED_EMOTION: {
+            return { ...state, hasCreatedEmotion: action.payload };
+        }
+        case GlobalTypes.SET_CREATED_EMOTION: {
+            return { ...state, createdEmotion: action.payload };
         }
         default:
             return state;

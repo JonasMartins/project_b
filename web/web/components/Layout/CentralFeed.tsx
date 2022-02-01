@@ -13,8 +13,6 @@ import ModalCreatePost from "components/Modal/modalCreatePost";
 import {
     GetPostsDocument,
     GetPostsQuery,
-    GetUserConnectionsQuery,
-    useGetUserConnectionsLazyQuery,
     useGetUserPendingInvitationsCountLazyQuery,
 } from "generated/graphql";
 import type { NextPage } from "next";
@@ -49,7 +47,9 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
     };
 
     const [getCountPendingInvitations, resultgetCountPendingInvitations] =
-        useGetUserPendingInvitationsCountLazyQuery({});
+        useGetUserPendingInvitationsCountLazyQuery({
+            fetchPolicy: "cache-and-network",
+        });
 
     const handleGetUserConnections = useCallback(async () => {
         if (user?.id) {

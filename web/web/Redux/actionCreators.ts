@@ -2,6 +2,25 @@ import { GetUserConnectionsQuery } from "generated/graphql";
 import { GlobalTypes } from "Redux/types";
 import { Action } from "Redux/actions";
 import { Dispatch } from "redux";
+import { postEmotion } from "utils/types/post/post.types";
+
+export const setHasCreatedEmotion = (hasCreated: boolean) => {
+    return (dispatch: Dispatch<Action>) => {
+        dispatch({
+            type: GlobalTypes.HAS_CREATED_EMOTION,
+            payload: hasCreated,
+        });
+    };
+};
+
+export const setCreatedEmotion = (emotion: postEmotion) => {
+    return (dispatch: Dispatch<Action>) => {
+        dispatch({
+            type: GlobalTypes.SET_CREATED_EMOTION,
+            payload: emotion,
+        });
+    };
+};
 
 export const setGetUserConnections = (
     userConnections: GetUserConnectionsQuery

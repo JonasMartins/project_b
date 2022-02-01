@@ -414,7 +414,7 @@ export type CreateEmotionMutationVariables = Exact<{
 }>;
 
 
-export type CreateEmotionMutation = { __typename?: 'Mutation', createEmotion: { __typename?: 'EmotionResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', method: string, message: string, field: string }> | null | undefined, emotion?: { __typename?: 'Emotion', id: string, type: EmotionType, creator: { __typename?: 'User', id: string, name: string }, post: { __typename?: 'Post', id: string, body: string } } | null | undefined } };
+export type CreateEmotionMutation = { __typename?: 'Mutation', createEmotion: { __typename?: 'EmotionResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', method: string, message: string, field: string }> | null | undefined, emotion?: { __typename?: 'Emotion', id: string, type: EmotionType, creator: { __typename?: 'User', id: string, name: string }, post: { __typename?: 'Post', id: string } } | null | undefined } };
 
 export type CreatePostMutationVariables = Exact<{
   options: PostValidator;
@@ -587,7 +587,6 @@ export const CreateEmotionDocument = gql`
       }
       post {
         id
-        body
       }
     }
   }
