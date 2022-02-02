@@ -44,6 +44,8 @@ import {
 } from "utils/posts/postsUtils";
 import { getPostsType } from "utils/types/post/post.types";
 import { getServerPathImage } from "utils/generalAuxFunctions";
+import BeatLoader from "react-spinners/BeatLoader";
+import { handleChangeEmotions } from "utils/emotions/auxFunctions";
 
 interface PostEmotionsRecordProps {
     user: UserType;
@@ -59,6 +61,7 @@ const PostEmotionsRecord: NextPage<PostEmotionsRecordProps> = ({
     post,
 }) => {
     const { colorMode } = useColorMode();
+    const [loadEffect, setLoadEffect] = useState(false);
     const color = { dark: "#FFFFFF", light: "#16161D" };
     const [deleteEmotion, deleteResult] = useMutation<DeleteEmotionMutation>(
         DeleteEmotionDocument
@@ -117,24 +120,6 @@ const PostEmotionsRecord: NextPage<PostEmotionsRecordProps> = ({
         return uniqueEmotions;
     }, [post.emotions]);
 
-    const toggleUserReaction = (type: EmotionType) => {
-        if (!user) return;
-
-        if (userReactions[type].has(user.id)) {
-            userReactions[type].delete(user.id);
-            let aux = userReactions[type];
-            setUserReactions((prevReactions) => ({
-                ...prevReactions,
-                [type]: aux,
-            }));
-        } else {
-            setUserReactions((prevReactions) => ({
-                ...prevReactions,
-                [type]: prevReactions[type].add(user.id),
-            }));
-        }
-    };
-
     // *************************************************** FORM
 
     const [userReactState, setUserReactState] = useState<EmotionType | null>(
@@ -168,6 +153,7 @@ const PostEmotionsRecord: NextPage<PostEmotionsRecordProps> = ({
     }; */
 
     const handleCreateEmotion = async (type: EmotionType) => {
+        setLoadEffect(true);
         let aux: emotionElement = {
             id: "5294e970-5091-46d8-a2e9-128ed87a526f",
             type,
@@ -177,26 +163,18 @@ const PostEmotionsRecord: NextPage<PostEmotionsRecordProps> = ({
             },
         };
 
-        let alreadyReacted = false;
-        uniqueEmotions.forEach((x) => {
-            if (x.creator.id === user?.id) {
-                alreadyReacted = true;
+        setTimeout(() => {
+            if (user?.id) {
+                const result = handleChangeEmotions(
+                    user.id,
+                    aux,
+                    uniqueEmotions,
+                    userReactions
+                );
+                setUniqueEmotions(result.uniqueEmotions);
             }
-        });
-        if (!alreadyReacted) {
-            setUniqueEmotions((prevEmo) => [...prevEmo, aux]);
-        } else {
-            const index = uniqueEmotions.findIndex(
-                (x) => x.creator.id === user?.id
-            );
-
-            let newState = [...uniqueEmotions];
-
-            if (index !== -1) {
-                newState[index] = { ...newState[index], type: type };
-                setUniqueEmotions(newState);
-            }
-        }
+            setLoadEffect(false);
+        }, 500);
     };
 
     useEffect(() => {
@@ -222,38 +200,39 @@ const PostEmotionsRecord: NextPage<PostEmotionsRecordProps> = ({
     return (
         <Flex mt={3} justifyContent="space-between" alignItems="center">
             <Flex>
-                {uniqueEmotions.map((item) => (
-                    <Tooltip
-                        hasArrow
-                        aria-label="react to post"
-                        label={
-                            userReactions[item.type].has(user!.id)
-                                ? "Cancel Reaction"
-                                : "React to Post"
-                        }
-                        colorScheme="white"
-                    >
-                        <Button
-                            leftIcon={getEmotionTypeIcon(item.type)}
-                            variant="outline"
-                            size="sm"
-                            mr={1}
-                            onClick={() => {
-                                toggleUserReaction(item.type);
-                            }}
+                {loadEffect ? (
+                    <BeatLoader color="#E10DFF" />
+                ) : (
+                    uniqueEmotions.map((item) => (
+                        <Tooltip
+                            hasArrow
+                            aria-label="react to post"
+                            label={
+                                userReactions[item.type].has(user!.id)
+                                    ? "Cancel Reaction"
+                                    : "React to Post"
+                            }
+                            colorScheme="white"
                         >
-                            <Text
-                                textColor={
-                                    userReactions[item.type].has(user!.id)
-                                        ? "#E10DFF"
-                                        : color[colorMode]
-                                }
+                            <Button
+                                leftIcon={getEmotionTypeIcon(item.type)}
+                                variant="outline"
+                                size="sm"
+                                mr={1}
                             >
-                                {userReactions[item.type].size}
-                            </Text>
-                        </Button>
-                    </Tooltip>
-                ))}
+                                <Text
+                                    textColor={
+                                        userReactions[item.type].has(user!.id)
+                                            ? "#E10DFF"
+                                            : color[colorMode]
+                                    }
+                                >
+                                    {userReactions[item.type].size}
+                                </Text>
+                            </Button>
+                        </Tooltip>
+                    ))
+                )}
             </Flex>
             <Flex>
                 <Popover placement="top-end" trigger="hover">
