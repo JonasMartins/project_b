@@ -130,11 +130,9 @@ const PostEmotionsRecord: NextPage<PostEmotionsRecordProps> = ({
         CreateEmotionDocument
     );
 
-    /*
-    const handleCreateEmotion = async (
-        type: EmotionType
-    ): Promise<CreateEmotionMutation> => {
-        
+    const handleCreateEmotion = async (type: EmotionType) => {
+        setLoadEffect(true);
+
         const result = await createEmotion({
             variables: {
                 userId: user?.id,
@@ -146,35 +144,29 @@ const PostEmotionsRecord: NextPage<PostEmotionsRecordProps> = ({
             },
         });
 
-        if (!result.data) {
-            throw new Error(error?.message);
+        if (result.data?.createEmotion?.emotion) {
+            let aux: emotionElement = {
+                id: result.data.createEmotion.emotion.id,
+                type,
+                creator: {
+                    id: user?.id || "123",
+                    name: user?.name || "Doe",
+                },
+            };
+
+            setTimeout(() => {
+                if (user?.id) {
+                    const resultFront = handleChangeEmotions(
+                        user.id,
+                        aux,
+                        uniqueEmotions,
+                        userReactions
+                    );
+                    setUniqueEmotions(resultFront.uniqueEmotions);
+                }
+                setLoadEffect(false);
+            }, 500);
         }
-        return result.data; 
-    }; */
-
-    const handleCreateEmotion = async (type: EmotionType) => {
-        setLoadEffect(true);
-        let aux: emotionElement = {
-            id: "5294e970-5091-46d8-a2e9-128ed87a526f",
-            type,
-            creator: {
-                id: user?.id || "123",
-                name: user?.name || "Doe",
-            },
-        };
-
-        setTimeout(() => {
-            if (user?.id) {
-                const result = handleChangeEmotions(
-                    user.id,
-                    aux,
-                    uniqueEmotions,
-                    userReactions
-                );
-                setUniqueEmotions(result.uniqueEmotions);
-            }
-            setLoadEffect(false);
-        }, 500);
     };
 
     useEffect(() => {
@@ -195,7 +187,7 @@ const PostEmotionsRecord: NextPage<PostEmotionsRecordProps> = ({
                 }
             });
         }
-    }, [post.emotions.length, user]);
+    }, [post.emotions.length, user?.id]);
 
     return (
         <Flex mt={3} justifyContent="space-between" alignItems="center">
@@ -204,33 +196,22 @@ const PostEmotionsRecord: NextPage<PostEmotionsRecordProps> = ({
                     <BeatLoader color="#E10DFF" />
                 ) : (
                     uniqueEmotions.map((item) => (
-                        <Tooltip
-                            hasArrow
-                            aria-label="react to post"
-                            label={
-                                userReactions[item.type].has(user!.id)
-                                    ? "Cancel Reaction"
-                                    : "React to Post"
-                            }
-                            colorScheme="white"
+                        <Button
+                            leftIcon={getEmotionTypeIcon(item.type)}
+                            variant="outline"
+                            size="sm"
+                            mr={1}
                         >
-                            <Button
-                                leftIcon={getEmotionTypeIcon(item.type)}
-                                variant="outline"
-                                size="sm"
-                                mr={1}
+                            <Text
+                                textColor={
+                                    userReactions[item.type].has(user!.id)
+                                        ? "#E10DFF"
+                                        : color[colorMode]
+                                }
                             >
-                                <Text
-                                    textColor={
-                                        userReactions[item.type].has(user!.id)
-                                            ? "#E10DFF"
-                                            : color[colorMode]
-                                    }
-                                >
-                                    {userReactions[item.type].size}
-                                </Text>
-                            </Button>
-                        </Tooltip>
+                                {userReactions[item.type].size}
+                            </Text>
+                        </Button>
                     ))
                 )}
             </Flex>

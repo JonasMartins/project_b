@@ -41,7 +41,6 @@ export const handleChangeEmotions = (
         }
     } else {
         if (!postAlreadyHaveTheComingReaction) {
-            console.log(userReactions);
             const index = uniqueEmotions.findIndex((x) =>
                 userReactions[x.type].has(creatorId)
             );
