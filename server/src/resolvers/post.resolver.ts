@@ -40,7 +40,7 @@ export class PostResolver {
         @Arg("offset", () => Number, { nullable: true }) offset: number,
         @Ctx() { em }: Context
     ): Promise<PostsResponse> {
-        const max = Math.min(20, limit ? limit : 5);
+        const max = Math.min(10, limit ? limit : 5);
         const maxOffset = Math.min(10, offset ? offset : 0);
 
         try {
@@ -50,6 +50,8 @@ export class PostResolver {
                 .innerJoinAndSelect("post.creator", "u1")
                 .leftJoinAndSelect("post.emotions", "e")
                 .leftJoinAndSelect("e.creator", "u2")
+                .leftJoinAndSelect("post.comments", "c")
+                .leftJoinAndSelect("c.replies", "r")
                 .select([
                     "post.id",
                     "post.body",
@@ -61,16 +63,17 @@ export class PostResolver {
                     "e.type",
                     "u2.id",
                     "u2.name",
+                    "c.id",
+                    "c.body",
+                    "c.parent",
+                    "r.id",
+                    "r.body",
                 ])
                 .limit(max)
                 .offset(maxOffset)
                 .orderBy("post.createdAt", "DESC");
 
-            //console.log("query ", qb.getQuery());
-
             const posts = await qb.getMany();
-
-            // console.log("posts ", posts);
 
             return { posts };
         } catch (e) {

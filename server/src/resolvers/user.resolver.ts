@@ -116,26 +116,18 @@ export class UserResolver {
                     ),
                 };
             }
-            // get the logged user and all his invitations still not accepeted
             const qb = await em
                 .getRepository(User)
                 .createQueryBuilder("user")
                 .leftJoinAndSelect("user.role", "role")
-                .leftJoinAndSelect("user.invitations", "i")
-                .leftJoinAndSelect("i.requestor", "r")
                 .where("user.id = :id", { id: req.session.userId })
-                .andWhere("i.accepted IS NULL")
                 .select([
                     "user.id",
                     "user.name",
                     "user.picture",
                     "user.email",
-                    "user.password",
                     "role.id",
                     "role.name",
-                    "i.id",
-                    "r.name",
-                    "r.picture",
                 ]);
 
             const user = await qb.getOne();

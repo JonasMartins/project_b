@@ -245,7 +245,9 @@ const Invitations: NextPage<InvitationsProps> = ({}) => {
                     >
                         <Skeleton isLoaded={!loadEffect}>
                             <Flex alignItems="center">
-                                <NexLink href={`/user/${invitation.id}`}>
+                                <NexLink
+                                    href={`/user/${invitation.requestor.id}`}
+                                >
                                     <Image
                                         mr={2}
                                         borderRadius="full"
@@ -256,7 +258,9 @@ const Invitations: NextPage<InvitationsProps> = ({}) => {
                                         )}
                                     />
                                 </NexLink>
-                                <NexLink href={`/user/${invitation.id}`}>
+                                <NexLink
+                                    href={`/user/${invitation.requestor.id}`}
+                                >
                                     <Link>
                                         <Text fontWeight="thin">
                                             {invitation?.requestor?.name}

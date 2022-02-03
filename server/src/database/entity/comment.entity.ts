@@ -22,17 +22,23 @@ export class Comment extends Base {
     @JoinTable()
     public post: Post;
 
+    @Field(() => Number)
+    @Column({ default: 1 })
+    public order: Number;
+
     @Field(() => Comment, { nullable: true })
-    @ManyToOne(() => Comment, { nullable: true, onDelete: "CASCADE" })
+    @ManyToOne(() => Comment, (parent: Comment) => parent.replies, {
+        nullable: true,
+        onDelete: "CASCADE",
+    })
     public parent: Comment;
 
     @Field(() => [Comment])
     @OneToMany(() => Comment, (replies: Comment) => replies.parent, {
         nullable: true,
-        eager: true,
         cascade: true,
     })
-    public replies: [Comment];
+    public replies: Comment[];
 
     constructor(body?: CommentValidator) {
         super();

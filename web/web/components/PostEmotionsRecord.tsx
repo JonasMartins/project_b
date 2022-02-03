@@ -14,6 +14,7 @@ import {
     PopoverContent,
     PopoverHeader,
     PopoverTrigger,
+    Link,
 } from "@chakra-ui/react";
 import {
     DeleteEmotionDocument,
@@ -46,6 +47,7 @@ import { getPostsType } from "utils/types/post/post.types";
 import { getServerPathImage } from "utils/generalAuxFunctions";
 import BeatLoader from "react-spinners/BeatLoader";
 import { handleChangeEmotions } from "utils/emotions/auxFunctions";
+import NexLink from "next/link";
 
 interface PostEmotionsRecordProps {
     user: UserType;
@@ -409,12 +411,15 @@ const PostEmotionsRecord: NextPage<PostEmotionsRecordProps> = ({
                         label={`Author: ${post.creator.name}`}
                         colorScheme="white"
                     >
-                        <ChakraImage
-                            mr={1}
-                            borderRadius="full"
-                            boxSize="32px"
-                            src={getServerPathImage(post.creator.picture)}
-                        />
+                        <NexLink href={`/user/${post.creator.id}`}>
+                            <ChakraImage
+                                cursor="pointer"
+                                mr={1}
+                                borderRadius="full"
+                                boxSize="32px"
+                                src={getServerPathImage(post.creator.picture)}
+                            />
+                        </NexLink>
                     </Tooltip>
                 </Flex>
             </Flex>

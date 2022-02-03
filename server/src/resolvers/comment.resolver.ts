@@ -62,10 +62,27 @@ export class CommentResolver {
     @Mutation(() => CommentResponse)
     async createComment(
         @Arg("options") options: CommentValidator,
+        @Arg("parentId", () => String, { nullable: true }) parentId: string,
         @Ctx() { em }: Context
     ): Promise<CommentResponse> {
         try {
+            let commentParent: Comment | undefined = undefined;
             const post = await em.findOne(Post, { id: options.postId });
+
+            if (parentId) {
+                commentParent = await em.findOne(Comment, { id: parentId });
+
+                if (!commentParent) {
+                    return {
+                        errors: genericError(
+                            "parentId",
+                            "createComment",
+                            __filename,
+                            `Could not find the comment with id: ${parentId}`
+                        ),
+                    };
+                }
+            }
 
             if (!post) {
                 return {
@@ -93,10 +110,11 @@ export class CommentResolver {
 
             const comment = await em.create(Comment, {
                 body: options.body,
+                post: post,
+                author: user,
+                order: commentParent !== undefined ? 2 : 1,
+                parent: commentParent,
             });
-
-            comment.post = post;
-            comment.author = user;
 
             await comment.save();
 
