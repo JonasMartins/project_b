@@ -18,6 +18,7 @@ import { FileUpload, GraphQLUpload } from "graphql-upload";
 import { HandleUpload } from "./../helpers/handleUpload.helper";
 import { Request } from "./../database/entity/request.entity";
 import { RequestValidator } from "./../database/validators/request.validator";
+import { Post } from "./../database/entity/post.entity";
 
 @ObjectType()
 class LoginResponse {
@@ -104,9 +105,12 @@ export class UserResolver {
     }
 
     @Query(() => UserResponse)
-    async getUserById(@Ctx() { em, req }: Context): Promise<UserResponse> {
+    async getUserById(
+        @Arg("id") id: string,
+        @Ctx() { em }: Context
+    ): Promise<UserResponse> {
         try {
-            if (!req.session.userId) {
+            if (!id) {
                 return {
                     errors: genericError(
                         "id",
@@ -116,21 +120,33 @@ export class UserResolver {
                     ),
                 };
             }
-            const qb = await em
+            const qbPost = await em
+                .getRepository(Post)
+                .createQueryBuilder("post")
+                .where((qb) => {
+                    const subQuery = qb
+                        .subQuery()
+                        .select("user.id")
+                        .from(User, "user")
+                        .where("user.id = :user_id")
+                        .getQuery();
+                    return "post.creator_id = " + subQuery;
+                })
+                .setParameter("user_id", id)
+                .select(["post.id", "post.body"]);
+
+            const posts = await qbPost.getMany();
+
+            const user = await em
                 .getRepository(User)
                 .createQueryBuilder("user")
-                .leftJoinAndSelect("user.role", "role")
-                .where("user.id = :id", { id: req.session.userId })
-                .select([
-                    "user.id",
-                    "user.name",
-                    "user.picture",
-                    "user.email",
-                    "role.id",
-                    "role.name",
-                ]);
+                .where("id = :id", { id })
+                .select(["user.id", "user.name"])
+                .getOne();
 
-            const user = await qb.getOne();
+            if (posts && user) {
+                user.posts = posts;
+            }
 
             return { user };
         } catch (e) {
