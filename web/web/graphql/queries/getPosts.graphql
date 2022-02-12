@@ -22,6 +22,24 @@ query GetPosts($offset: Float!, $limit: Float!) {
                     name
                 }
             }
+            comments {
+                id
+                body
+                author {
+                    id
+                    name
+                    picture
+                }
+                replies {
+                    id
+                    body
+                    author {
+                        id
+                        name
+                        picture
+                    }
+                }
+            }
         }
     }
 }

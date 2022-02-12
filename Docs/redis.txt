@@ -58,3 +58,16 @@ info.
 delete all data from a db:
 
 flushdb
+
+# Bugs
+
+Warning: Could not create server TCP listening socket *:6379: bind: Address already in use
+
+ps -ef | grep -i redis
+
+-- show something like this:
+501  2267     1   0  3 119  ??        8:17.40 redis-server *:6379
+501 48677 48662   0  3:17下午 ttys002    0:00.00 grep -i redis
+
+kill -9 2267
+

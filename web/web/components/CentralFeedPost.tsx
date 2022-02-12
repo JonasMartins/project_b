@@ -1,6 +1,6 @@
-import { Box, Flex, Text, useColorMode } from "@chakra-ui/react";
+import { Box, Flex, Text, useColorMode, Image } from "@chakra-ui/react";
 import type { NextPage } from "next";
-import Image from "next/image";
+//import Image from "next/image";
 import PostEmotionsRecord from "components/PostEmotionsRecord";
 import { getPostsType } from "utils/types/post/post.types";
 import { useUser } from "utils/hooks/useUser";
@@ -13,6 +13,7 @@ import { emotion as emotionElement } from "utils/types/post/post.types";
 import { useDispatch } from "react-redux";
 import { bindActionCreators } from "redux";
 import { actionCreators } from "Redux/actions";
+import { getServerPathImage } from "utils/generalAuxFunctions";
 
 interface CentralFeedPostProps {
     post: getPostsType;
@@ -86,7 +87,10 @@ const CentralFeedPost: NextPage<CentralFeedPostProps> = ({ post }) => {
                 {post.files?.length ? (
                     post.files.map((file) => (
                         <Box p={1} m={0}>
-                            <Image src={file} width="52px" height="52px" />
+                            <Image
+                                src={getServerPathImage(file)}
+                                boxSize="52px"
+                            />
                         </Box>
                     ))
                 ) : (

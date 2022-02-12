@@ -10,6 +10,7 @@ import {
 } from "type-graphql";
 import { Post } from "../database/entity/post.entity";
 import { User } from "../database/entity/user.entity";
+import { Comment } from "../database/entity/comment.entity";
 import { ErrorFieldHandler } from "../helpers/errorFieldHandler";
 import { Context } from "./../context";
 import { genericError } from "./../helpers/generalAuxMethods";
@@ -47,11 +48,13 @@ export class PostResolver {
             const qb = await em
                 .getRepository(Post)
                 .createQueryBuilder("post")
-                .innerJoinAndSelect("post.creator", "u1")
+                .leftJoinAndSelect("post.creator", "u1")
                 .leftJoinAndSelect("post.emotions", "e")
                 .leftJoinAndSelect("e.creator", "u2")
                 .leftJoinAndSelect("post.comments", "c")
+                .leftJoinAndSelect("c.author", "ca")
                 .leftJoinAndSelect("c.replies", "r")
+                .leftJoinAndSelect("r.author", "ra")
                 .select([
                     "post.id",
                     "post.body",
@@ -65,9 +68,14 @@ export class PostResolver {
                     "u2.name",
                     "c.id",
                     "c.body",
-                    "c.parent",
+                    "ca.id",
+                    "ca.name",
+                    "ca.picture",
                     "r.id",
                     "r.body",
+                    "ra.id",
+                    "ra.name",
+                    "ra.picture",
                 ])
                 .limit(max)
                 .offset(maxOffset)

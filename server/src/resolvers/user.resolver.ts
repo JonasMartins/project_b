@@ -71,7 +71,7 @@ export class UserResolver {
         @Ctx() { em }: Context
     ): Promise<UsersResponse> {
         const max = Math.min(20, limit ? limit : 10);
-        const maxOffset = Math.min(10, offset ? offset : 0);
+        const maxOffset = offset ? offset : 0;
 
         try {
             const qb = await em
@@ -107,9 +107,15 @@ export class UserResolver {
     @Query(() => UserResponse)
     async getUserById(
         @Arg("id") id: string,
+        @Arg("post_offset", () => Number, { nullable: true })
+        post_offset: number,
+        @Arg("post_limit", () => Number, { nullable: true }) post_limit: number,
         @Ctx() { em }: Context
     ): Promise<UserResponse> {
         try {
+            const maxPosts = Math.min(10, post_limit ? post_limit : 10);
+            const maxPostOffset = post_offset ? post_offset : 0;
+
             if (!id) {
                 return {
                     errors: genericError(
@@ -120,7 +126,8 @@ export class UserResolver {
                     ),
                 };
             }
-            const qbPost = await em
+            // now we can limit the posts and even paginate it
+            const posts = await em
                 .getRepository(Post)
                 .createQueryBuilder("post")
                 .where((qb) => {
@@ -129,20 +136,21 @@ export class UserResolver {
                         .select("user.id")
                         .from(User, "user")
                         .where("user.id = :user_id")
+                        .limit(maxPosts)
+                        .offset(maxPostOffset)
                         .getQuery();
                     return "post.creator_id = " + subQuery;
                 })
                 .setParameter("user_id", id)
-                .select(["post.id", "post.body"]);
-
-            const posts = await qbPost.getMany();
+                .select(["post.id", "post.body"])
+                .getMany();
 
             const user = await em
                 .getRepository(User)
                 .createQueryBuilder("user")
                 .where("id = :id", { id })
                 .select(["user.id", "user.name"])
-                .getOne();
+                .getOneOrFail();
 
             if (posts && user) {
                 user.posts = posts;

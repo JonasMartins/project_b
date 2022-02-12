@@ -24,7 +24,6 @@ import { css } from "@emotion/react";
 import { useMutation } from "@apollo/client";
 import { LogoutDocument, LogoutMutation } from "generated/graphql";
 import { useRouter } from "next/dist/client/router";
-import { defaultImage } from "utils/consts";
 import { useSelector } from "react-redux";
 import { RootState } from "Redux/Global/GlobalReducer";
 import { useUser } from "utils/hooks/useUser";

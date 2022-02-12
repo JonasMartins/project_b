@@ -25,6 +25,7 @@ export type Comment = {
   body: Scalars['String'];
   createdAt: Scalars['DateTime'];
   id: Scalars['String'];
+  order: Scalars['Float'];
   parent?: Maybe<Comment>;
   post: Post;
   replies: Array<Comment>;
@@ -142,6 +143,7 @@ export type Mutation = {
 
 export type MutationCreateCommentArgs = {
   options: CommentValidator;
+  parentId?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -299,6 +301,13 @@ export type QueryGetRoleByIdArgs = {
 
 export type QueryGetRolesArgs = {
   limit?: InputMaybe<Scalars['Float']>;
+};
+
+
+export type QueryGetUserByIdArgs = {
+  id: Scalars['String'];
+  post_limit?: InputMaybe<Scalars['Float']>;
+  post_offset?: InputMaybe<Scalars['Float']>;
 };
 
 
@@ -498,7 +507,7 @@ export type GetPostsQueryVariables = Exact<{
 }>;
 
 
-export type GetPostsQuery = { __typename?: 'Query', getPosts: { __typename?: 'PostsResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', message: string, method: string, field: string }> | null | undefined, posts?: Array<{ __typename?: 'Post', id: string, body: string, files?: Array<string> | null | undefined, creator: { __typename?: 'User', id: string, name: string, picture?: string | null | undefined }, emotions?: Array<{ __typename?: 'Emotion', id: string, type: EmotionType, creator: { __typename?: 'User', id: string, name: string } }> | null | undefined }> | null | undefined } };
+export type GetPostsQuery = { __typename?: 'Query', getPosts: { __typename?: 'PostsResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', message: string, method: string, field: string }> | null | undefined, posts?: Array<{ __typename?: 'Post', id: string, body: string, files?: Array<string> | null | undefined, creator: { __typename?: 'User', id: string, name: string, picture?: string | null | undefined }, emotions?: Array<{ __typename?: 'Emotion', id: string, type: EmotionType, creator: { __typename?: 'User', id: string, name: string } }> | null | undefined, comments?: Array<{ __typename?: 'Comment', id: string, body: string, author: { __typename?: 'User', id: string, name: string, picture?: string | null | undefined }, replies: Array<{ __typename?: 'Comment', id: string, body: string, author: { __typename?: 'User', id: string, name: string, picture?: string | null | undefined } }> }> | null | undefined }> | null | undefined } };
 
 export type GetUserConnectionsQueryVariables = Exact<{
   id: Scalars['String'];
@@ -1096,6 +1105,24 @@ export const GetPostsDocument = gql`
         creator {
           id
           name
+        }
+      }
+      comments {
+        id
+        body
+        author {
+          id
+          name
+          picture
+        }
+        replies {
+          id
+          body
+          author {
+            id
+            name
+            picture
+          }
         }
       }
     }
