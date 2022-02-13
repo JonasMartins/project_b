@@ -126,35 +126,25 @@ export class UserResolver {
                     ),
                 };
             }
-            // now we can limit the posts and even paginate it
-            const posts = await em
-                .getRepository(Post)
-                .createQueryBuilder("post")
-                .where((qb) => {
-                    const subQuery = qb
-                        .subQuery()
-                        .select("user.id")
-                        .from(User, "user")
-                        .where("user.id = :user_id")
-                        .limit(maxPosts)
-                        .offset(maxPostOffset)
-                        .getQuery();
-                    return "post.creator_id = " + subQuery;
-                })
-                .setParameter("user_id", id)
-                .select(["post.id", "post.body"])
-                .getMany();
 
-            const user = await em
+            const qb = await em
                 .getRepository(User)
                 .createQueryBuilder("user")
-                .where("id = :id", { id })
-                .select(["user.id", "user.name"])
-                .getOneOrFail();
+                .leftJoinAndSelect(
+                    (sQ) =>
+                        sQ
+                            .select(["p.id", "p.creator_id"])
+                            .from(Post, "p")
+                            .limit(5),
+                    "post",
+                    "post.creator_id = user.id"
+                )
+                .where("user.id = :id", { id })
+                .select(["user.id", "post.p_id", "post.creator_id"]);
 
-            if (posts && user) {
-                user.posts = posts;
-            }
+            const user = await em.findOne(User, { id });
+
+            const qbRaw = await qb.getRawMany();
 
             return { user };
         } catch (e) {

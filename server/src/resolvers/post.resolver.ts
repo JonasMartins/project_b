@@ -17,6 +17,13 @@ import { genericError } from "./../helpers/generalAuxMethods";
 import { FileUpload, GraphQLUpload } from "graphql-upload";
 import { HandleUpload } from "./../helpers/handleUpload.helper";
 
+interface postAndCommentsRaw {
+    post_id: string;
+    c_id: string;
+    c_body: string;
+    created_at: Date;
+}
+
 @ObjectType()
 class PostsResponse {
     @Field(() => [ErrorFieldHandler], { nullable: true })
@@ -59,6 +66,7 @@ export class PostResolver {
                     "post.id",
                     "post.body",
                     "post.files",
+                    "post.createdAt",
                     "u1.id",
                     "u1.name",
                     "u1.picture",
@@ -77,8 +85,8 @@ export class PostResolver {
                     "ra.name",
                     "ra.picture",
                 ])
-                .limit(max)
-                .offset(maxOffset)
+                .take(max)
+                .skip(maxOffset)
                 .orderBy("post.createdAt", "DESC");
 
             const posts = await qb.getMany();
@@ -91,6 +99,78 @@ export class PostResolver {
                     "getUsers",
                     __filename,
                     `Could not get the users, details: ${e.message}`
+                ),
+            };
+        }
+    }
+
+    @Query(() => PostResponse)
+    async getPostById(
+        @Arg("id") id: string,
+        @Arg("comment_offset", () => Number, { nullable: true })
+        comment_offset: number,
+        @Arg("comment_limit", () => Number, { nullable: true })
+        comment_limit: number,
+        @Ctx() { em }: Context
+    ): Promise<PostResponse> {
+        try {
+            const maxComments = Math.min(
+                10,
+                comment_limit ? comment_limit : 10
+            );
+            const maxCommentOffset = comment_offset ? comment_offset : 0;
+
+            const qb = await em
+                .getRepository(Post)
+                .createQueryBuilder("post")
+                .leftJoinAndSelect(
+                    (sQ) =>
+                        sQ
+                            .select([
+                                "c.id",
+                                "c.created_at",
+                                "c.post_id",
+                                "c.body",
+                            ])
+                            .from(Comment, "c")
+                            .take(maxComments)
+                            .skip(maxCommentOffset)
+                            .orderBy("c.created_at", "DESC"),
+                    "comment",
+                    "comment.post_id = post.id"
+                )
+                .where("post.id = :id", { id })
+                .select([
+                    "post.id",
+                    "comment.c_id",
+                    "comment.created_at",
+                    "comment.c_body",
+                ]);
+
+            let post = new Post();
+
+            const qbRaw: postAndCommentsRaw[] = await qb.getRawMany();
+
+            let comments: Comment[] = [];
+            qbRaw.forEach((rawObj) => {
+                let comment = new Comment();
+                comment.id = rawObj.c_id;
+                comment.createdAt = rawObj.created_at;
+                comment.body = rawObj.c_body;
+                comments.push(comment);
+            });
+
+            post.id = qbRaw[0].post_id;
+            post.comments = comments;
+
+            return { post };
+        } catch (e) {
+            return {
+                errors: genericError(
+                    "-",
+                    "getPostById",
+                    __filename,
+                    `Could not get the post, details: ${e.message}`
                 ),
             };
         }
