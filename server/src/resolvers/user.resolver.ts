@@ -19,6 +19,32 @@ import { HandleUpload } from "./../helpers/handleUpload.helper";
 import { Request } from "./../database/entity/request.entity";
 import { RequestValidator } from "./../database/validators/request.validator";
 import { Post } from "./../database/entity/post.entity";
+import { Comment } from "./../database/entity/comment.entity";
+
+interface userPostsCommentsRepliesRaw {
+    user_id: string;
+    user_name: string;
+    user_email: string;
+    user_picture: string;
+    reply_id: string;
+    reply_body: string;
+    reply_author_picture: string;
+    reply_author_name: string;
+    reply_author_id: string;
+    reply_created_at: Date;
+    p_id: string;
+    p_body: string;
+    p_created_at: Date;
+    p_creator_id: string;
+    p_creator_name: string;
+    p_creator_picture: string;
+    comment_id: string;
+    comment_body: string;
+    comment_created_at: Date;
+    comment_author_picture: string;
+    comment_author_name: string;
+    comment_author_id: string;
+}
 
 @ObjectType()
 class LoginResponse {
@@ -133,18 +159,118 @@ export class UserResolver {
                 .leftJoinAndSelect(
                     (sQ) =>
                         sQ
-                            .select(["p.id", "p.creator_id"])
                             .from(Post, "p")
-                            .limit(5),
+                            .leftJoinAndSelect("p.comments", "comment")
+                            .leftJoinAndSelect("p.creator", "p_creator")
+                            .leftJoinAndSelect("comment.replies", "reply")
+                            .leftJoinAndSelect("reply.author", "reply_author")
+                            .leftJoinAndSelect(
+                                "comment.author",
+                                "comment_author"
+                            )
+                            .select([
+                                "p.id",
+                                "p.body",
+                                "p.creator_id as p_creator_id",
+                                "p.created_at as p_created_at",
+                                "p_creator.name",
+                                "p_creator.picture",
+                                "comment.id",
+                                "comment.body",
+                                "comment_author.id",
+                                "comment.created_at as comment_created_at",
+                                "comment_author.name",
+                                "comment_author.picture",
+                                "reply.id",
+                                "reply.body",
+                                "reply_author.id",
+                                "reply.created_at as reply_created_at",
+                                "reply_author.name",
+                                "reply_author.picture",
+                            ])
+                            .take(maxPosts)
+                            .skip(maxPostOffset),
                     "post",
-                    "post.creator_id = user.id"
+                    "post.p_creator_id = user.id"
                 )
                 .where("user.id = :id", { id })
-                .select(["user.id", "post.p_id", "post.creator_id"]);
+                .select([
+                    "user.id",
+                    "user.name",
+                    "user.email",
+                    "user.picture",
+                    "post.p_id",
+                    "post.p_body",
+                    "post.p_created_at",
+                    "post.p_creator_id",
+                    "post.p_creator_picture",
+                    "post.p_creator_name",
+                    "post.reply_id",
+                    "post.reply_body",
+                    "post.reply_author_id",
+                    "post.reply_created_at",
+                    "post.reply_author_name",
+                    "post.reply_author_picture",
+                    "post.comment_id",
+                    "post.comment_body",
+                    "post.comment_author_id",
+                    "post.comment_created_at",
+                    "post.comment_author_name",
+                    "post.comment_author_picture",
+                ]);
 
-            const user = await em.findOne(User, { id });
+            let qbRaw: userPostsCommentsRepliesRaw[] = await qb.getRawMany();
 
-            const qbRaw = await qb.getRawMany();
+            let posts: Post[] = [];
+            let comments: Comment[] = [];
+            let replies: Comment[] = [];
+            let reply_author = new User();
+            let comment_author = new User();
+
+            let currentPostId = "";
+
+            qbRaw.forEach((rawObj) => {
+                if (rawObj.p_id !== currentPostId) {
+                    let post = new Post();
+                    post.id = rawObj.p_id;
+                    post.body = rawObj.p_body;
+                    post.createdAt = rawObj.p_created_at;
+                    posts.push(post);
+                    currentPostId = rawObj.p_id;
+                }
+
+                if (rawObj.comment_id) {
+                    let comment = new Comment();
+                    comment.id = rawObj.comment_id;
+                    comment.body = rawObj.comment_body;
+                    comment.createdAt = rawObj.comment_created_at;
+                    comment_author.id = rawObj.comment_author_id;
+                    comment_author.name = rawObj.comment_author_name;
+                    comment_author.picture = rawObj.comment_author_picture;
+                    comment.author = comment_author;
+                    comments.push(comment);
+                }
+
+                if (rawObj.reply_id) {
+                    let reply = new Comment();
+                    reply.id = rawObj.reply_id;
+                    reply.body = rawObj.reply_body;
+                    reply.createdAt = rawObj.reply_created_at;
+                    reply_author.id = rawObj.reply_author_id;
+                    reply_author.name = rawObj.reply_author_name;
+                    reply_author.picture = rawObj.reply_author_picture;
+                    reply.author = reply_author;
+                    replies.push(reply);
+                }
+            });
+
+            let user = new User();
+            if (qbRaw.length) {
+                user.id = qbRaw[0].user_id;
+                user.name = qbRaw[0].user_name;
+                user.email = qbRaw[0].user_email;
+                user.picture = qbRaw[0].user_picture;
+            }
 
             return { user };
         } catch (e) {
