@@ -222,21 +222,22 @@ export class UserResolver {
             let qbRaw: userPostsCommentsRepliesRaw[] = await qb.getRawMany();
 
             let posts: Post[] = [];
-            let comments: Comment[] = [];
-            let replies: Comment[] = [];
             let reply_author = new User();
             let comment_author = new User();
 
             let currentPostId = "";
 
+            let post: Post;
+
             qbRaw.forEach((rawObj) => {
                 if (rawObj.p_id !== currentPostId) {
-                    let post = new Post();
+                    post = new Post();
                     post.id = rawObj.p_id;
                     post.body = rawObj.p_body;
                     post.createdAt = rawObj.p_created_at;
-                    posts.push(post);
-                    currentPostId = rawObj.p_id;
+
+                    let _comments = new Array<Comment>();
+                    post.comments = _comments;
                 }
 
                 if (rawObj.comment_id) {
@@ -248,19 +249,30 @@ export class UserResolver {
                     comment_author.name = rawObj.comment_author_name;
                     comment_author.picture = rawObj.comment_author_picture;
                     comment.author = comment_author;
-                    comments.push(comment);
+
+                    let _replies = new Array<Comment>();
+                    comment.replies = _replies;
+
+                    if (rawObj.reply_id) {
+                        let reply = new Comment();
+                        reply.id = rawObj.reply_id;
+                        reply.body = rawObj.reply_body;
+                        reply.createdAt = rawObj.reply_created_at;
+                        reply_author.id = rawObj.reply_author_id;
+                        reply_author.name = rawObj.reply_author_name;
+                        reply_author.picture = rawObj.reply_author_picture;
+                        reply.author = reply_author;
+                        comment.replies.push(reply);
+                    }
+
+                    if (!post.comments.find((x) => x.id === comment.id)) {
+                        post.comments.push(comment);
+                    }
                 }
 
-                if (rawObj.reply_id) {
-                    let reply = new Comment();
-                    reply.id = rawObj.reply_id;
-                    reply.body = rawObj.reply_body;
-                    reply.createdAt = rawObj.reply_created_at;
-                    reply_author.id = rawObj.reply_author_id;
-                    reply_author.name = rawObj.reply_author_name;
-                    reply_author.picture = rawObj.reply_author_picture;
-                    reply.author = reply_author;
-                    replies.push(reply);
+                currentPostId = rawObj.p_id;
+                if (!posts.find((x) => x.id === post.id)) {
+                    posts.push(post);
                 }
             });
 
@@ -270,6 +282,7 @@ export class UserResolver {
                 user.name = qbRaw[0].user_name;
                 user.email = qbRaw[0].user_email;
                 user.picture = qbRaw[0].user_picture;
+                user.posts = posts;
             }
 
             return { user };
