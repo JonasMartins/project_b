@@ -5,8 +5,6 @@ import PostEmotionsRecord from "components/PostEmotionsRecord";
 import { getPostsType } from "utils/types/post/post.types";
 import { useUser } from "utils/hooks/useUser";
 import { useEffect, useState } from "react";
-import SkeletonLines from "components/Layout/SkeletonLines";
-
 import { useSelector } from "react-redux";
 import { RootState } from "Redux/Global/GlobalReducer";
 import { emotion as emotionElement } from "utils/types/post/post.types";
@@ -81,7 +79,7 @@ const CentralFeedPost: NextPage<CentralFeedPostProps> = ({ post }) => {
             mt={3}
             flexDir="column"
         >
-            {loadEffect ? <SkeletonLines /> : <Text>{post.body}</Text>}
+            <Text>{post.body}</Text>
 
             <Flex mt={2}>
                 {post.files?.length ? (

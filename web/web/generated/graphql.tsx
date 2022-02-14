@@ -260,6 +260,7 @@ export type Query = {
   getCurrentLoggedUser: UserResponse;
   getEmotionsFromPost: EmotionsResponse;
   getEmotionsFromUser: EmotionsResponse;
+  getPostById: PostResponse;
   getPostComments: CommentsResponse;
   getPosts: PostsResponse;
   getRoleById: RoleResponse;
@@ -280,6 +281,13 @@ export type QueryGetEmotionsFromPostArgs = {
 
 export type QueryGetEmotionsFromUserArgs = {
   userId: Scalars['String'];
+};
+
+
+export type QueryGetPostByIdArgs = {
+  comment_limit?: InputMaybe<Scalars['Float']>;
+  comment_offset?: InputMaybe<Scalars['Float']>;
+  id: Scalars['String'];
 };
 
 
@@ -508,6 +516,15 @@ export type GetPostsQueryVariables = Exact<{
 
 
 export type GetPostsQuery = { __typename?: 'Query', getPosts: { __typename?: 'PostsResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', message: string, method: string, field: string }> | null | undefined, posts?: Array<{ __typename?: 'Post', id: string, body: string, files?: Array<string> | null | undefined, creator: { __typename?: 'User', id: string, name: string, picture?: string | null | undefined }, emotions?: Array<{ __typename?: 'Emotion', id: string, type: EmotionType, creator: { __typename?: 'User', id: string, name: string } }> | null | undefined, comments?: Array<{ __typename?: 'Comment', id: string, body: string, author: { __typename?: 'User', id: string, name: string, picture?: string | null | undefined }, replies: Array<{ __typename?: 'Comment', id: string, body: string, author: { __typename?: 'User', id: string, name: string, picture?: string | null | undefined } }> }> | null | undefined }> | null | undefined } };
+
+export type GetUserByIdQueryVariables = Exact<{
+  post_limit?: InputMaybe<Scalars['Float']>;
+  post_offset?: InputMaybe<Scalars['Float']>;
+  id: Scalars['String'];
+}>;
+
+
+export type GetUserByIdQuery = { __typename?: 'Query', getUserById: { __typename?: 'UserResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', message: string, field: string, method: string }> | null | undefined, user?: { __typename?: 'User', id: string, name: string, email: string, picture?: string | null | undefined, posts?: Array<{ __typename?: 'Post', id: string, body: string, comments?: Array<{ __typename?: 'Comment', id: string, body: string, author: { __typename?: 'User', id: string, name: string, picture?: string | null | undefined } }> | null | undefined }> | null | undefined } | null | undefined } };
 
 export type GetUserConnectionsQueryVariables = Exact<{
   id: Scalars['String'];
@@ -1158,6 +1175,66 @@ export function useGetPostsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<G
 export type GetPostsQueryHookResult = ReturnType<typeof useGetPostsQuery>;
 export type GetPostsLazyQueryHookResult = ReturnType<typeof useGetPostsLazyQuery>;
 export type GetPostsQueryResult = Apollo.QueryResult<GetPostsQuery, GetPostsQueryVariables>;
+export const GetUserByIdDocument = gql`
+    query GetUserById($post_limit: Float, $post_offset: Float, $id: String!) {
+  getUserById(post_limit: $post_limit, post_offset: $post_offset, id: $id) {
+    errors {
+      message
+      field
+      method
+    }
+    user {
+      id
+      name
+      email
+      picture
+      posts {
+        id
+        body
+        comments {
+          id
+          body
+          author {
+            id
+            name
+            picture
+          }
+        }
+      }
+    }
+  }
+}
+    `;
+
+/**
+ * __useGetUserByIdQuery__
+ *
+ * To run a query within a React component, call `useGetUserByIdQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetUserByIdQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetUserByIdQuery({
+ *   variables: {
+ *      post_limit: // value for 'post_limit'
+ *      post_offset: // value for 'post_offset'
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useGetUserByIdQuery(baseOptions: Apollo.QueryHookOptions<GetUserByIdQuery, GetUserByIdQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetUserByIdQuery, GetUserByIdQueryVariables>(GetUserByIdDocument, options);
+      }
+export function useGetUserByIdLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetUserByIdQuery, GetUserByIdQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetUserByIdQuery, GetUserByIdQueryVariables>(GetUserByIdDocument, options);
+        }
+export type GetUserByIdQueryHookResult = ReturnType<typeof useGetUserByIdQuery>;
+export type GetUserByIdLazyQueryHookResult = ReturnType<typeof useGetUserByIdLazyQuery>;
+export type GetUserByIdQueryResult = Apollo.QueryResult<GetUserByIdQuery, GetUserByIdQueryVariables>;
 export const GetUserConnectionsDocument = gql`
     query GetUserConnections($id: String!) {
   getUserConnections(id: $id) {

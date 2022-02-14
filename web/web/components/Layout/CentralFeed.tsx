@@ -138,7 +138,8 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
                     />
                 </Tooltip>
             </Flex>
-            <Box mt={5}>
+
+            {/* <Box mt={5}>
                 {loading && !data?.getPosts?.posts ? (
                     <SkeletonLines />
                 ) : (
@@ -146,6 +147,11 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
                         <CentralFeedPost key={post.id} post={post} />
                     ))
                 )}
+            </Box> */}
+            <Box mt={5}>
+                {data?.getPosts?.posts?.map((post) => (
+                    <CentralFeedPost key={post.id} post={post} />
+                ))}
             </Box>
 
             <ModalCreatePost

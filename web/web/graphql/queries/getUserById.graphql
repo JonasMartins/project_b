@@ -1,0 +1,28 @@
+query GetUserById($post_limit: Float, $post_offset: Float, $id: String!) {
+    getUserById(post_limit: $post_limit, post_offset: $post_offset, id: $id) {
+        errors {
+            message
+            field
+            method
+        }
+        user {
+            id
+            name
+            email
+            picture
+            posts {
+                id
+                body
+                comments {
+                    id
+                    body
+                    author {
+                        id
+                        name
+                        picture
+                    }
+                }
+            }
+        }
+    }
+}

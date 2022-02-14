@@ -193,7 +193,6 @@ export class UserResolver {
                     "post.comment_author_name",
                     "post.comment_author_picture",
                 ]);
-
             const user = await mapGetUserByIdRaw(qb);
 
             return { user };
