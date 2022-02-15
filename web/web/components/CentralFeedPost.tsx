@@ -1,16 +1,12 @@
 import { Box, Flex, Text, useColorMode, Image } from "@chakra-ui/react";
 import type { NextPage } from "next";
-//import Image from "next/image";
 import PostEmotionsRecord from "components/PostEmotionsRecord";
 import { getPostsType } from "utils/types/post/post.types";
 import { useUser } from "utils/hooks/useUser";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "Redux/Global/GlobalReducer";
 import { emotion as emotionElement } from "utils/types/post/post.types";
-import { useDispatch } from "react-redux";
-import { bindActionCreators } from "redux";
-import { actionCreators } from "Redux/actions";
 import { getServerPathImage } from "utils/generalAuxFunctions";
 
 interface CentralFeedPostProps {
@@ -19,9 +15,7 @@ interface CentralFeedPostProps {
 
 const CentralFeedPost: NextPage<CentralFeedPostProps> = ({ post }) => {
     const user = useUser();
-    const dispatch = useDispatch();
     const { colorMode } = useColorMode();
-    const [loadEffect, setLoadEffect] = useState(true);
 
     const createdEmotion = useSelector(
         (state: RootState) => state.globalReducer.createdEmotion
@@ -30,15 +24,6 @@ const CentralFeedPost: NextPage<CentralFeedPostProps> = ({ post }) => {
     const hasCreatedEmotion = useSelector(
         (state: RootState) => state.globalReducer.hasCreatedEmotion
     );
-
-    const { setHasCreatedEmotion } = bindActionCreators(
-        actionCreators,
-        dispatch
-    );
-
-    const onSetHasCreatedEmotion = (hasCreated: boolean) => {
-        setHasCreatedEmotion(hasCreated);
-    };
 
     useEffect(() => {
         if (createdEmotion) {
@@ -59,16 +44,11 @@ const CentralFeedPost: NextPage<CentralFeedPostProps> = ({ post }) => {
                 } else {
                     post.emotions.push(emotionObj);
                 }
-                console.log("emotions ", post.emotions);
             }
         }
     }, [hasCreatedEmotion]);
 
-    useEffect(() => {
-        setTimeout(() => {
-            setLoadEffect(false);
-        }, 500);
-    }, [post.creator.picture, user]);
+    useEffect(() => {}, [post.creator.picture, user]);
 
     return (
         <Flex

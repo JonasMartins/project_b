@@ -48,6 +48,7 @@ import { getServerPathImage } from "utils/generalAuxFunctions";
 import BeatLoader from "react-spinners/BeatLoader";
 import { handleChangeEmotions } from "utils/emotions/auxFunctions";
 import NexLink from "next/link";
+import { HiUserAdd } from "react-icons/hi";
 
 interface PostEmotionsRecordProps {
     user: UserType;
@@ -405,22 +406,58 @@ const PostEmotionsRecord: NextPage<PostEmotionsRecordProps> = ({
                     </PopoverContent>
                 </Popover>
                 <Flex alignItems="center" ml={2}>
-                    <Tooltip
-                        hasArrow
-                        aria-label="author"
-                        label={`Author: ${post.creator.name}`}
-                        colorScheme="white"
-                    >
-                        <NexLink href={`/user/${post.creator.id}`}>
+                    <Popover placement="top-end" trigger="hover">
+                        <PopoverTrigger>
                             <ChakraImage
-                                cursor="pointer"
                                 mr={1}
                                 borderRadius="full"
                                 boxSize="32px"
                                 src={getServerPathImage(post.creator.picture)}
                             />
-                        </NexLink>
-                    </Tooltip>
+                        </PopoverTrigger>
+                        <PopoverContent>
+                            <PopoverArrow />
+                            <PopoverBody>
+                                <NexLink href={`/user/${post.creator.id}`}>
+                                    <Flex
+                                        justifyContent="space-between"
+                                        p={2}
+                                        alignItems="center"
+                                    >
+                                        <Flex alignItems="center">
+                                            <ChakraImage
+                                                cursor="pointer"
+                                                mr={2}
+                                                borderRadius="full"
+                                                boxSize="32px"
+                                                src={getServerPathImage(
+                                                    post.creator.picture
+                                                )}
+                                            />
+                                            {post.creator.name}
+                                        </Flex>
+                                        <Tooltip
+                                            hasArrow
+                                            aria-label="connect"
+                                            label="Connect"
+                                            colorScheme="white"
+                                        >
+                                            <IconButton
+                                                isRound={true}
+                                                aria-label="connect"
+                                                isDisabled={loadEffect}
+                                                icon={
+                                                    <HiUserAdd color="teal" />
+                                                }
+                                                m={1}
+                                                onClick={() => {}}
+                                            />
+                                        </Tooltip>
+                                    </Flex>
+                                </NexLink>
+                            </PopoverBody>
+                        </PopoverContent>
+                    </Popover>
                 </Flex>
             </Flex>
         </Flex>
