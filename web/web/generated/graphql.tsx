@@ -507,7 +507,7 @@ export type GetConnectionSuggestionsQuery = { __typename?: 'Query', getUserSugge
 export type GetCurrentLoggedUserQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetCurrentLoggedUserQuery = { __typename?: 'Query', getCurrentLoggedUser: { __typename?: 'UserResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', method: string, field: string, message: string }> | null | undefined, user?: { __typename?: 'User', id: string, name: string, email: string, password: string, picture?: string | null | undefined, role: { __typename?: 'Role', id: string, name: string } } | null | undefined } };
+export type GetCurrentLoggedUserQuery = { __typename?: 'Query', getCurrentLoggedUser: { __typename?: 'UserResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', method: string, field: string, message: string }> | null | undefined, user?: { __typename?: 'User', id: string, name: string, email: string, password: string, picture?: string | null | undefined, role: { __typename?: 'Role', id: string, name: string }, connections?: Array<{ __typename?: 'User', id: string }> | null | undefined } | null | undefined } };
 
 export type GetPostsQueryVariables = Exact<{
   offset: Scalars['Float'];
@@ -1067,6 +1067,9 @@ export const GetCurrentLoggedUserDocument = gql`
       role {
         id
         name
+      }
+      connections {
+        id
       }
     }
   }

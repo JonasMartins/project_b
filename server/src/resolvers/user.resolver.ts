@@ -339,6 +339,7 @@ export class UserResolver {
             .getRepository(User)
             .createQueryBuilder("user")
             .leftJoinAndSelect("user.role", "role")
+            .leftJoinAndSelect("user.connections", "connections")
             .where("user.id = :id", { id: req.session.userId })
             .select([
                 "user.id",
@@ -348,6 +349,7 @@ export class UserResolver {
                 "user.password",
                 "role.id",
                 "role.name",
+                "connections.id",
             ]);
 
         const user = await qb.getOne();

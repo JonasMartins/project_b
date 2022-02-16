@@ -49,6 +49,7 @@ import BeatLoader from "react-spinners/BeatLoader";
 import { handleChangeEmotions } from "utils/emotions/auxFunctions";
 import NexLink from "next/link";
 import { HiUserAdd } from "react-icons/hi";
+import { FaUserCheck } from "react-icons/fa";
 
 interface PostEmotionsRecordProps {
     user: UserType;
@@ -170,6 +171,64 @@ const PostEmotionsRecord: NextPage<PostEmotionsRecordProps> = ({
                 setLoadEffect(false);
             }, 500);
         }
+    };
+
+    /**
+     *
+     * @param id post's author id
+     * @returns if the post's author is the current logged user, returns
+     * nothing, if is one of the logged user connections, returns an icon
+     * representing that the user already is connected with that user.
+     * If the post's author is not among the logged user connections,
+     * it will return an button that if clicked will send a invite of connection
+     * to the post's author
+     */
+    const checkIfGivenUserIdIsConnected = (id: string): JSX.Element => {
+        if (id === user?.id) {
+            return <></>;
+        }
+        let bool = false;
+        let isConn: JSX.Element = (
+            <Tooltip
+                hasArrow
+                aria-label="connect"
+                label="Connected"
+                colorScheme="white"
+            >
+                <IconButton
+                    isRound={true}
+                    aria-label="connected"
+                    isDisabled={loadEffect}
+                    icon={<FaUserCheck color="#E426FF" />}
+                    m={1}
+                />
+            </Tooltip>
+        );
+
+        let isNotConn: JSX.Element = (
+            <Tooltip
+                hasArrow
+                aria-label="connect"
+                label="Connect"
+                colorScheme="white"
+            >
+                <IconButton
+                    isRound={true}
+                    aria-label="connect"
+                    isDisabled={loadEffect}
+                    icon={<HiUserAdd color="#E426FF" />}
+                    m={1}
+                    onClick={() => {}}
+                />
+            </Tooltip>
+        );
+        user?.connections?.forEach((conn) => {
+            if (conn.id === id) {
+                bool = true;
+            }
+        });
+
+        return bool ? isConn : isNotConn;
     };
 
     useEffect(() => {
@@ -436,23 +495,11 @@ const PostEmotionsRecord: NextPage<PostEmotionsRecordProps> = ({
                                             />
                                             {post.creator.name}
                                         </Flex>
-                                        <Tooltip
-                                            hasArrow
-                                            aria-label="connect"
-                                            label="Connect"
-                                            colorScheme="white"
-                                        >
-                                            <IconButton
-                                                isRound={true}
-                                                aria-label="connect"
-                                                isDisabled={loadEffect}
-                                                icon={
-                                                    <HiUserAdd color="teal" />
-                                                }
-                                                m={1}
-                                                onClick={() => {}}
-                                            />
-                                        </Tooltip>
+
+                                        {post.creator.id &&
+                                            checkIfGivenUserIdIsConnected(
+                                                post.creator.id
+                                            )}
                                     </Flex>
                                 </NexLink>
                             </PopoverBody>

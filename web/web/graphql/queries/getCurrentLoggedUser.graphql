@@ -15,6 +15,9 @@ query GetCurrentLoggedUser {
                 id
                 name
             }
+            connections {
+                id
+            }
         }
     }
 }

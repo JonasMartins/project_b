@@ -16,6 +16,10 @@ export type UserType =
           password: string;
           picture?: string | null | undefined;
           role: { __typename?: "Role"; name: string };
+          connections?:
+              | Array<{ __typename?: "User"; id: string }>
+              | null
+              | undefined;
       }
     | null
     | undefined;
