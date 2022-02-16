@@ -18,6 +18,9 @@ import session from "express-session";
 import connectRedis from "connect-redis";
 import Redis from "ioredis";
 import { graphqlUploadExpress } from "graphql-upload";
+import { createServer } from "http";
+import { execute, subscribe } from "graphql";
+import { SubscriptionServer } from "subscriptions-transport-ws";
 
 declare module "express-session" {
     interface SessionData {
@@ -30,6 +33,7 @@ export default class Application {
     public orm: EntityManager;
     public app: express.Application;
     public server: Server;
+    public httpServer: Server;
     public cookieLife: number = 1000 * 60 * 60 * 24 * 4; // four days
 
     public connect = async (): Promise<void> => {
@@ -73,6 +77,21 @@ export default class Application {
             ],
             validate: false,
         });
+
+        this.httpServer = createServer(this.app);
+
+        const subscriptionServer = SubscriptionServer.create(
+            {
+                schema,
+                execute,
+                subscribe,
+            },
+            {
+                server: this.httpServer,
+                path: "/graphql",
+            }
+        );
+
         const apolloServer = new ApolloServer({
             schema,
             context: ({ req, res }): Context => ({
@@ -81,7 +100,19 @@ export default class Application {
                 res,
             }),
             introspection: true,
-            plugins: [ApolloServerPluginLandingPageGraphQLPlayground()],
+            plugins: [
+                ApolloServerPluginLandingPageGraphQLPlayground(),
+
+                {
+                    async serverWillStart() {
+                        return {
+                            async drainServer() {
+                                subscriptionServer.close();
+                            },
+                        };
+                    },
+                },
+            ],
         });
 
         await apolloServer.start();
@@ -98,7 +129,7 @@ export default class Application {
             cors: false,
         });
 
-        this.server = this.app.listen(4001, () => {
+        this.server = this.httpServer.listen(4001, () => {
             console.log(
                 `The application is listening on port 4001! at ${process.env.ENV} mode`
             );

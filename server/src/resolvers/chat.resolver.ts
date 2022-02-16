@@ -7,6 +7,9 @@ import {
     Ctx,
     ObjectType,
     Field,
+    PubSub,
+    Subscription,
+    Root,
 } from "type-graphql";
 import { Chat } from "./../database/entity/chat.entity";
 import { Context } from "./../context";
@@ -14,14 +17,17 @@ import { genericError } from "./../helpers/generalAuxMethods";
 import { User } from "./../database/entity/user.entity";
 import { Message } from "./../database/entity/message.entity";
 import { GeneralResponse } from "./../helpers/generalTypeReturns";
+import { PubSubEngine } from "graphql-subscriptions";
 
 interface user_chats_chat {
     user_id: string;
     chat_id: string;
 }
-interface chat_messages_message {
-    chat_id: string;
-    message_id: string;
+
+@ObjectType()
+class MessageSubscription {
+    @Field(() => Message, { nullable: true })
+    newMessage?: Message;
 }
 
 @ObjectType()
@@ -85,6 +91,15 @@ export class ChatResolver {
         }
     }
 
+    @Subscription(() => MessageSubscription, {
+        topics: "MESSAGE_CREATED",
+    })
+    async newMessageNotification(
+        @Root("message") message: Message
+    ): Promise<MessageSubscription> {
+        return { newMessage: message };
+    }
+
     @Mutation(() => GeneralResponse)
     async createMessage(
         @Arg("creatorId") creatorId: string,
@@ -92,6 +107,7 @@ export class ChatResolver {
         @Arg("participants", () => [String], { nullable: false })
         participants: string[],
         @Arg("body") body: string,
+        @PubSub() pubSub: PubSubEngine,
         @Ctx() { em }: Context
     ): Promise<GeneralResponse> {
         try {
@@ -183,6 +199,8 @@ export class ChatResolver {
                 .into("chat_messages_message")
                 .values({ chat_id: chat.id, message_id: message.id })
                 .execute();
+
+            await pubSub.publish("MESSAGE_CREATED", { message });
 
             return { done: message ? true : false };
         } catch (e) {
