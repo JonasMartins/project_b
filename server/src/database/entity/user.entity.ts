@@ -13,6 +13,8 @@ import { UserValidator } from "../validators/user.validator";
 import { Base } from "./base.entity";
 import { Role } from "./role.entity";
 import { Post } from "./post.entity";
+import { Message } from "./message.entity";
+import { Chat } from "./chat.entity";
 import { Emotion } from "./emotion.entity";
 import { Comment } from "./comment.entity";
 import argon2 from "argon2";
@@ -46,6 +48,19 @@ export class User extends Base {
     @OneToMany(() => Post, (post) => post.creator)
     public posts: Post[];
 
+    @Field(() => Message)
+    @OneToMany(() => Message, (message) => message.creator)
+    public messages: Message[];
+
+    @Field(() => [Chat], { nullable: true })
+    @ManyToMany(() => Chat, (chat) => chat.participants)
+    @JoinTable({
+        name: "user_chats_chat",
+        joinColumns: [{ name: "user_id" }],
+        inverseJoinColumns: [{ name: "chat_id" }],
+    })
+    public chats: Chat[];
+
     @Field(() => [Request], { nullable: true })
     @OneToMany(() => Request, (request) => request.requestor)
     public requests: Request[];
@@ -70,6 +85,14 @@ export class User extends Base {
     @ManyToMany(() => User, { nullable: true, onDelete: "SET NULL" })
     @JoinTable()
     public connections: User[];
+
+    @Field(() => Date, { nullable: true })
+    @Column({ nullable: true })
+    public lastSeen: Date;
+
+    @Field(() => Date, { nullable: true })
+    @Column({ nullable: true })
+    public lastTyped: Date;
 
     @BeforeInsert()
     async hashPassword() {

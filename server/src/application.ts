@@ -13,6 +13,7 @@ import { RoleResolver } from "./resolvers/role.resolver";
 import { PostResolver } from "./resolvers/post.resolver";
 import { CommentResolver } from "./resolvers/comment.resolver";
 import { EmotionResolver } from "./resolvers/emotion.resolver";
+import { ChatResolver } from "./resolvers/chat.resolver";
 import session from "express-session";
 import connectRedis from "connect-redis";
 import Redis from "ioredis";
@@ -68,6 +69,7 @@ export default class Application {
                 PostResolver,
                 CommentResolver,
                 EmotionResolver,
+                ChatResolver,
             ],
             validate: false,
         });
