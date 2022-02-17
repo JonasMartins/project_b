@@ -563,6 +563,13 @@ export type UpdateUserSettingsMutationVariables = Exact<{
 
 export type UpdateUserSettingsMutation = { __typename?: 'Mutation', updateUserSettings: { __typename?: 'UserResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', method: string, message: string, field: string }> | null | undefined, user?: { __typename?: 'User', id: string, name: string, email: string, picture?: string | null | undefined } | null | undefined } };
 
+export type GetChatsQueryVariables = Exact<{
+  participant: Scalars['String'];
+}>;
+
+
+export type GetChatsQuery = { __typename?: 'Query', getChats: { __typename?: 'ChatsResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', message: string }> | null | undefined, chats?: Array<{ __typename?: 'Chat', id: string, participants: Array<{ __typename?: 'User', id: string, name: string, picture?: string | null | undefined }>, messages?: Array<{ __typename?: 'Message', id: string, body: string, creator: { __typename?: 'User', id: string, name: string, picture?: string | null | undefined } }> | null | undefined }> | null | undefined } };
+
 export type GetConnectionSuggestionsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -1120,6 +1127,60 @@ export function useUpdateUserSettingsMutation(baseOptions?: Apollo.MutationHookO
 export type UpdateUserSettingsMutationHookResult = ReturnType<typeof useUpdateUserSettingsMutation>;
 export type UpdateUserSettingsMutationResult = Apollo.MutationResult<UpdateUserSettingsMutation>;
 export type UpdateUserSettingsMutationOptions = Apollo.BaseMutationOptions<UpdateUserSettingsMutation, UpdateUserSettingsMutationVariables>;
+export const GetChatsDocument = gql`
+    query GetChats($participant: String!) {
+  getChats(participant: $participant) {
+    errors {
+      message
+    }
+    chats {
+      id
+      participants {
+        id
+        name
+        picture
+      }
+      messages {
+        id
+        body
+        creator {
+          id
+          name
+          picture
+        }
+      }
+    }
+  }
+}
+    `;
+
+/**
+ * __useGetChatsQuery__
+ *
+ * To run a query within a React component, call `useGetChatsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetChatsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetChatsQuery({
+ *   variables: {
+ *      participant: // value for 'participant'
+ *   },
+ * });
+ */
+export function useGetChatsQuery(baseOptions: Apollo.QueryHookOptions<GetChatsQuery, GetChatsQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetChatsQuery, GetChatsQueryVariables>(GetChatsDocument, options);
+      }
+export function useGetChatsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetChatsQuery, GetChatsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetChatsQuery, GetChatsQueryVariables>(GetChatsDocument, options);
+        }
+export type GetChatsQueryHookResult = ReturnType<typeof useGetChatsQuery>;
+export type GetChatsLazyQueryHookResult = ReturnType<typeof useGetChatsLazyQuery>;
+export type GetChatsQueryResult = Apollo.QueryResult<GetChatsQuery, GetChatsQueryVariables>;
 export const GetConnectionSuggestionsDocument = gql`
     query GetConnectionSuggestions {
   getUserSuggestions {

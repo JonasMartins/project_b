@@ -1,0 +1,24 @@
+query GetChats($participant: String!) {
+    getChats(participant: $participant) {
+        errors {
+            message
+        }
+        chats {
+            id
+            participants {
+                id
+                name
+                picture
+            }
+            messages {
+                id
+                body
+                creator {
+                    id
+                    name
+                    picture
+                }
+            }
+        }
+    }
+}

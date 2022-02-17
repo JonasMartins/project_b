@@ -162,7 +162,9 @@ const LeftPanel: NextPage<LeftPanelProps> = ({}) => {
                             aria-label="chats"
                             size="lg"
                             icon={<BsFillChatDotsFill />}
-                            onClick={() => {}}
+                            onClick={() => {
+                                router.push("/chat");
+                            }}
                         />
                     </Tooltip>
                 </GridItem>
