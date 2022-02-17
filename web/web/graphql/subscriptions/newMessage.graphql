@@ -1,0 +1,16 @@
+subscription NewMessageNotification {
+    newMessageNotification {
+        newMessage {
+            id
+            body
+            creator {
+                id
+                name
+                picture
+            }
+            chat {
+                id
+            }
+        }
+    }
+}

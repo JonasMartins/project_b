@@ -1,0 +1,18 @@
+mutation CreateMessage(
+    $body: String!
+    $participants: [String!]!
+    $creatorId: String!
+    $chatId: String
+) {
+    createMessage(
+        body: $body
+        participants: $participants
+        creatorId: $creatorId
+        chatId: $chatId
+    ) {
+        errors {
+            message
+        }
+        done
+    }
+}

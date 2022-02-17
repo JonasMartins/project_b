@@ -19,6 +19,21 @@ export type Scalars = {
   Upload: any;
 };
 
+export type Chat = {
+  __typename?: 'Chat';
+  createdAt: Scalars['DateTime'];
+  id: Scalars['String'];
+  messages?: Maybe<Array<Message>>;
+  participants: Array<User>;
+  updatedAt: Scalars['DateTime'];
+};
+
+export type ChatsResponse = {
+  __typename?: 'ChatsResponse';
+  chats?: Maybe<Array<Chat>>;
+  errors?: Maybe<Array<ErrorFieldHandler>>;
+};
+
 export type Comment = {
   __typename?: 'Comment';
   author: User;
@@ -120,11 +135,27 @@ export type LoginResponse = {
   token?: Maybe<Scalars['String']>;
 };
 
+export type Message = {
+  __typename?: 'Message';
+  body: Scalars['String'];
+  chat: Chat;
+  createdAt: Scalars['DateTime'];
+  creator: User;
+  id: Scalars['String'];
+  updatedAt: Scalars['DateTime'];
+};
+
+export type MessageSubscription = {
+  __typename?: 'MessageSubscription';
+  newMessage?: Maybe<Message>;
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
   createComment: CommentResponse;
   createConnection: GeneralResponse;
   createEmotion: EmotionResponse;
+  createMessage: GeneralResponse;
   createPost: PostResponse;
   createRequest: GeneralResponse;
   createRole: RoleResponse;
@@ -157,6 +188,14 @@ export type MutationCreateEmotionArgs = {
   postId: Scalars['String'];
   type: EmotionType;
   userId: Scalars['String'];
+};
+
+
+export type MutationCreateMessageArgs = {
+  body: Scalars['String'];
+  chatId?: InputMaybe<Scalars['String']>;
+  creatorId: Scalars['String'];
+  participants: Array<Scalars['String']>;
 };
 
 
@@ -257,6 +296,7 @@ export type PostsResponse = {
 
 export type Query = {
   __typename?: 'Query';
+  getChats: ChatsResponse;
   getCurrentLoggedUser: UserResponse;
   getEmotionsFromPost: EmotionsResponse;
   getEmotionsFromUser: EmotionsResponse;
@@ -271,6 +311,11 @@ export type Query = {
   getUserSuggestions: UsersResponse;
   getUsers: UsersResponse;
   loginTest: Scalars['Boolean'];
+};
+
+
+export type QueryGetChatsArgs = {
+  participant: Scalars['String'];
 };
 
 
@@ -378,8 +423,14 @@ export type RolesResponse = {
   roles?: Maybe<Array<Role>>;
 };
 
+export type Subscription = {
+  __typename?: 'Subscription';
+  newMessageNotification: MessageSubscription;
+};
+
 export type User = {
   __typename?: 'User';
+  chats?: Maybe<Array<Chat>>;
   comments?: Maybe<Array<Comment>>;
   connections?: Maybe<Array<User>>;
   createdAt: Scalars['DateTime'];
@@ -387,6 +438,9 @@ export type User = {
   emotions?: Maybe<Array<Emotion>>;
   id: Scalars['String'];
   invitations?: Maybe<Array<Request>>;
+  lastSeen?: Maybe<Scalars['DateTime']>;
+  lastTyped?: Maybe<Scalars['DateTime']>;
+  messages: Message;
   name: Scalars['String'];
   password: Scalars['String'];
   picture?: Maybe<Scalars['String']>;
@@ -432,6 +486,16 @@ export type CreateEmotionMutationVariables = Exact<{
 
 
 export type CreateEmotionMutation = { __typename?: 'Mutation', createEmotion: { __typename?: 'EmotionResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', method: string, message: string, field: string }> | null | undefined, emotion?: { __typename?: 'Emotion', id: string, type: EmotionType, creator: { __typename?: 'User', id: string, name: string }, post: { __typename?: 'Post', id: string } } | null | undefined } };
+
+export type CreateMessageMutationVariables = Exact<{
+  body: Scalars['String'];
+  participants: Array<Scalars['String']> | Scalars['String'];
+  creatorId: Scalars['String'];
+  chatId?: InputMaybe<Scalars['String']>;
+}>;
+
+
+export type CreateMessageMutation = { __typename?: 'Mutation', createMessage: { __typename?: 'GeneralResponse', done?: boolean | null | undefined, errors?: Array<{ __typename?: 'ErrorFieldHandler', message: string }> | null | undefined } };
 
 export type CreatePostMutationVariables = Exact<{
   options: PostValidator;
@@ -553,6 +617,11 @@ export type LoginTestQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type LoginTestQuery = { __typename?: 'Query', loginTest: boolean };
 
+export type NewMessageNotificationSubscriptionVariables = Exact<{ [key: string]: never; }>;
+
+
+export type NewMessageNotificationSubscription = { __typename?: 'Subscription', newMessageNotification: { __typename?: 'MessageSubscription', newMessage?: { __typename?: 'Message', id: string, body: string, creator: { __typename?: 'User', id: string, name: string, picture?: string | null | undefined }, chat: { __typename?: 'Chat', id: string } } | null | undefined } };
+
 
 export const CreateConnectionDocument = gql`
     mutation CreateConnection($userRequestedId: String!, $userRequestorId: String!) {
@@ -646,6 +715,50 @@ export function useCreateEmotionMutation(baseOptions?: Apollo.MutationHookOption
 export type CreateEmotionMutationHookResult = ReturnType<typeof useCreateEmotionMutation>;
 export type CreateEmotionMutationResult = Apollo.MutationResult<CreateEmotionMutation>;
 export type CreateEmotionMutationOptions = Apollo.BaseMutationOptions<CreateEmotionMutation, CreateEmotionMutationVariables>;
+export const CreateMessageDocument = gql`
+    mutation CreateMessage($body: String!, $participants: [String!]!, $creatorId: String!, $chatId: String) {
+  createMessage(
+    body: $body
+    participants: $participants
+    creatorId: $creatorId
+    chatId: $chatId
+  ) {
+    errors {
+      message
+    }
+    done
+  }
+}
+    `;
+export type CreateMessageMutationFn = Apollo.MutationFunction<CreateMessageMutation, CreateMessageMutationVariables>;
+
+/**
+ * __useCreateMessageMutation__
+ *
+ * To run a mutation, you first call `useCreateMessageMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateMessageMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createMessageMutation, { data, loading, error }] = useCreateMessageMutation({
+ *   variables: {
+ *      body: // value for 'body'
+ *      participants: // value for 'participants'
+ *      creatorId: // value for 'creatorId'
+ *      chatId: // value for 'chatId'
+ *   },
+ * });
+ */
+export function useCreateMessageMutation(baseOptions?: Apollo.MutationHookOptions<CreateMessageMutation, CreateMessageMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<CreateMessageMutation, CreateMessageMutationVariables>(CreateMessageDocument, options);
+      }
+export type CreateMessageMutationHookResult = ReturnType<typeof useCreateMessageMutation>;
+export type CreateMessageMutationResult = Apollo.MutationResult<CreateMessageMutation>;
+export type CreateMessageMutationOptions = Apollo.BaseMutationOptions<CreateMessageMutation, CreateMessageMutationVariables>;
 export const CreatePostDocument = gql`
     mutation CreatePost($options: PostValidator!, $files: [Upload!]) {
   createPost(options: $options, files: $files) {
@@ -1418,6 +1531,46 @@ export function useLoginTestLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<
 export type LoginTestQueryHookResult = ReturnType<typeof useLoginTestQuery>;
 export type LoginTestLazyQueryHookResult = ReturnType<typeof useLoginTestLazyQuery>;
 export type LoginTestQueryResult = Apollo.QueryResult<LoginTestQuery, LoginTestQueryVariables>;
+export const NewMessageNotificationDocument = gql`
+    subscription NewMessageNotification {
+  newMessageNotification {
+    newMessage {
+      id
+      body
+      creator {
+        id
+        name
+        picture
+      }
+      chat {
+        id
+      }
+    }
+  }
+}
+    `;
+
+/**
+ * __useNewMessageNotificationSubscription__
+ *
+ * To run a query within a React component, call `useNewMessageNotificationSubscription` and pass it any options that fit your needs.
+ * When your component renders, `useNewMessageNotificationSubscription` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the subscription, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useNewMessageNotificationSubscription({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useNewMessageNotificationSubscription(baseOptions?: Apollo.SubscriptionHookOptions<NewMessageNotificationSubscription, NewMessageNotificationSubscriptionVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useSubscription<NewMessageNotificationSubscription, NewMessageNotificationSubscriptionVariables>(NewMessageNotificationDocument, options);
+      }
+export type NewMessageNotificationSubscriptionHookResult = ReturnType<typeof useNewMessageNotificationSubscription>;
+export type NewMessageNotificationSubscriptionResult = Apollo.SubscriptionResult<NewMessageNotificationSubscription>;
 
       export interface PossibleTypesResultData {
         possibleTypes: {

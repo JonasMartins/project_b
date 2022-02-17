@@ -10,6 +10,7 @@ import {
     PubSub,
     Subscription,
     Root,
+    Publisher,
 } from "type-graphql";
 import { Chat } from "./../database/entity/chat.entity";
 import { Context } from "./../context";
@@ -22,6 +23,15 @@ import { PubSubEngine } from "graphql-subscriptions";
 interface user_chats_chat {
     user_id: string;
     chat_id: string;
+}
+
+@ObjectType()
+class MessageNotification {
+    @Field(() => Message)
+    message: Message;
+
+    @Field(() => String)
+    loggedUserId: string;
 }
 
 @ObjectType()
@@ -95,9 +105,18 @@ export class ChatResolver {
         topics: "MESSAGE_CREATED",
     })
     async newMessageNotification(
-        @Root("message") message: Message
+        @Root("notification") notification: MessageNotification
     ): Promise<MessageSubscription> {
-        return { newMessage: message };
+        const { message, loggedUserId } = notification;
+        if (message && message.chat.participants) {
+            let participant = message.chat.participants.find(
+                (x) => x.id === loggedUserId
+            );
+            if (participant) {
+                return { newMessage: message };
+            }
+        }
+        return {};
     }
 
     @Mutation(() => GeneralResponse)
@@ -159,7 +178,18 @@ export class ChatResolver {
                     .values(chat_participants)
                     .execute();
             } else {
-                chat = await em.findOne(Chat, { id: chatId });
+                chat = await em
+                    .getRepository(Chat)
+                    .createQueryBuilder("chat")
+                    .leftJoinAndSelect("chat.participants", "participants")
+                    .select([
+                        "chat.id",
+                        "chat.created_at",
+                        "participants.id",
+                        "participants.name",
+                        "participants.picture",
+                    ])
+                    .getOne();
             }
 
             if (chat === undefined) {
@@ -200,7 +230,12 @@ export class ChatResolver {
                 .values({ chat_id: chat.id, message_id: message.id })
                 .execute();
 
-            await pubSub.publish("MESSAGE_CREATED", { message });
+            await pubSub.publish("MESSAGE_CREATED", {
+                notification: {
+                    message: message,
+                    loggedUserId: "63eb77ce-1e4c-432b-9cff-9a31b1298b7c",
+                },
+            });
 
             return { done: message ? true : false };
         } catch (e) {
