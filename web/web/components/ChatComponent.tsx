@@ -4,29 +4,33 @@ import {
     AvatarGroup,
     Flex,
     Stack,
+    useColorMode,
 } from "@chakra-ui/react";
 import type { NextPage } from "next";
 import { getServerPathImage } from "utils/generalAuxFunctions";
+import { useUser } from "utils/hooks/useUser";
 import { chat as ChatType } from "utils/types/chat/chat.types";
 
 interface ChatProps {
     chat: ChatType;
-    currentUserId: string;
     changeChat: (chat: ChatType) => void;
     currentChatId: string;
 }
 
-const Chat: NextPage<ChatProps> = ({
-    chat,
-    currentUserId,
-    changeChat,
-    currentChatId,
-}) => {
-    const participants = chat?.participants.filter(
-        (x) => x.id !== currentUserId
-    );
+const Chat: NextPage<ChatProps> = ({ chat, changeChat, currentChatId }) => {
+    const user = useUser();
+    const participants = chat?.participants.filter((x) => x.id !== user?.id);
+    const { colorMode } = useColorMode();
 
-    console.log(currentUserId);
+    const handleBadgeColor = (active: boolean): string => {
+        let color = "";
+        if (active) {
+            color = colorMode === "dark" ? "#064a73" : "grey.200";
+        } else {
+            color = colorMode === "dark" ? "grey.700" : "grey.100";
+        }
+        return color;
+    };
 
     const content = (
         <Flex
@@ -36,7 +40,7 @@ const Chat: NextPage<ChatProps> = ({
             onClick={() => {
                 changeChat(chat);
             }}
-            bg={currentChatId === chat?.id ? "grey.200" : "grey.100"}
+            bg={handleBadgeColor(currentChatId === chat?.id)}
             boxShadow="base"
             borderWidth="1px"
             borderRadius="lg"

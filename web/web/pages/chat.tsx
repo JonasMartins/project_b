@@ -5,6 +5,7 @@ import { ComponentProps, useCallback, useEffect, useState } from "react";
 import {
     chats as ChatsType,
     chat as ChatType,
+    message as ChatMessage,
 } from "utils/types/chat/chat.types";
 import {
     Box,
@@ -20,6 +21,7 @@ import {
     Textarea,
     Tooltip,
     useColorMode,
+    useToast,
 } from "@chakra-ui/react";
 import Container from "components/Container";
 import NavBar from "components/Layout/NavBar";
@@ -31,6 +33,10 @@ import * as Yup from "yup";
 import { Field, Form, Formik, FormikProps } from "formik";
 import { useRef } from "react";
 import { BiDownArrowAlt } from "react-icons/bi";
+import {
+    useCreateMessageMutation,
+    CreateMessageMutation,
+} from "generated/graphql";
 
 interface ChatProps {}
 
@@ -53,9 +59,13 @@ const Chat: NextPage<ChatProps> = () => {
     const bgColor = { light: "gray.200", dark: "gray.700" };
     const [getChats, resultGetChats] = useGetChatsLazyQuery({});
     const [chats, setChats] = useState<ChatsType>([]);
+    const [chatMessages, setChatMessages] = useState<
+        Array<ChatMessage> | null | undefined
+    >([]);
     const [currentChat, setCurrentChat] = useState<ChatType>(null);
-
+    const [createMessage, resultCreateMessage] = useCreateMessageMutation({});
     const inputMessageRef = useRef<HTMLTextAreaElement>(null);
+    const toast = useToast();
 
     const ChakraTextArea = (props: TextAreaProps) => {
         return (
@@ -70,8 +80,70 @@ const Chat: NextPage<ChatProps> = () => {
         );
     };
 
+    const handlAddMessageToState = (body: string) => {
+        let newMessage: ChatMessage = {
+            id: "",
+            body: body,
+            creator: {
+                id: user?.id || "",
+                name: user?.name || "",
+                picture: user?.picture,
+            },
+        };
+
+        if (chatMessages?.length) {
+            setChatMessages((prevMessages) => [...prevMessages!, newMessage]);
+        } else {
+            setChatMessages([newMessage]);
+        }
+
+        if (inputMessageRef.current) {
+            inputMessageRef.current.scrollIntoView({
+                behavior: "smooth",
+            });
+            inputMessageRef.current.focus();
+        }
+    };
+
+    const handleCreateMessage = async (
+        body: string
+    ): Promise<CreateMessageMutation | null> => {
+        if (!currentChat?.participants || !user) {
+            return null;
+        }
+        let ids: string[] = [];
+        currentChat.participants.forEach((x) => {
+            ids.push(x.id);
+        });
+
+        const result = await createMessage({
+            variables: {
+                body,
+                participants: ids,
+                creatorId: user.id,
+                chatId: currentChat.id,
+            },
+            onError: () => {
+                toast({
+                    title: "Error",
+                    description: "Something went wrong",
+                    status: "error",
+                    duration: 8000,
+                    isClosable: true,
+                    position: "top",
+                });
+                console.error(resultCreateMessage.error);
+            },
+        });
+        if (!result.data?.createMessage?.done) {
+            return null;
+        }
+        return result.data;
+    };
+
     const changeCurrentChatCallback = (chat: ChatType): void => {
         setCurrentChat(chat);
+        setChatMessages(chat?.messages);
     };
 
     const handleBalloonColor = (guest: boolean): string => {
@@ -95,6 +167,7 @@ const Chat: NextPage<ChatProps> = () => {
             if (chats.data?.getChats?.chats) {
                 setChats(chats.data.getChats.chats);
                 setCurrentChat(chats.data.getChats.chats[0]);
+                setChatMessages(chats.data.getChats.chats[0].messages);
             }
         }
     }, [user?.id]);
@@ -154,8 +227,8 @@ const Chat: NextPage<ChatProps> = () => {
                                     icon={<BiDownArrowAlt />}
                                 />
                             </Tooltip>
-                            {currentChat &&
-                                currentChat.messages?.map((x) => (
+                            {chatMessages &&
+                                chatMessages?.map((x) => (
                                     <Flex
                                         justifyContent={
                                             x.creator.id === user?.id
@@ -183,7 +256,7 @@ const Chat: NextPage<ChatProps> = () => {
                                 <Formik
                                     initialValues={initialValues}
                                     onSubmit={(values) => {
-                                        console.log(values);
+                                        handlAddMessageToState(values.body);
                                     }}
                                     validationSchema={MessageSchema}
                                 >
@@ -223,10 +296,10 @@ const Chat: NextPage<ChatProps> = () => {
                                                         mt={3}
                                                         mb={3}
                                                         type="submit"
-                                                        disabled={
-                                                            props.isSubmitting ||
-                                                            !!props.errors.body
-                                                        }
+                                                        // disabled={
+                                                        //     props.isSubmitting ||
+                                                        //     !!props.errors.body
+                                                        // }
                                                         variant={`phlox-gradient-${colorMode}`}
                                                         color="white"
                                                     >
@@ -243,7 +316,6 @@ const Chat: NextPage<ChatProps> = () => {
                             {chats?.map((x) => (
                                 <ChatComponent
                                     chat={x}
-                                    currentUserId={user?.id || ""}
                                     changeChat={changeCurrentChatCallback}
                                     currentChatId={currentChat?.id ?? ""}
                                 />

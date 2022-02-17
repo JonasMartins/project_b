@@ -53,3 +53,15 @@ export type chat =
       }
     | null
     | undefined;
+
+export type message = {
+    __typename?: "Message" | undefined;
+    id: string;
+    body: string;
+    creator: {
+        __typename?: "User";
+        id: string;
+        name: string;
+        picture?: string | null | undefined;
+    };
+};
