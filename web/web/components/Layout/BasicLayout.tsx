@@ -38,6 +38,9 @@ const BasicLayout: NextPage<BasicLayoutProps> = () => {
                             colSpan={3}
                             bg={bgColor[colorMode]}
                             boxShadow="lg"
+                            display="block"
+                            overflow="auto"
+                            height="600px"
                         >
                             <CentralFeed />{" "}
                         </GridItem>

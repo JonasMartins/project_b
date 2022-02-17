@@ -13,12 +13,20 @@ interface ChatProps {
     chat: ChatType;
     currentUserId: string;
     changeChat: (chat: ChatType) => void;
+    currentChatId: string;
 }
 
-const Chat: NextPage<ChatProps> = ({ chat, currentUserId, changeChat }) => {
+const Chat: NextPage<ChatProps> = ({
+    chat,
+    currentUserId,
+    changeChat,
+    currentChatId,
+}) => {
     const participants = chat?.participants.filter(
         (x) => x.id !== currentUserId
     );
+
+    console.log(currentUserId);
 
     const content = (
         <Flex
@@ -26,9 +34,13 @@ const Chat: NextPage<ChatProps> = ({ chat, currentUserId, changeChat }) => {
             justifyContent="center"
             m={2}
             onClick={() => {
-                console.log("here");
                 changeChat(chat);
             }}
+            bg={currentChatId === chat?.id ? "grey.200" : "grey.100"}
+            boxShadow="base"
+            borderWidth="1px"
+            borderRadius="lg"
+            cursor="pointer"
         >
             <Stack direction="row" spacing={4}>
                 <AvatarGroup size="md" max={2}>

@@ -18,6 +18,7 @@ import {
     Stack,
     Text,
     Textarea,
+    Tooltip,
     useColorMode,
 } from "@chakra-ui/react";
 import Container from "components/Container";
@@ -27,8 +28,6 @@ import Footer from "components/Layout/Footer";
 import BeatLoaderCustom from "components/Layout/BeatLoaderCustom";
 import ChatComponent from "components/ChatComponent";
 import * as Yup from "yup";
-import { css } from "@emotion/react";
-import { customPostFeedInput } from "utils/custom/customStyles";
 import { Field, Form, Formik, FormikProps } from "formik";
 import { useRef } from "react";
 import { BiDownArrowAlt } from "react-icons/bi";
@@ -73,6 +72,16 @@ const Chat: NextPage<ChatProps> = () => {
 
     const changeCurrentChatCallback = (chat: ChatType): void => {
         setCurrentChat(chat);
+    };
+
+    const handleBalloonColor = (guest: boolean): string => {
+        let color = "";
+        if (!guest) {
+            color = colorMode === "dark" ? "#032a42" : "white";
+        } else {
+            color = colorMode === "dark" ? "#064a73" : "#b1d1b4";
+        }
+        return color;
     };
 
     const handleGetChats = useCallback(async () => {
@@ -122,21 +131,29 @@ const Chat: NextPage<ChatProps> = () => {
                             overflow="auto"
                             height="600px"
                         >
-                            <IconButton
-                                p={2}
-                                m={3}
-                                aria-label="conversation bottom"
-                                rounded="full"
-                                onClick={() => {
-                                    if (inputMessageRef.current) {
-                                        inputMessageRef.current.scrollIntoView({
-                                            behavior: "smooth",
-                                        });
-                                        inputMessageRef.current.focus();
-                                    }
-                                }}
-                                icon={<BiDownArrowAlt />}
-                            />
+                            <Tooltip
+                                hasArrow
+                                aria-label="go to bottom"
+                                label="Go to Bottom"
+                            >
+                                <IconButton
+                                    p={2}
+                                    m={3}
+                                    aria-label="conversation bottom"
+                                    rounded="full"
+                                    onClick={() => {
+                                        if (inputMessageRef.current) {
+                                            inputMessageRef.current.scrollIntoView(
+                                                {
+                                                    behavior: "smooth",
+                                                }
+                                            );
+                                            inputMessageRef.current.focus();
+                                        }
+                                    }}
+                                    icon={<BiDownArrowAlt />}
+                                />
+                            </Tooltip>
                             {currentChat &&
                                 currentChat.messages?.map((x) => (
                                     <Flex
@@ -150,24 +167,19 @@ const Chat: NextPage<ChatProps> = () => {
                                             p={5}
                                             m={4}
                                             boxShadow="lg"
-                                            borderRadius="1em"
+                                            borderRadius="1.5em"
                                             width="max-content"
-                                            bgColor={
+                                            bg={handleBalloonColor(
                                                 x.creator.id === user?.id
-                                                    ? "#fbcafb"
-                                                    : "grey.50"
-                                            }
+                                            )}
                                         >
-                                            <Text
-                                                fontWeight="semibold"
-                                                textColor={"black"}
-                                            >
+                                            <Text fontWeight="semibold">
                                                 {x.body}
                                             </Text>
                                         </Flex>
                                     </Flex>
                                 ))}
-                            <Box p={3} mt={4} mb={2}>
+                            <Box p={5} mt={4} mb={2}>
                                 <Formik
                                     initialValues={initialValues}
                                     onSubmit={(values) => {
@@ -189,9 +201,6 @@ const Chat: NextPage<ChatProps> = () => {
                                                         name="body"
                                                         as={ChakraTextArea}
                                                         placeholder="Send Message"
-                                                        css={css(
-                                                            customPostFeedInput
-                                                        )}
                                                         onBlur={() => {
                                                             if (
                                                                 !props.values
@@ -209,6 +218,21 @@ const Chat: NextPage<ChatProps> = () => {
                                                         {props.errors.body}
                                                     </FormErrorMessage>
                                                 </FormControl>
+                                                <Flex justifyContent="flex-end">
+                                                    <Button
+                                                        mt={3}
+                                                        mb={3}
+                                                        type="submit"
+                                                        disabled={
+                                                            props.isSubmitting ||
+                                                            !!props.errors.body
+                                                        }
+                                                        variant={`phlox-gradient-${colorMode}`}
+                                                        color="white"
+                                                    >
+                                                        Send
+                                                    </Button>
+                                                </Flex>
                                             </Stack>
                                         </Form>
                                     )}
@@ -221,6 +245,7 @@ const Chat: NextPage<ChatProps> = () => {
                                     chat={x}
                                     currentUserId={user?.id || ""}
                                     changeChat={changeCurrentChatCallback}
+                                    currentChatId={currentChat?.id ?? ""}
                                 />
                             ))}
                         </GridItem>
