@@ -66,6 +66,19 @@ export class ChatResolver {
         @Ctx() { em }: Context
     ): Promise<ChatsResponse> {
         try {
+            const chats_ids = await em
+                .getRepository(Chat)
+                .createQueryBuilder("chat")
+                .leftJoin("chat.participants", "participant")
+                .select(["chat.id"])
+                .where("participant.id = :id", { id: participant })
+                .getMany();
+
+            let str_chat_ids: string[] = [];
+            chats_ids.forEach((x) => {
+                str_chat_ids.push(x.id);
+            });
+
             const qb = await em
                 .getRepository(Chat)
                 .createQueryBuilder("chat")
@@ -84,7 +97,7 @@ export class ChatResolver {
                     "participant.name",
                     "participant.picture",
                 ])
-                .where("participant.id = :id", { id: participant });
+                .where("chat.id IN (:...ids)", { ids: str_chat_ids });
 
             const chats = await qb.getMany();
 
@@ -177,6 +190,8 @@ export class ChatResolver {
                     .into("user_chats_chat")
                     .values(chat_participants)
                     .execute();
+
+                chat.participants = users;
             } else {
                 chat = await em
                     .getRepository(Chat)
