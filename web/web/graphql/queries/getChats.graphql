@@ -13,6 +13,7 @@ query GetChats($participant: String!) {
             messages {
                 id
                 body
+                createdAt
                 creator {
                     id
                     name

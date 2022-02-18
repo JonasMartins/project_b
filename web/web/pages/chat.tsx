@@ -1,7 +1,7 @@
 import type { NextPage } from "next";
 import { useUser } from "utils/hooks/useUser";
 import { useGetChatsLazyQuery } from "generated/graphql";
-import {
+import React, {
     ChangeEvent,
     ComponentProps,
     useCallback,
@@ -17,7 +17,6 @@ import {
     Avatar,
     AvatarBadge,
     Box,
-    Button,
     Flex,
     FormControl,
     FormErrorMessage,
@@ -50,6 +49,8 @@ import {
 import { userConnectionType } from "utils/types/user/user.types";
 import { getServerPathImage, truncateString } from "utils/generalAuxFunctions";
 import { BsChatSquareDots } from "react-icons/bs";
+import { IoSend } from "react-icons/io5";
+import { formatRelative } from "date-fns";
 
 interface ChatProps {}
 
@@ -88,10 +89,6 @@ const Chat: NextPage<ChatProps> = () => {
         connections: Array<userConnectionType>;
     }>({ connections: [] });
 
-    const [defaultConnections, setDefaultConnections] = useState<
-        Array<userConnectionType>
-    >([]);
-
     const ChakraTextArea = (props: TextAreaProps) => {
         return (
             <Textarea
@@ -101,36 +98,17 @@ const Chat: NextPage<ChatProps> = () => {
                 borderRadius="1em"
                 size={"sm"}
                 variant="filled"
+                mt={3}
+                mb={4}
             />
         );
-    };
-
-    const handleSearchFriends = (e: ChangeEvent<HTMLInputElement>) => {
-        setSearchInput(e.target.value);
-        let regexTerm = "";
-        if (e.target.value.length >= 2) {
-            //regexTerm = "[ˆ,]*" + e.target.value.toLowerCase() + "[,$]*";
-            let result = connections.connections.filter((x) =>
-                x.name.toLowerCase().startsWith(e.target.value.toLowerCase())
-            );
-
-            setConnections((prevConn) => ({
-                connections: prevConn.connections.filter((x) =>
-                    x.name
-                        .toLowerCase()
-                        .startsWith(e.target.value.toLowerCase())
-                ),
-            }));
-        } else {
-            //setConnections({ connections: [] });
-            setConnections({ connections: defaultConnections });
-        }
     };
 
     const handlAddMessageToState = (body: string) => {
         let newMessage: ChatMessage = {
             id: "",
             body: body,
+            createdAt: new Date(),
             creator: {
                 id: user?.id || "",
                 name: user?.name || "",
@@ -147,6 +125,8 @@ const Chat: NextPage<ChatProps> = () => {
         if (inputMessageRef.current) {
             inputMessageRef.current.scrollIntoView({
                 behavior: "smooth",
+                block: "nearest",
+                inline: "end",
             });
             inputMessageRef.current.focus();
         }
@@ -224,7 +204,6 @@ const Chat: NextPage<ChatProps> = () => {
                         setConnections((prevConn) => ({
                             connections: [...prevConn.connections, x],
                         }));
-                        setDefaultConnections((prevConn) => [...prevConn, x]);
                     }
                 );
             }
@@ -279,11 +258,19 @@ const Chat: NextPage<ChatProps> = () => {
                                     m={3}
                                     aria-label="conversation bottom"
                                     rounded="full"
-                                    onClick={() => {
+                                    onClick={(
+                                        e: React.MouseEvent<
+                                            HTMLButtonElement,
+                                            MouseEvent
+                                        >
+                                    ) => {
+                                        e.preventDefault();
                                         if (inputMessageRef.current) {
                                             inputMessageRef.current.scrollIntoView(
                                                 {
                                                     behavior: "smooth",
+                                                    block: "nearest",
+                                                    inline: "end",
                                                 }
                                             );
                                             inputMessageRef.current.focus();
@@ -292,90 +279,118 @@ const Chat: NextPage<ChatProps> = () => {
                                     icon={<BiDownArrowAlt />}
                                 />
                             </Tooltip>
-                            {chatMessages &&
-                                chatMessages?.map((x) => (
-                                    <Flex
-                                        justifyContent={
-                                            x.creator.id === user?.id
-                                                ? "flex-end"
-                                                : "flex-start"
-                                        }
-                                    >
+                            <Flex
+                                flexDir="column"
+                                justifyContent="space-between"
+                                height="100%"
+                            >
+                                {chatMessages &&
+                                    chatMessages?.map((x) => (
                                         <Flex
-                                            p={5}
-                                            m={4}
-                                            boxShadow="lg"
-                                            borderRadius="1.5em"
-                                            width="max-content"
-                                            bg={handleBalloonColor(
+                                            justifyContent={
                                                 x.creator.id === user?.id
-                                            )}
+                                                    ? "flex-end"
+                                                    : "flex-start"
+                                            }
                                         >
-                                            <Text fontWeight="semibold">
-                                                {x.body}
-                                            </Text>
-                                        </Flex>
-                                    </Flex>
-                                ))}
-                            <Box p={5} mt={4} mb={2}>
-                                <Formik
-                                    initialValues={initialValues}
-                                    onSubmit={(values) => {
-                                        handlAddMessageToState(values.body);
-                                    }}
-                                    validationSchema={MessageSchema}
-                                >
-                                    {(props: FormikProps<FormValues>) => (
-                                        <Form>
-                                            <Stack spacing={3}>
-                                                <FormControl
-                                                    isInvalid={
-                                                        props.touched.body &&
-                                                        !!props.errors.body
-                                                    }
+                                            <Flex
+                                                p={5}
+                                                m={4}
+                                                boxShadow="lg"
+                                                borderRadius="1.5em"
+                                                width="max-content"
+                                                bg={handleBalloonColor(
+                                                    x.creator.id === user?.id
+                                                )}
+                                                flexDir="column"
+                                            >
+                                                <Text
+                                                    fontWeight="semibold"
+                                                    fontSize="md"
                                                 >
-                                                    <Field
-                                                        id="body"
-                                                        name="body"
-                                                        as={ChakraTextArea}
-                                                        placeholder="Send Message"
-                                                        onBlur={() => {
-                                                            if (
-                                                                !props.values
-                                                                    .body.length
-                                                            ) {
-                                                                props.setErrors(
-                                                                    {
-                                                                        body: "",
-                                                                    }
-                                                                );
-                                                            }
-                                                        }}
-                                                    />
-                                                    <FormErrorMessage>
-                                                        {props.errors.body}
-                                                    </FormErrorMessage>
-                                                </FormControl>
-                                                <Flex justifyContent="flex-end">
-                                                    <Button
-                                                        mt={3}
-                                                        mb={3}
-                                                        type="submit"
-                                                        // disabled={
-                                                        //     props.isSubmitting ||
-                                                        //     !!props.errors.body
-                                                        // }
-                                                        variant={`phlox-gradient-${colorMode}`}
-                                                        color="white"
+                                                    {x.body}
+                                                </Text>
+                                                <Text
+                                                    fontWeight="thin"
+                                                    fontSize="sm"
+                                                    textAlign="end"
+                                                >
+                                                    {formatRelative(
+                                                        new Date(x.createdAt),
+                                                        new Date()
+                                                    )}
+                                                </Text>
+                                            </Flex>
+                                        </Flex>
+                                    ))}
+                                <Box p={5} mt={4} mb={2}>
+                                    <Formik
+                                        initialValues={initialValues}
+                                        onSubmit={(values) => {
+                                            handlAddMessageToState(values.body);
+                                        }}
+                                        validationSchema={MessageSchema}
+                                    >
+                                        {(props: FormikProps<FormValues>) => (
+                                            <Form>
+                                                <Stack spacing={3}>
+                                                    <FormControl
+                                                        isInvalid={
+                                                            props.touched
+                                                                .body &&
+                                                            !!props.errors.body
+                                                        }
                                                     >
-                                                        Send
-                                                    </Button>
-                                                </Flex>
-                                            </Stack>
-                                        </Form>
-                                    )}
-                                </Formik>
-                            </Box>
+                                                        <Flex alignItems="center">
+                                                            <Field
+                                                                id="body"
+                                                                name="body"
+                                                                as={
+                                                                    ChakraTextArea
+                                                                }
+                                                                placeholder="Send Message"
+                                                                onBlur={() => {
+                                                                    if (
+                                                                        !props
+                                                                            .values
+                                                                            .body
+                                                                            .length
+                                                                    ) {
+                                                                        props.setErrors(
+                                                                            {
+                                                                                body: "",
+                                                                            }
+                                                                        );
+                                                                    }
+                                                                }}
+                                                            />
+                                                            <IconButton
+                                                                aria-label="Send"
+                                                                m={3}
+                                                                p={2}
+                                                                rounded="full"
+                                                                type="submit"
+                                                                // disabled={
+                                                                //     props.isSubmitting ||
+                                                                //     !!props.errors.body
+                                                                // }
+                                                                variant={`phlox-gradient-${colorMode}`}
+                                                                icon={
+                                                                    <IoSend color="white" />
+                                                                }
+                                                                boxSize="3.5rem"
+                                                            />
+                                                        </Flex>
+                                                        <FormErrorMessage>
+                                                            {props.errors.body}
+                                                        </FormErrorMessage>
+                                                    </FormControl>
+                                                </Stack>
+                                            </Form>
+                                        )}
+                                    </Formik>
+                                </Box>
+                            </Flex>
                         </GridItem>
                         <GridItem bg={bgColor[colorMode]} boxShadow="lg">
                             <Flex

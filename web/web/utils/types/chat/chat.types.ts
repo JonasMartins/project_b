@@ -13,6 +13,7 @@ export type chats =
                     __typename?: "Message" | undefined;
                     id: string;
                     body: string;
+                    createdAt: any;
                     creator: {
                         __typename?: "User";
                         id: string;
@@ -41,6 +42,7 @@ export type chat =
                     __typename?: "Message" | undefined;
                     id: string;
                     body: string;
+                    createdAt: any;
                     creator: {
                         __typename?: "User";
                         id: string;
@@ -58,6 +60,7 @@ export type message = {
     __typename?: "Message" | undefined;
     id: string;
     body: string;
+    createdAt: any;
     creator: {
         __typename?: "User";
         id: string;

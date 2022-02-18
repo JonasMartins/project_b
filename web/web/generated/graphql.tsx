@@ -568,7 +568,7 @@ export type GetChatsQueryVariables = Exact<{
 }>;
 
 
-export type GetChatsQuery = { __typename?: 'Query', getChats: { __typename?: 'ChatsResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', message: string }> | null | undefined, chats?: Array<{ __typename?: 'Chat', id: string, participants: Array<{ __typename?: 'User', id: string, name: string, picture?: string | null | undefined }>, messages?: Array<{ __typename?: 'Message', id: string, body: string, creator: { __typename?: 'User', id: string, name: string, picture?: string | null | undefined } }> | null | undefined }> | null | undefined } };
+export type GetChatsQuery = { __typename?: 'Query', getChats: { __typename?: 'ChatsResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', message: string }> | null | undefined, chats?: Array<{ __typename?: 'Chat', id: string, participants: Array<{ __typename?: 'User', id: string, name: string, picture?: string | null | undefined }>, messages?: Array<{ __typename?: 'Message', id: string, body: string, createdAt: any, creator: { __typename?: 'User', id: string, name: string, picture?: string | null | undefined } }> | null | undefined }> | null | undefined } };
 
 export type GetConnectionSuggestionsQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1143,6 +1143,7 @@ export const GetChatsDocument = gql`
       messages {
         id
         body
+        createdAt
         creator {
           id
           name

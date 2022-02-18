@@ -89,7 +89,7 @@ export class ChatResolver {
                     "chat.id",
                     "message.body",
                     "message.id",
-                    "message.created_at",
+                    "message.createdAt",
                     "creator.id",
                     "creator.name",
                     "creator.picture",
