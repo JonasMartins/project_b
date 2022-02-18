@@ -27,6 +27,13 @@ export type chats =
     | null
     | undefined;
 
+export type participant = {
+    __typename?: "User" | undefined;
+    id: string;
+    name: string;
+    picture?: string | null | undefined;
+};
+
 export type chat =
     | {
           __typename?: "Chat" | undefined;

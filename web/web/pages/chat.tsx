@@ -9,9 +9,9 @@ import React, {
     useState,
 } from "react";
 import {
-    chats as ChatsType,
     chat as ChatType,
     message as ChatMessage,
+    participant as participantType,
 } from "utils/types/chat/chat.types";
 import {
     Avatar,
@@ -47,7 +47,11 @@ import {
     useGetUserConnectionsLazyQuery,
 } from "generated/graphql";
 import { userConnectionType } from "utils/types/user/user.types";
-import { getServerPathImage, truncateString } from "utils/generalAuxFunctions";
+import {
+    getServerPathImage,
+    truncateString,
+    uuidv4Like,
+} from "utils/generalAuxFunctions";
 import { BsChatSquareDots } from "react-icons/bs";
 import { IoSend } from "react-icons/io5";
 import { formatRelative } from "date-fns";
@@ -73,7 +77,7 @@ const Chat: NextPage<ChatProps> = () => {
     const { colorMode } = useColorMode();
     const bgColor = { light: "gray.200", dark: "gray.700" };
     const [getChats, resultGetChats] = useGetChatsLazyQuery({});
-    const [chats, setChats] = useState<ChatsType>([]);
+    const [chats, setChats] = useState<Array<ChatType>>([]);
     const [chatMessages, setChatMessages] = useState<
         Array<ChatMessage> | null | undefined
     >([]);
@@ -102,6 +106,43 @@ const Chat: NextPage<ChatProps> = () => {
                 mb={4}
             />
         );
+    };
+
+    const handleAddChatToUi = (conn: userConnectionType) => {
+        let foundChatIndex = -1;
+
+        for (let i = 0; i < chats.length; i++) {
+            if (foundChatIndex > -1) {
+                break;
+            }
+            for (let j = 0; j < chats[i]!.participants.length; j++) {
+                if (chats[i]?.participants[j].id === conn.id) {
+                    foundChatIndex = i;
+                }
+            }
+        }
+        if (foundChatIndex > -1) {
+            setCurrentChat(chats[foundChatIndex]);
+            setChatMessages(chats[foundChatIndex]!.messages);
+        } else {
+            let participants: participantType[] = [];
+
+            participants.push({
+                id: user?.id || "",
+                name: user?.name || "",
+                picture: user?.picture,
+            });
+
+            participants.push(conn);
+            let chat: ChatType = {
+                id: uuidv4Like(),
+                participants,
+            };
+
+            setChats((prevChats) => [...prevChats, chat]);
+            setCurrentChat(chat);
+            setChatMessages([]);
+        }
     };
 
     const handlAddMessageToState = (body: string) => {
@@ -197,7 +238,16 @@ const Chat: NextPage<ChatProps> = () => {
                 },
             });
 
-            if (conn?.data?.getUserConnections?.user) {
+            if (chats.data?.getChats?.chats) {
+                setChats(chats.data.getChats.chats);
+                setCurrentChat(chats.data.getChats.chats[0]);
+                setChatMessages(chats.data.getChats.chats[0].messages);
+            }
+
+            if (
+                conn?.data?.getUserConnections?.user &&
+                chats.data?.getChats?.chats
+            ) {
                 setConnections({ connections: [] });
                 conn?.data?.getUserConnections.user.connections?.forEach(
                     (x) => {
@@ -206,11 +256,6 @@ const Chat: NextPage<ChatProps> = () => {
                         }));
                     }
                 );
-            }
-            if (chats.data?.getChats?.chats) {
-                setChats(chats.data.getChats.chats);
-                setCurrentChat(chats.data.getChats.chats[0]);
-                setChatMessages(chats.data.getChats.chats[0].messages);
             }
         }
     }, [user?.id]);
@@ -284,7 +329,7 @@ const Chat: NextPage<ChatProps> = () => {
                                 justifyContent="space-between"
                                 height="100%"
                             >
-                                {chatMessages &&
+                                {chatMessages?.length ? (
                                     chatMessages?.map((x) => (
                                         <Flex
                                             justifyContent={
@@ -295,7 +340,7 @@ const Chat: NextPage<ChatProps> = () => {
                                         >
                                             <Flex
                                                 p={5}
-                                                m={4}
+                                                m={2.5}
                                                 boxShadow="lg"
                                                 borderRadius="1.5em"
                                                 width="max-content"
@@ -322,7 +367,10 @@ const Chat: NextPage<ChatProps> = () => {
                                                 </Text>
                                             </Flex>
                                         </Flex>
-                                    ))}
+                                    ))
+                                ) : (
+                                    <Text>{""}</Text>
+                                )}
                                 <Box p={5} mt={4} mb={2}>
                                     <Formik
                                         initialValues={initialValues}
@@ -477,6 +525,11 @@ const Chat: NextPage<ChatProps> = () => {
                                                                 icon={
                                                                     <BsChatSquareDots />
                                                                 }
+                                                                onClick={() => {
+                                                                    handleAddChatToUi(
+                                                                        x
+                                                                    );
+                                                                }}
                                                             />
                                                         </Tooltip>
                                                     </Flex>
