@@ -1,13 +1,21 @@
 import type { NextPage } from "next";
 import { useUser } from "utils/hooks/useUser";
 import { useGetChatsLazyQuery } from "generated/graphql";
-import { ComponentProps, useCallback, useEffect, useState } from "react";
+import {
+    ChangeEvent,
+    ComponentProps,
+    useCallback,
+    useEffect,
+    useState,
+} from "react";
 import {
     chats as ChatsType,
     chat as ChatType,
     message as ChatMessage,
 } from "utils/types/chat/chat.types";
 import {
+    Avatar,
+    AvatarBadge,
     Box,
     Button,
     Flex,
@@ -16,6 +24,7 @@ import {
     Grid,
     GridItem,
     IconButton,
+    Input,
     Stack,
     Text,
     Textarea,
@@ -36,7 +45,11 @@ import { BiDownArrowAlt } from "react-icons/bi";
 import {
     useCreateMessageMutation,
     CreateMessageMutation,
+    useGetUserConnectionsLazyQuery,
 } from "generated/graphql";
+import { userConnectionType } from "utils/types/user/user.types";
+import { getServerPathImage, truncateString } from "utils/generalAuxFunctions";
+import { BsChatSquareDots } from "react-icons/bs";
 
 interface ChatProps {}
 
@@ -55,6 +68,7 @@ const Chat: NextPage<ChatProps> = () => {
         body: "",
     };
     const user = useUser();
+    const toast = useToast();
     const { colorMode } = useColorMode();
     const bgColor = { light: "gray.200", dark: "gray.700" };
     const [getChats, resultGetChats] = useGetChatsLazyQuery({});
@@ -65,7 +79,17 @@ const Chat: NextPage<ChatProps> = () => {
     const [currentChat, setCurrentChat] = useState<ChatType>(null);
     const [createMessage, resultCreateMessage] = useCreateMessageMutation({});
     const inputMessageRef = useRef<HTMLTextAreaElement>(null);
-    const toast = useToast();
+    const [searchInput, setSearchInput] = useState("");
+
+    const [getUserConnections, resultGetUserConnectionsLazy] =
+        useGetUserConnectionsLazyQuery({});
+
+    const [connections, setConnections] = useState<Array<userConnectionType>>(
+        []
+    );
+    const [defaultConnections, setDefaultConnections] = useState<
+        Array<userConnectionType>
+    >([]);
 
     const ChakraTextArea = (props: TextAreaProps) => {
         return (
@@ -78,6 +102,35 @@ const Chat: NextPage<ChatProps> = () => {
                 variant="filled"
             />
         );
+    };
+
+    const handleSearchFriends = (e: ChangeEvent<HTMLInputElement>) => {
+        setSearchInput(e.target.value);
+        let regexTerm = "";
+        if (e.target.value.length >= 2) {
+            regexTerm = "[ˆ,]*" + e.target.value + "[,$]*";
+            let result = connections.filter((x) => x.name.match(regexTerm));
+
+            console.log(result);
+        }
+
+        /*
+        if (e.target.value.length >= 2) {
+            let regexTerm =
+                "[ˆ,]*" +
+                e.target.value +
+                "[,$]*";
+            let result = connections.filter(
+                (x) =>
+                    x.name.match(regexTerm)
+            );
+            setConnections(result);
+        } else {
+            setConnections([]);
+            setConnections(
+                defaultConnections
+            );
+        } */
     };
 
     const handlAddMessageToState = (body: string) => {
@@ -156,13 +209,29 @@ const Chat: NextPage<ChatProps> = () => {
         return color;
     };
 
-    const handleGetChats = useCallback(async () => {
+    const handleGetChatsAndConnections = useCallback(async () => {
         if (user?.id) {
             const chats = await getChats({
                 variables: {
                     participant: user.id,
                 },
             });
+
+            const conn = await getUserConnections({
+                variables: {
+                    id: user.id,
+                },
+            });
+
+            if (conn?.data?.getUserConnections?.user) {
+                setConnections([]);
+                conn?.data?.getUserConnections.user.connections?.forEach(
+                    (x) => {
+                        setConnections((prevConn) => [...prevConn, x]);
+                        setDefaultConnections((prevConn) => [...prevConn, x]);
+                    }
+                );
+            }
 
             if (chats.data?.getChats?.chats) {
                 setChats(chats.data.getChats.chats);
@@ -173,7 +242,7 @@ const Chat: NextPage<ChatProps> = () => {
     }, [user?.id]);
 
     useEffect(() => {
-        handleGetChats();
+        handleGetChatsAndConnections();
     }, [user?.id, resultGetChats.loading]);
 
     const content = (
@@ -202,7 +271,8 @@ const Chat: NextPage<ChatProps> = () => {
                             boxShadow="md"
                             display="block"
                             overflow="auto"
-                            height="600px"
+                            maxHeight="800px"
+                            minHeight="800px"
                         >
                             <Tooltip
                                 hasArrow
@@ -313,13 +383,107 @@ const Chat: NextPage<ChatProps> = () => {
                             </Box>
                         </GridItem>
                         <GridItem bg={bgColor[colorMode]} boxShadow="lg">
-                            {chats?.map((x) => (
-                                <ChatComponent
-                                    chat={x}
-                                    changeChat={changeCurrentChatCallback}
-                                    currentChatId={currentChat?.id ?? ""}
-                                />
-                            ))}
+                            <Flex
+                                flexDirection="column"
+                                justifyContent="space-between"
+                                height="100%"
+                                flexGrow={1}
+                            >
+                                <Flex flexDir="column" alignItems="center">
+                                    <Text fontWeight="thin" p={2} m={2}>
+                                        Chats
+                                    </Text>
+                                    <Box width="100%">
+                                        {chats?.map((x) => (
+                                            <ChatComponent
+                                                chat={x}
+                                                changeChat={
+                                                    changeCurrentChatCallback
+                                                }
+                                                currentChatId={
+                                                    currentChat?.id ?? ""
+                                                }
+                                            />
+                                        ))}
+                                    </Box>
+                                </Flex>
+                                <Flex
+                                    flexDirection="column"
+                                    p={2}
+                                    m={2}
+                                    alignItems="center"
+                                >
+                                    <Text fontWeight="thin" p={2} m={2}>
+                                        Firends
+                                    </Text>
+                                    <Flex
+                                        overflow="auto"
+                                        maxHeight="200px"
+                                        flexDir="column"
+                                        width="100%"
+                                    >
+                                        {connections &&
+                                            connections.map((x) => (
+                                                <Box>
+                                                    <Flex
+                                                        boxShadow="base"
+                                                        borderWidth="1px"
+                                                        borderRadius="lg"
+                                                        cursor="pointer"
+                                                        p={2}
+                                                        m={1}
+                                                        justifyContent="space-evenly"
+                                                        alignItems="center"
+                                                    >
+                                                        <Avatar
+                                                            key={x.id}
+                                                            name={x.name}
+                                                            src={getServerPathImage(
+                                                                x.picture
+                                                            )}
+                                                            size="sm"
+                                                        >
+                                                            <AvatarBadge
+                                                                boxSize="1.25em"
+                                                                bg="green.500"
+                                                            />
+                                                        </Avatar>
+                                                        <Text fontWeight="thin">
+                                                            {truncateString(
+                                                                x.name,
+                                                                15
+                                                            )}
+                                                        </Text>
+
+                                                        <Tooltip
+                                                            aria-label="Start chat"
+                                                            label="Start Chat"
+                                                            hasArrow
+                                                        >
+                                                            <IconButton
+                                                                variant="ghost"
+                                                                aria-label="Chat"
+                                                                size="xs"
+                                                                icon={
+                                                                    <BsChatSquareDots />
+                                                                }
+                                                            />
+                                                        </Tooltip>
+                                                    </Flex>
+                                                </Box>
+                                            ))}
+                                    </Flex>
+                                    <Input
+                                        borderRadius="1em"
+                                        size="sm"
+                                        name="search"
+                                        placeholder="Search Friends"
+                                        variant="filled"
+                                        value={searchInput}
+                                        onChange={handleSearchFriends}
+                                    />
+                                </Flex>
+                            </Flex>
                         </GridItem>
                         <GridItem />
                     </Grid>
@@ -331,7 +495,11 @@ const Chat: NextPage<ChatProps> = () => {
         </Container>
     );
 
-    return resultGetChats.loading ? <BeatLoaderCustom /> : content;
+    return resultGetChats.loading || resultGetUserConnectionsLazy.loading ? (
+        <BeatLoaderCustom />
+    ) : (
+        content
+    );
 };
 
 export default Chat;

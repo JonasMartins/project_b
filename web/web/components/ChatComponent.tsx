@@ -47,7 +47,7 @@ const Chat: NextPage<ChatProps> = ({ chat, changeChat, currentChatId }) => {
             cursor="pointer"
         >
             <Stack direction="row" spacing={4}>
-                <AvatarGroup size="md" max={2}>
+                <AvatarGroup size="sm" max={2}>
                     {participants?.map((x) => (
                         <Avatar
                             key={x.id}

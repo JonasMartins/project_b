@@ -28,26 +28,11 @@ import { useDispatch } from "react-redux";
 import NexLink from "next/link";
 import { useUser } from "utils/hooks/useUser";
 import { getServerPathImage } from "utils/generalAuxFunctions";
+import {
+    userConnectionType,
+    userInvitationsType,
+} from "utils/types/user/user.types";
 interface InvitationsProps {}
-
-interface userInvitationsType {
-    __typename?: "Request" | undefined;
-    id: string;
-    accepted?: boolean | null | undefined;
-    requestor: {
-        __typename?: "User" | undefined;
-        id: string;
-        name: string;
-        picture?: string | null | undefined;
-    };
-}
-
-interface userConnectionType {
-    __typename?: "User" | undefined;
-    id: string;
-    name: string;
-    picture?: string | null | undefined;
-}
 
 const Invitations: NextPage<InvitationsProps> = ({}) => {
     const toast = useToast();

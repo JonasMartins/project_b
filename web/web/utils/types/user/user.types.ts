@@ -30,3 +30,22 @@ export type userGetUserByIdType =
       }
     | null
     | undefined;
+
+export interface userInvitationsType {
+    __typename?: "Request" | undefined;
+    id: string;
+    accepted?: boolean | null | undefined;
+    requestor: {
+        __typename?: "User" | undefined;
+        id: string;
+        name: string;
+        picture?: string | null | undefined;
+    };
+}
+
+export interface userConnectionType {
+    __typename?: "User" | undefined;
+    id: string;
+    name: string;
+    picture?: string | null | undefined;
+}
