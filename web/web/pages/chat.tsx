@@ -84,9 +84,10 @@ const Chat: NextPage<ChatProps> = () => {
     const [getUserConnections, resultGetUserConnectionsLazy] =
         useGetUserConnectionsLazyQuery({});
 
-    const [connections, setConnections] = useState<Array<userConnectionType>>(
-        []
-    );
+    const [connections, setConnections] = useState<{
+        connections: Array<userConnectionType>;
+    }>({ connections: [] });
+
     const [defaultConnections, setDefaultConnections] = useState<
         Array<userConnectionType>
     >([]);
@@ -108,29 +109,22 @@ const Chat: NextPage<ChatProps> = () => {
         setSearchInput(e.target.value);
         let regexTerm = "";
         if (e.target.value.length >= 2) {
-            regexTerm = "[ˆ,]*" + e.target.value + "[,$]*";
-            let result = connections.filter((x) => x.name.match(regexTerm));
-
-            console.log(result);
-        }
-
-        /*
-        if (e.target.value.length >= 2) {
-            let regexTerm =
-                "[ˆ,]*" +
-                e.target.value +
-                "[,$]*";
-            let result = connections.filter(
-                (x) =>
-                    x.name.match(regexTerm)
+            //regexTerm = "[ˆ,]*" + e.target.value.toLowerCase() + "[,$]*";
+            let result = connections.connections.filter((x) =>
+                x.name.toLowerCase().startsWith(e.target.value.toLowerCase())
             );
-            setConnections(result);
+
+            setConnections((prevConn) => ({
+                connections: prevConn.connections.filter((x) =>
+                    x.name
+                        .toLowerCase()
+                        .startsWith(e.target.value.toLowerCase())
+                ),
+            }));
         } else {
-            setConnections([]);
-            setConnections(
-                defaultConnections
-            );
-        } */
+            //setConnections({ connections: [] });
+            setConnections({ connections: defaultConnections });
+        }
     };
 
     const handlAddMessageToState = (body: string) => {
@@ -224,15 +218,16 @@ const Chat: NextPage<ChatProps> = () => {
             });
 
             if (conn?.data?.getUserConnections?.user) {
-                setConnections([]);
+                setConnections({ connections: [] });
                 conn?.data?.getUserConnections.user.connections?.forEach(
                     (x) => {
-                        setConnections((prevConn) => [...prevConn, x]);
+                        setConnections((prevConn) => ({
+                            connections: [...prevConn.connections, x],
+                        }));
                         setDefaultConnections((prevConn) => [...prevConn, x]);
                     }
                 );
             }
-
             if (chats.data?.getChats?.chats) {
                 setChats(chats.data.getChats.chats);
                 setCurrentChat(chats.data.getChats.chats[0]);
@@ -423,7 +418,7 @@ const Chat: NextPage<ChatProps> = () => {
                                         width="100%"
                                     >
                                         {connections &&
-                                            connections.map((x) => (
+                                            connections.connections.map((x) => (
                                                 <Box>
                                                     <Flex
                                                         boxShadow="base"
@@ -480,7 +475,48 @@ const Chat: NextPage<ChatProps> = () => {
                                         placeholder="Search Friends"
                                         variant="filled"
                                         value={searchInput}
-                                        onChange={handleSearchFriends}
+                                        onChange={(
+                                            e: ChangeEvent<HTMLInputElement>
+                                        ) => {
+                                            setSearchInput(e.target.value);
+
+                                            if (e.target.value.length >= 2) {
+                                                let regexTerm =
+                                                    "[ˆ,]*" +
+                                                    e.target.value.toLowerCase() +
+                                                    "[,$]*";
+                                                setConnections((prevConn) => ({
+                                                    connections:
+                                                        prevConn.connections.filter(
+                                                            (x) =>
+                                                                x.name
+                                                                    .toLowerCase()
+                                                                    .match(
+                                                                        regexTerm
+                                                                    )
+                                                        ),
+                                                }));
+                                            } else if (
+                                                e.target.value.length === 0
+                                            ) {
+                                                if (
+                                                    resultGetUserConnectionsLazy
+                                                        .data
+                                                        ?.getUserConnections
+                                                        ?.user?.connections
+                                                        ?.length
+                                                ) {
+                                                    setConnections({
+                                                        connections:
+                                                            resultGetUserConnectionsLazy
+                                                                .data
+                                                                .getUserConnections
+                                                                .user
+                                                                .connections,
+                                                    });
+                                                }
+                                            }
+                                        }}
                                     />
                                 </Flex>
                             </Flex>
