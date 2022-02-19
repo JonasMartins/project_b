@@ -1,4 +1,12 @@
 
+***************** 
+
+import { useApolloClient } from "@apollo/client"
+const client = useApolloClient()
+
+***************** 
+
+
 * Read Query:
 
 const READ_USER = gql`
@@ -39,4 +47,20 @@ const result = client.writeQuery({
 
         }
     }
+});
+
+
+works but not update the ui
+
+client.writeFragment({
+    id: "Message:d31bcbc5-9d81-4d5b-99dc-72c24858326b",
+    fragment: messageFragment,
+    data: {
+        body: "TESTE!!!!!",
+    },
+});
+
+const result = client.readFragment({
+    id: "Message:d31bcbc5-9d81-4d5b-99dc-72c24858326b",
+    fragment: messageFragment,
 });

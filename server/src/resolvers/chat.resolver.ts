@@ -41,6 +41,15 @@ class MessageSubscription {
 }
 
 @ObjectType()
+class MessageResponse {
+    @Field(() => [ErrorFieldHandler], { nullable: true })
+    errors?: ErrorFieldHandler[];
+
+    @Field(() => Message, { nullable: true })
+    message?: Message;
+}
+
+@ObjectType()
 class ChatResponse {
     @Field(() => [ErrorFieldHandler], { nullable: true })
     errors?: ErrorFieldHandler[];
@@ -132,7 +141,7 @@ export class ChatResolver {
         return {};
     }
 
-    @Mutation(() => GeneralResponse)
+    @Mutation(() => MessageResponse)
     async createMessage(
         @Arg("creatorId") creatorId: string,
         @Arg("chatId", () => String, { nullable: true }) chatId: string,
@@ -141,7 +150,7 @@ export class ChatResolver {
         @Arg("body") body: string,
         @PubSub() pubSub: PubSubEngine,
         @Ctx() { em }: Context
-    ): Promise<GeneralResponse> {
+    ): Promise<MessageResponse> {
         try {
             const users = await em
                 .getRepository(User)
@@ -204,6 +213,7 @@ export class ChatResolver {
                         "participants.name",
                         "participants.picture",
                     ])
+                    .where("chat.id = :id", { id: chatId })
                     .getOne();
             }
 
@@ -252,7 +262,7 @@ export class ChatResolver {
                 },
             });
 
-            return { done: message ? true : false };
+            return { message };
         } catch (e) {
             return {
                 errors: genericError(

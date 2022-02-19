@@ -1,5 +1,6 @@
 import {
     Box,
+    Button,
     Flex,
     Grid,
     GridItem,
@@ -18,6 +19,7 @@ import BeatLoader from "react-spinners/BeatLoader";
 import { useGetUserByIdLazyQuery } from "generated/graphql";
 import { userGetUserByIdType } from "utils/types/user/user.types";
 import { getServerPathImage } from "utils/generalAuxFunctions";
+import { gql, useApolloClient } from "@apollo/client";
 
 interface userPageProps {}
 
@@ -29,7 +31,7 @@ const UserPage: NextPage<userPageProps> = () => {
     const { user } = router.query;
     const bgColor = { light: "gray.200", dark: "gray.700" };
     const { colorMode } = useColorMode();
-
+    const client = useApolloClient();
     const [userData, setUserData] = useState<userGetUserByIdType>(null);
     const [getUserById, resultGetUserById] = useGetUserByIdLazyQuery({});
 
@@ -50,11 +52,34 @@ const UserPage: NextPage<userPageProps> = () => {
         [user, resultGetUserById.data?.getUserById?.user?.id]
     );
 
+    const frag = gql`
+        fragment test on User {
+            name
+        }
+    `;
+
+    const result = client.readFragment({
+        id: "User:8c051772-d347-48a8-9c8f-c30c1f642e83",
+        fragment: frag,
+    });
+
+    console.log(result);
+
     useEffect(() => {
         if (user && typeof user === "string" && regexUuid.test(user)) {
             handleGetUserInfo(user, 0);
         }
     }, [resultGetUserById.loading]);
+
+    const changeName = () => {
+        client.writeFragment({
+            id: "User:8c051772-d347-48a8-9c8f-c30c1f642e83",
+            fragment: frag,
+            data: {
+                name: "RRRRRR",
+            },
+        });
+    };
 
     const content = (
         <Container>
@@ -93,8 +118,11 @@ const UserPage: NextPage<userPageProps> = () => {
                                     />
 
                                     <Text fontWeight="thin" fontSize="lg">
-                                        {userData.name}
+                                        {result.name}
                                     </Text>
+                                    <Button onClick={changeName} ml={5}>
+                                        Change Name
+                                    </Button>
                                 </Flex>
                             )}
                         </GridItem>

@@ -1146,6 +1146,49 @@
       },
       {
         "kind": "OBJECT",
+        "name": "MessageResponse",
+        "description": null,
+        "fields": [
+          {
+            "name": "errors",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "LIST",
+              "name": null,
+              "ofType": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "OBJECT",
+                  "name": "ErrorFieldHandler",
+                  "ofType": null
+                }
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "message",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "OBJECT",
+              "name": "Message",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
         "name": "MessageSubscription",
         "description": null,
         "fields": [
@@ -1409,7 +1452,7 @@
               "name": null,
               "ofType": {
                 "kind": "OBJECT",
-                "name": "GeneralResponse",
+                "name": "MessageResponse",
                 "ofType": null
               }
             },

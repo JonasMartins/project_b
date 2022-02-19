@@ -145,6 +145,12 @@ export type Message = {
   updatedAt: Scalars['DateTime'];
 };
 
+export type MessageResponse = {
+  __typename?: 'MessageResponse';
+  errors?: Maybe<Array<ErrorFieldHandler>>;
+  message?: Maybe<Message>;
+};
+
 export type MessageSubscription = {
   __typename?: 'MessageSubscription';
   newMessage?: Maybe<Message>;
@@ -155,7 +161,7 @@ export type Mutation = {
   createComment: CommentResponse;
   createConnection: GeneralResponse;
   createEmotion: EmotionResponse;
-  createMessage: GeneralResponse;
+  createMessage: MessageResponse;
   createPost: PostResponse;
   createRequest: GeneralResponse;
   createRole: RoleResponse;
@@ -495,7 +501,7 @@ export type CreateMessageMutationVariables = Exact<{
 }>;
 
 
-export type CreateMessageMutation = { __typename?: 'Mutation', createMessage: { __typename?: 'GeneralResponse', done?: boolean | null | undefined, errors?: Array<{ __typename?: 'ErrorFieldHandler', message: string }> | null | undefined } };
+export type CreateMessageMutation = { __typename?: 'Mutation', createMessage: { __typename?: 'MessageResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', message: string }> | null | undefined, message?: { __typename?: 'Message', id: string, body: string, createdAt: any } | null | undefined } };
 
 export type CreatePostMutationVariables = Exact<{
   options: PostValidator;
@@ -733,7 +739,11 @@ export const CreateMessageDocument = gql`
     errors {
       message
     }
-    done
+    message {
+      id
+      body
+      createdAt
+    }
   }
 }
     `;

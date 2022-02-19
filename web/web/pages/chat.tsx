@@ -55,6 +55,13 @@ import {
 import { BsChatSquareDots } from "react-icons/bs";
 import { IoSend } from "react-icons/io5";
 import { formatRelative } from "date-fns";
+import { useApolloClient } from "@apollo/client";
+import {
+    ADD_MESSAGE_LOCAL_CACHE,
+    GET_CHATS,
+    GET_MESSAGES_FROM_CHAT,
+    MESSAGE_FRAGMENT,
+} from "utils/cache/chat.cache";
 
 interface ChatProps {}
 
@@ -74,9 +81,12 @@ const Chat: NextPage<ChatProps> = () => {
     };
     const user = useUser();
     const toast = useToast();
+    const client = useApolloClient();
     const { colorMode } = useColorMode();
     const bgColor = { light: "gray.200", dark: "gray.700" };
-    const [getChats, resultGetChats] = useGetChatsLazyQuery({});
+    const [getChats, resultGetChats] = useGetChatsLazyQuery({
+        refetchWritePolicy: "overwrite",
+    });
     const [chats, setChats] = useState<Array<ChatType>>([]);
     const [chatMessages, setChatMessages] = useState<
         Array<ChatMessage> | null | undefined
@@ -107,7 +117,14 @@ const Chat: NextPage<ChatProps> = () => {
             />
         );
     };
-
+    /**
+     *
+     * @param conn A user connection, which is the same as a chat
+     * participant, if there is already a conversation with that
+     * connection, the list will not be updated, it will simple
+     * change the current chat and messages, if there is not a chat
+     * previously, it will added an set the focus on this new chat.
+     */
     const handleAddChatToUi = (conn: userConnectionType) => {
         let foundChatIndex = -1;
 
@@ -145,9 +162,17 @@ const Chat: NextPage<ChatProps> = () => {
         }
     };
 
-    const handlAddMessageToState = (body: string) => {
+    /**
+     *
+     * @param body The message body
+     * this body will generate a message to be added
+     * into the ui and added to the cache, avoiding
+     * to refetch the data after the mutation of a message
+     * inserted
+     */
+    const handlAddMessageToState = (body: string, id: string) => {
         let newMessage: ChatMessage = {
-            id: "",
+            id,
             body: body,
             createdAt: new Date(),
             creator: {
@@ -173,6 +198,62 @@ const Chat: NextPage<ChatProps> = () => {
         }
     };
 
+    const handleRefetchMessageFromCache = (id: string) => {
+        let newMessage: ChatMessage = {
+            __typename: "Message",
+            id,
+            body: "Test2",
+            createdAt: new Date(),
+            creator: {
+                id: user?.id || "",
+                name: user?.name || "",
+                picture: user?.picture,
+            },
+        };
+
+        let aux: ChatMessage[] = [];
+
+        chatMessages?.forEach((x) => {
+            aux.push(x);
+        });
+        aux.push(newMessage);
+
+        console.log(aux);
+
+        client.writeQuery({
+            query: GET_CHATS,
+            data: {
+                getChats: {
+                    __typename: "ChatsResponse",
+                    errors: null,
+                    chats: {
+                        __typename: "Chat",
+                        id: currentChat?.id,
+                        participants: currentChat?.participants,
+                        messages: aux,
+                    },
+                },
+            },
+            variables: {
+                participant: user?.id,
+            },
+        });
+
+        const result = client.readFragment({
+            id: `Message:${id}`,
+            fragment: MESSAGE_FRAGMENT,
+        });
+
+        console.log(result);
+        console.log(client.cache);
+    };
+
+    /**
+     *
+     * @param body The new message body
+     * @returns The result from the mutation with
+     * the recent created message
+     */
     const handleCreateMessage = async (
         body: string
     ): Promise<CreateMessageMutation | null> => {
@@ -203,17 +284,28 @@ const Chat: NextPage<ChatProps> = () => {
                 console.error(resultCreateMessage.error);
             },
         });
-        if (!result.data?.createMessage?.done) {
+        if (!result.data?.createMessage?.message) {
             return null;
         }
         return result.data;
     };
 
+    /**
+     *
+     * @param chat A chat when a chat is selected (clicked)
+     * resets the current chat and all of its conversations
+     */
     const changeCurrentChatCallback = (chat: ChatType): void => {
         setCurrentChat(chat);
         setChatMessages(chat?.messages);
     };
 
+    /**
+     *
+     * @param guest Guest if the message comes from a user
+     * different from the current logged user
+     * @returns the string representing the color of the balloon
+     */
     const handleBalloonColor = (guest: boolean): string => {
         let color = "";
         if (!guest) {
@@ -224,6 +316,10 @@ const Chat: NextPage<ChatProps> = () => {
         return color;
     };
 
+    /**
+     * The Main setter, that will set chats, current chat, and messages
+     * when they're fetched
+     */
     const handleGetChatsAndConnections = useCallback(async () => {
         if (user?.id) {
             const chats = await getChats({
@@ -324,6 +420,7 @@ const Chat: NextPage<ChatProps> = () => {
                                     icon={<BiDownArrowAlt />}
                                 />
                             </Tooltip>
+                            {/* $$$$$$$$$$$$$$$$$$$$$$$$$ MESSAGES $$$$$$$$$$$$$$$$$$$$$$$$$  */}
                             <Flex
                                 flexDir="column"
                                 justifyContent="space-between"
@@ -337,6 +434,7 @@ const Chat: NextPage<ChatProps> = () => {
                                                     ? "flex-end"
                                                     : "flex-start"
                                             }
+                                            key={x.id}
                                         >
                                             <Flex
                                                 p={5}
@@ -371,11 +469,32 @@ const Chat: NextPage<ChatProps> = () => {
                                 ) : (
                                     <Text>{""}</Text>
                                 )}
+                                {/* $$$$$$$$$$$$$$$$$$$$$$$$$ END MESSAGES $$$$$$$$$$$$$$$$$$$$$$$$$  */}
+
+                                {/* $$$$$$$$$$$$$$$$$$$$$$$$$ FORM $$$$$$$$$$$$$$$$$$$$$$$$$  */}
                                 <Box p={5} mt={4} mb={2}>
                                     <Formik
                                         initialValues={initialValues}
                                         onSubmit={(values) => {
-                                            handlAddMessageToState(values.body);
+                                            /*
+                                            const result =
+                                                await handleCreateMessage(
+                                                    values.body
+                                                );
+                                            
+                                            if (result?.createMessage.message) {
+                                                handlAddMessageToState(
+                                                    values.body,
+                                                    result.createMessage.message
+                                                        .id
+                                                );
+                                            } */
+                                            let id = uuidv4Like();
+                                            handlAddMessageToState(
+                                                values.body,
+                                                id
+                                            );
+                                            handleRefetchMessageFromCache(id);
                                         }}
                                         validationSchema={MessageSchema}
                                     >
@@ -438,8 +557,11 @@ const Chat: NextPage<ChatProps> = () => {
                                         )}
                                     </Formik>
                                 </Box>
+                                {/* $$$$$$$$$$$$$$$$$$$$$$$$$ END FORM $$$$$$$$$$$$$$$$$$$$$$$$$  */}
                             </Flex>
                         </GridItem>
+                        {/* $$$$$$$$$$$$$$$$$$$$$$$$$ CONNECTIONS $$$$$$$$$$$$$$$$$$$$$$$$$  */}
+
                         <GridItem bg={bgColor[colorMode]} boxShadow="lg">
                             <Flex
                                 flexDirection="column"
@@ -454,6 +576,7 @@ const Chat: NextPage<ChatProps> = () => {
                                     <Box width="100%">
                                         {chats?.map((x) => (
                                             <ChatComponent
+                                                key={x!.id}
                                                 chat={x}
                                                 changeChat={
                                                     changeCurrentChatCallback
@@ -482,7 +605,7 @@ const Chat: NextPage<ChatProps> = () => {
                                     >
                                         {connections &&
                                             connections.connections.map((x) => (
-                                                <Box>
+                                                <Box key={x.id}>
                                                     <Flex
                                                         boxShadow="base"
                                                         borderWidth="1px"
@@ -536,6 +659,10 @@ const Chat: NextPage<ChatProps> = () => {
                                                 </Box>
                                             ))}
                                     </Flex>
+                                    {/* $$$$$$$$$$$$$$$$$$$$$$$$$ END CONNECTIONS $$$$$$$$$$$$$$$$$$$$$$$$$  */}
+
+                                    {/* $$$$$$$$$$$$$$$$$$$$$$$$$ SEARCH CONNECTIONS  $$$$$$$$$$$$$$$$$$$$$$$$$  */}
+
                                     <Input
                                         borderRadius="1em"
                                         size="sm"
@@ -589,6 +716,8 @@ const Chat: NextPage<ChatProps> = () => {
                                 </Flex>
                             </Flex>
                         </GridItem>
+                        {/* $$$$$$$$$$$$$$$$$$$$$$$$$ END SEARCH CONNECTIONS  $$$$$$$$$$$$$$$$$$$$$$$$$  */}
+
                         <GridItem />
                     </Grid>
                 </Box>
