@@ -3,6 +3,7 @@ subscription NewMessageNotification {
         newMessage {
             id
             body
+            createdAt
             creator {
                 id
                 name

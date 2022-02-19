@@ -32,6 +32,12 @@ export const MESSAGE_FRAGMENT = gql`
     fragment myMessage on Message {
         id
         body
+        createdAt
+        creator {
+            id
+            name
+            picture
+        }
     }
 `;
 
@@ -43,14 +49,6 @@ export const GET_MESSAGES_FROM_CHAT = gql`
                 body
                 createdAt
             }
-        }
-    }
-`;
-
-export const CHAT_FRAGMENT = gql`
-    fragment myChat on Chat {
-        messages {
-            __ref
         }
     }
 `;

@@ -1,18 +1,4 @@
-import type { NextPage } from "next";
-import { useUser } from "utils/hooks/useUser";
-import { useGetChatsLazyQuery } from "generated/graphql";
-import React, {
-    ChangeEvent,
-    ComponentProps,
-    useCallback,
-    useEffect,
-    useState,
-} from "react";
-import {
-    chat as ChatType,
-    message as ChatMessage,
-    participant as participantType,
-} from "utils/types/chat/chat.types";
+import { useApolloClient } from "@apollo/client";
 import {
     Avatar,
     AvatarBadge,
@@ -31,37 +17,46 @@ import {
     useColorMode,
     useToast,
 } from "@chakra-ui/react";
-import Container from "components/Container";
-import NavBar from "components/Layout/NavBar";
-import LeftPanel from "components/Layout/LeftPanel";
-import Footer from "components/Layout/Footer";
-import BeatLoaderCustom from "components/Layout/BeatLoaderCustom";
 import ChatComponent from "components/ChatComponent";
-import * as Yup from "yup";
+import Container from "components/Container";
+import BeatLoaderCustom from "components/Layout/BeatLoaderCustom";
+import Footer from "components/Layout/Footer";
+import LeftPanel from "components/Layout/LeftPanel";
+import NavBar from "components/Layout/NavBar";
+import { formatRelative } from "date-fns";
 import { Field, Form, Formik, FormikProps } from "formik";
-import { useRef } from "react";
-import { BiDownArrowAlt } from "react-icons/bi";
 import {
-    useCreateMessageMutation,
     CreateMessageMutation,
+    useCreateMessageMutation,
+    useGetChatsLazyQuery,
     useGetUserConnectionsLazyQuery,
+    useNewMessageNotificationSubscription,
 } from "generated/graphql";
-import { userConnectionType } from "utils/types/user/user.types";
+import type { NextPage } from "next";
+import React, {
+    ChangeEvent,
+    ComponentProps,
+    useEffect,
+    useRef,
+    useState,
+} from "react";
+import { BiDownArrowAlt } from "react-icons/bi";
+import { BsChatSquareDots } from "react-icons/bs";
+import { IoSend } from "react-icons/io5";
+import { MESSAGE_FRAGMENT } from "utils/cache/chat.cache";
 import {
     getServerPathImage,
     truncateString,
     uuidv4Like,
 } from "utils/generalAuxFunctions";
-import { BsChatSquareDots } from "react-icons/bs";
-import { IoSend } from "react-icons/io5";
-import { formatRelative } from "date-fns";
-import { useApolloClient } from "@apollo/client";
+import { useUser } from "utils/hooks/useUser";
 import {
-    ADD_MESSAGE_LOCAL_CACHE,
-    GET_CHATS,
-    GET_MESSAGES_FROM_CHAT,
-    MESSAGE_FRAGMENT,
-} from "utils/cache/chat.cache";
+    chat as ChatType,
+    message as ChatMessage,
+    participant as participantType,
+} from "utils/types/chat/chat.types";
+import { userConnectionType } from "utils/types/user/user.types";
+import * as Yup from "yup";
 
 interface ChatProps {}
 
@@ -85,7 +80,7 @@ const Chat: NextPage<ChatProps> = () => {
     const { colorMode } = useColorMode();
     const bgColor = { light: "gray.200", dark: "gray.700" };
     const [getChats, resultGetChats] = useGetChatsLazyQuery({
-        refetchWritePolicy: "overwrite",
+        fetchPolicy: "cache-and-network",
     });
     const [chats, setChats] = useState<Array<ChatType>>([]);
     const [chatMessages, setChatMessages] = useState<
@@ -96,8 +91,12 @@ const Chat: NextPage<ChatProps> = () => {
     const inputMessageRef = useRef<HTMLTextAreaElement>(null);
     const [searchInput, setSearchInput] = useState("");
 
+    const newMessagesSubscription = useNewMessageNotificationSubscription();
+
     const [getUserConnections, resultGetUserConnectionsLazy] =
-        useGetUserConnectionsLazyQuery({});
+        useGetUserConnectionsLazyQuery({
+            refetchWritePolicy: "overwrite",
+        });
 
     const [connections, setConnections] = useState<{
         connections: Array<userConnectionType>;
@@ -163,6 +162,32 @@ const Chat: NextPage<ChatProps> = () => {
     };
 
     /**
+     *  When a new message is created, the loading prop on
+     * newMessagesSubscription changes, triggers the useEffect and run this
+     * method, it checks if the message belongs to this user's chats, if so,
+     * it adds the new message into the chats and possible into current displayed
+     * chat and current displayed messages.
+     */
+    const handleNewMessagesSubscriptions = () => {
+        if (newMessagesSubscription.data?.newMessageNotification?.newMessage) {
+            const { newMessage } =
+                newMessagesSubscription.data.newMessageNotification;
+            chats.forEach((x) => {
+                if (
+                    x?.id === newMessage?.chat.id &&
+                    newMessage?.creator.id !== user?.id
+                ) {
+                    if (chatMessages?.length) {
+                        setChatMessages((prev) => [...prev!, newMessage]);
+                    } else {
+                        setChatMessages([newMessage]);
+                    }
+                }
+            });
+        }
+    };
+
+    /**
      *
      * @param body The message body
      * this body will generate a message to be added
@@ -172,6 +197,7 @@ const Chat: NextPage<ChatProps> = () => {
      */
     const handlAddMessageToState = (body: string, id: string) => {
         let newMessage: ChatMessage = {
+            __typename: "Message",
             id,
             body: body,
             createdAt: new Date(),
@@ -181,44 +207,13 @@ const Chat: NextPage<ChatProps> = () => {
                 picture: user?.picture,
             },
         };
-
-        if (chatMessages?.length) {
-            setChatMessages((prevMessages) => [...prevMessages!, newMessage]);
-        } else {
-            setChatMessages([newMessage]);
-        }
-
-        if (inputMessageRef.current) {
-            inputMessageRef.current.scrollIntoView({
-                behavior: "smooth",
-                block: "nearest",
-                inline: "end",
-            });
-            inputMessageRef.current.focus();
-        }
-    };
-
-    const handleRefetchMessageFromCache = (id: string) => {
-        let newMessage: ChatMessage = {
-            __typename: "Message",
-            id,
-            body: "Test2",
-            createdAt: new Date(),
-            creator: {
-                id: user?.id || "",
-                name: user?.name || "",
-                picture: user?.picture,
-            },
-        };
-
+        /*
         let aux: ChatMessage[] = [];
 
         chatMessages?.forEach((x) => {
             aux.push(x);
         });
         aux.push(newMessage);
-
-        console.log(aux);
 
         client.writeQuery({
             query: GET_CHATS,
@@ -237,15 +232,42 @@ const Chat: NextPage<ChatProps> = () => {
             variables: {
                 participant: user?.id,
             },
-        });
+        }); */
 
-        const result = client.readFragment({
+        if (chatMessages?.length) {
+            setChatMessages((prevMessages) => [...prevMessages!, newMessage]);
+        } else {
+            setChatMessages([newMessage]);
+        }
+
+        if (inputMessageRef.current) {
+            inputMessageRef.current.scrollIntoView({
+                behavior: "smooth",
+                block: "nearest",
+                inline: "end",
+            });
+            inputMessageRef.current.focus();
+        }
+    };
+
+    const handleUpdateStateFromCache = (id: string) => {
+        const newMessage: ChatMessage | null = client.readFragment({
             id: `Message:${id}`,
             fragment: MESSAGE_FRAGMENT,
         });
 
-        console.log(result);
-        console.log(client.cache);
+        //console.log(newMessage);
+
+        if (newMessage) {
+            if (chatMessages?.length) {
+                setChatMessages((prevMessages) => [
+                    ...prevMessages!,
+                    newMessage,
+                ]);
+            } else {
+                setChatMessages([newMessage]);
+            }
+        }
     };
 
     /**
@@ -320,7 +342,7 @@ const Chat: NextPage<ChatProps> = () => {
      * The Main setter, that will set chats, current chat, and messages
      * when they're fetched
      */
-    const handleGetChatsAndConnections = useCallback(async () => {
+    const handleGetChatsAndConnections = async () => {
         if (user?.id) {
             const chats = await getChats({
                 variables: {
@@ -354,11 +376,28 @@ const Chat: NextPage<ChatProps> = () => {
                 );
             }
         }
-    }, [user?.id]);
+    };
+
+    useEffect(() => {
+        handleNewMessagesSubscriptions();
+    }, [newMessagesSubscription.loading]);
 
     useEffect(() => {
         handleGetChatsAndConnections();
-    }, [user?.id, resultGetChats.loading]);
+    }, [user?.id]);
+
+    useEffect(() => {}, [
+        resultGetChats.loading,
+        resultGetUserConnectionsLazy.loading,
+    ]);
+
+    useEffect(() => {
+        return () => {
+            setChats([]);
+            setCurrentChat(null);
+            setChatMessages([]);
+        };
+    }, []);
 
     const content = (
         <Container>
@@ -475,26 +514,22 @@ const Chat: NextPage<ChatProps> = () => {
                                 <Box p={5} mt={4} mb={2}>
                                     <Formik
                                         initialValues={initialValues}
-                                        onSubmit={(values) => {
-                                            /*
+                                        onSubmit={async (values) => {
                                             const result =
                                                 await handleCreateMessage(
                                                     values.body
                                                 );
-                                            
+
                                             if (result?.createMessage.message) {
+                                                let id =
+                                                    result?.createMessage
+                                                        .message.id;
                                                 handlAddMessageToState(
                                                     values.body,
-                                                    result.createMessage.message
-                                                        .id
+                                                    id
                                                 );
-                                            } */
-                                            let id = uuidv4Like();
-                                            handlAddMessageToState(
-                                                values.body,
-                                                id
-                                            );
-                                            handleRefetchMessageFromCache(id);
+                                                //handleUpdateStateFromCache(id);
+                                            }
                                         }}
                                         validationSchema={MessageSchema}
                                     >

@@ -34,6 +34,13 @@ export type participant = {
     picture?: string | null | undefined;
 };
 
+export type GetTypesCache = {
+    getChats: {
+        __typename: "ChatsResponse";
+        chats: chats;
+    };
+};
+
 export type chat =
     | {
           __typename?: "Chat" | undefined;
