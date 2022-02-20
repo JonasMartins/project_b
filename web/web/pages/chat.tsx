@@ -30,7 +30,6 @@ import {
     useCreateMessageMutation,
     useGetChatsLazyQuery,
     useGetUserConnectionsLazyQuery,
-    useNewMessageNotificationSubscription,
 } from "generated/graphql";
 import type { NextPage } from "next";
 import React, {
@@ -54,6 +53,7 @@ import {
     chat as ChatType,
     message as ChatMessage,
     participant as participantType,
+    messageSubscription,
 } from "utils/types/chat/chat.types";
 import { userConnectionType } from "utils/types/user/user.types";
 import * as Yup from "yup";
@@ -76,7 +76,6 @@ const Chat: NextPage<ChatProps> = () => {
     };
     const user = useUser();
     const toast = useToast();
-    const client = useApolloClient();
     const { colorMode } = useColorMode();
     const bgColor = { light: "gray.200", dark: "gray.700" };
     const [getChats, resultGetChats] = useGetChatsLazyQuery({
@@ -90,8 +89,6 @@ const Chat: NextPage<ChatProps> = () => {
     const [createMessage, resultCreateMessage] = useCreateMessageMutation({});
     const inputMessageRef = useRef<HTMLTextAreaElement>(null);
     const [searchInput, setSearchInput] = useState("");
-
-    const newMessagesSubscription = useNewMessageNotificationSubscription();
 
     const [getUserConnections, resultGetUserConnectionsLazy] =
         useGetUserConnectionsLazyQuery({
@@ -168,11 +165,16 @@ const Chat: NextPage<ChatProps> = () => {
      * it adds the new message into the chats and possible into current displayed
      * chat and current displayed messages.
      */
+
+    /*
     const handleNewMessagesSubscriptions = () => {
-        debugger;
+        console.log(newMessagesSubscription);
+
         if (newMessagesSubscription.data?.newMessageNotification?.newMessage) {
             const { newMessage } =
                 newMessagesSubscription.data.newMessageNotification;
+
+            console.log("Message ", newMessage);
             chats.forEach((x) => {
                 if (
                     x?.id === newMessage?.chat.id &&
@@ -186,7 +188,7 @@ const Chat: NextPage<ChatProps> = () => {
                 }
             });
         }
-    };
+    }; */
 
     /**
      *
@@ -218,20 +220,39 @@ const Chat: NextPage<ChatProps> = () => {
             setChatMessages([newMessage]);
         }
 
-        let currentChatIndex = chats.indexOf(currentChat);
-        let auxChat = chats[currentChatIndex];
-        if (auxChat && !auxChat.messages) {
-            auxChat.messages = [];
-        }
-        const newChat = update(auxChat, {
-            messages: { $push: [newMessage] },
-        });
+        if (chats !== undefined) {
+            let currentChatIndex = chats.indexOf(currentChat);
 
-        const chatsUpdated = update(chats, {
-            $splice: [[currentChatIndex, 1, newChat]],
-        });
-        setChats(chatsUpdated);
+            if (currentChatIndex !== -1) {
+                let auxChat = chats[currentChatIndex];
+                if (auxChat && !auxChat.messages) {
+                    auxChat["messages"] = [];
+                }
+
+                const newChat = update(auxChat, {
+                    messages: { $push: [newMessage] },
+                });
+
+                setCurrentChat(newChat);
+
+                const chatsUpdated = update(chats, {
+                    $splice: [[currentChatIndex, 1, newChat]],
+                });
+                setChats(chatsUpdated);
+            }
+        }
+
         goToConverSationBottom();
+    };
+
+    const handleBalloonColor = (guest: boolean): string => {
+        let color = "";
+        if (!guest) {
+            color = colorMode === "dark" ? "#032a42" : "white";
+        } else {
+            color = colorMode === "dark" ? "#064a73" : "#b1d1b4";
+        }
+        return color;
     };
 
     /**
@@ -252,7 +273,6 @@ const Chat: NextPage<ChatProps> = () => {
         });
 
         let chatId: string = chatMessages?.length ? currentChat.id : "";
-        debugger;
         const result = await createMessage({
             variables: {
                 body,
@@ -276,12 +296,10 @@ const Chat: NextPage<ChatProps> = () => {
         if (!result.data?.createMessage?.message) {
             return null;
         }
-        debugger;
         let updatedCurrentChat = update(currentChat, {
             id: { $set: result.data.createMessage.message.chat.id },
         });
 
-        debugger;
         setCurrentChat(updatedCurrentChat);
 
         return result.data;
@@ -309,20 +327,57 @@ const Chat: NextPage<ChatProps> = () => {
         goToConverSationBottom();
     };
 
-    /**
-     *
-     * @param guest Guest if the message comes from a user
-     * different from the current logged user
-     * @returns the string representing the color of the balloon
-     */
-    const handleBalloonColor = (guest: boolean): string => {
-        let color = "";
-        if (!guest) {
-            color = colorMode === "dark" ? "#032a42" : "white";
-        } else {
-            color = colorMode === "dark" ? "#064a73" : "#b1d1b4";
+    const addNewCommingMessageCallback = (
+        message: messageSubscription
+    ): void => {
+        let indexChat = -1;
+        if (message) {
+            let chatId = message.chat.id;
+
+            chats.forEach((x, index) => {
+                if (x?.id === chatId) {
+                    indexChat = index;
+                }
+            });
         }
-        return color;
+
+        if (indexChat !== -1 && message && message.creator.id !== user?.id) {
+            let newMessage: ChatMessage = {
+                __typename: "Message",
+                id: message.id,
+                body: message.body,
+                createdAt: message.createdAt,
+                creator: {
+                    id: message.creator.id,
+                    name: message.creator.name,
+                    picture: message.creator.picture,
+                },
+            };
+
+            let auxChat = chats[indexChat];
+            if (auxChat && !auxChat.messages) {
+                auxChat["messages"] = [];
+            }
+            const newChat = update(auxChat, {
+                messages: { $push: [newMessage] },
+            });
+
+            if (newChat?.id === currentChat?.id) {
+                setCurrentChat(newChat);
+                if (chatMessages?.length) {
+                    setChatMessages((prevMessages) => [
+                        ...prevMessages!,
+                        newMessage,
+                    ]);
+                } else {
+                    setChatMessages([newMessage]);
+                }
+            }
+            const chatsUpdated = update(chats, {
+                $splice: [[indexChat, 1, newChat]],
+            });
+            setChats(chatsUpdated);
+        }
     };
 
     /**
@@ -361,10 +416,6 @@ const Chat: NextPage<ChatProps> = () => {
             }
         }
     };
-
-    useEffect(() => {
-        handleNewMessagesSubscriptions();
-    }, [newMessagesSubscription.loading]);
 
     useEffect(() => {
         handleGetChatsAndConnections();
@@ -434,6 +485,7 @@ const Chat: NextPage<ChatProps> = () => {
                                     icon={<BiDownArrowAlt />}
                                 />
                             </Tooltip>
+
                             {/* $$$$$$$$$$$$$$$$$$$$$$$$$ MESSAGES $$$$$$$$$$$$$$$$$$$$$$$$$  */}
                             <Flex
                                 flexDir="column"
@@ -495,7 +547,9 @@ const Chat: NextPage<ChatProps> = () => {
                                                     values.body
                                                 );
 
-                                            if (result?.createMessage.message) {
+                                            if (
+                                                result?.createMessage?.message
+                                            ) {
                                                 let id =
                                                     result?.createMessage
                                                         .message.id;
@@ -594,6 +648,9 @@ const Chat: NextPage<ChatProps> = () => {
                                                 chat={x}
                                                 changeChat={
                                                     changeCurrentChatCallback
+                                                }
+                                                addNewMessage={
+                                                    addNewCommingMessageCallback
                                                 }
                                                 currentChatId={
                                                     currentChat?.id ?? ""

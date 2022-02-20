@@ -9,18 +9,31 @@ import {
 import type { NextPage } from "next";
 import { getServerPathImage } from "utils/generalAuxFunctions";
 import { useUser } from "utils/hooks/useUser";
-import { chat as ChatType } from "utils/types/chat/chat.types";
+import {
+    chat as ChatType,
+    messageSubscription,
+} from "utils/types/chat/chat.types";
+import { useNewMessageNotificationSubscription } from "generated/graphql";
+import { useEffect } from "react";
 
 interface ChatProps {
     chat: ChatType;
     changeChat: (chat: ChatType) => void;
+    addNewMessage: (message: messageSubscription) => void;
     currentChatId: string;
 }
 
-const Chat: NextPage<ChatProps> = ({ chat, changeChat, currentChatId }) => {
+const Chat: NextPage<ChatProps> = ({
+    chat,
+    changeChat,
+    currentChatId,
+    addNewMessage,
+}) => {
     const user = useUser();
     const participants = chat?.participants.filter((x) => x.id !== user?.id);
     const { colorMode } = useColorMode();
+
+    const newMessagesSubscription = useNewMessageNotificationSubscription();
 
     const handleBadgeColor = (active: boolean): string => {
         let color = "";
@@ -31,6 +44,22 @@ const Chat: NextPage<ChatProps> = ({ chat, changeChat, currentChatId }) => {
         }
         return color;
     };
+
+    const handleNewMessagesSubscriptions = () => {
+        if (newMessagesSubscription.data?.newMessageNotification?.newMessage) {
+            const { newMessage } =
+                newMessagesSubscription.data.newMessageNotification;
+
+            addNewMessage(newMessage);
+        }
+    };
+
+    useEffect(() => {
+        handleNewMessagesSubscriptions();
+    }, [
+        newMessagesSubscription.loading,
+        newMessagesSubscription.data?.newMessageNotification?.newMessage?.id,
+    ]);
 
     const content = (
         <Flex

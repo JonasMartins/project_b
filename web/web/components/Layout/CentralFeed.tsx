@@ -71,11 +71,14 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
         if (newMessagesSubscription.data?.newMessageNotification?.newMessage) {
             const { newMessage } =
                 newMessagesSubscription.data.newMessageNotification;
-
-            console.log("New ", newMessage);
-
-            if (user?.id && newMessage.chat.participants.includes(user)) {
-                if (!newMessage.userSeen.includes(user?.id)) {
+            if (user?.id) {
+                let found = false;
+                newMessage.chat.participants.forEach((x) => {
+                    if (x.id === user.id) {
+                        found = true;
+                    }
+                });
+                if (found && !newMessage.userSeen.includes(user.id)) {
                     onSetCountUserNewMessages(userNewMessages + 1);
                 }
             }
@@ -120,7 +123,10 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
 
     useEffect(() => {
         handleNewMessagesSubscriptions();
-    }, [newMessagesSubscription.loading]);
+    }, [
+        newMessagesSubscription.loading,
+        newMessagesSubscription.data?.newMessageNotification.newMessage?.id,
+    ]);
 
     useEffect(() => {
         handleGetUserConnections();

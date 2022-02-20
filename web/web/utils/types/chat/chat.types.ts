@@ -82,3 +82,25 @@ export type message = {
         picture?: string | null | undefined;
     };
 };
+
+export type messageSubscription =
+    | {
+          __typename?: "Message";
+          id: string;
+          body: string;
+          createdAt: any;
+          userSeen: Array<string>;
+          creator: {
+              __typename?: "User";
+              id: string;
+              name: string;
+              picture?: string | null | undefined;
+          };
+          chat: {
+              __typename?: "Chat";
+              id: string;
+              participants: Array<{ __typename?: "User"; id: string }>;
+          };
+      }
+    | null
+    | undefined;

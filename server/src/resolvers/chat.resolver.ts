@@ -297,7 +297,9 @@ export class ChatResolver {
             await pubSub.publish("MESSAGE_CREATED", {
                 notification: {
                     message: message,
-                    loggedUserId: req.session.userId || "",
+                    loggedUserId:
+                        req.session.userId ||
+                        "63eb77ce-1e4c-432b-9cff-9a31b1298b7c",
                 },
             });
 
