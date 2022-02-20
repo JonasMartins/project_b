@@ -123,6 +123,44 @@ export class ChatResolver {
         }
     }
 
+    @Mutation(() => GeneralResponse)
+    async addUserSeenMessage(
+        @Arg("messageId") messageId: string,
+        @Arg("userId") userId: string,
+        @Ctx() { em }: Context
+    ): Promise<GeneralResponse> {
+        try {
+            const message = await em.findOne(Message, { id: messageId });
+
+            if (!message) {
+                return {
+                    errors: genericError(
+                        "messageId",
+                        "addUserSeenMessage",
+                        __filename,
+                        `Could not find message with id ${messageId}`
+                    ),
+                };
+            }
+
+            if (message.userSeen && !message.userSeen.includes(userId)) {
+                message.userSeen.push(userId);
+                await em.save(message);
+            }
+
+            return { done: true };
+        } catch (e) {
+            return {
+                errors: genericError(
+                    "-",
+                    "addUserSeenMessage",
+                    __filename,
+                    `${e.message}`
+                ),
+            };
+        }
+    }
+
     @Subscription(() => MessageSubscription, {
         topics: "MESSAGE_CREATED",
     })
@@ -149,7 +187,7 @@ export class ChatResolver {
         participants: string[],
         @Arg("body") body: string,
         @PubSub() pubSub: PubSubEngine,
-        @Ctx() { em }: Context
+        @Ctx() { em, req }: Context
     ): Promise<MessageResponse> {
         try {
             const users = await em
@@ -170,7 +208,21 @@ export class ChatResolver {
             }
             let chat: Chat | undefined = undefined;
 
-            if (!chatId) {
+            if (chatId) {
+                chat = await em
+                    .getRepository(Chat)
+                    .createQueryBuilder("chat")
+                    .leftJoinAndSelect("chat.participants", "participants")
+                    .select([
+                        "chat.id",
+                        "chat.created_at",
+                        "participants.id",
+                        "participants.name",
+                        "participants.picture",
+                    ])
+                    .where("chat.id = :id", { id: chatId })
+                    .getOne();
+            } else {
                 chat = new Chat();
                 chat = await em.save(chat);
 
@@ -201,20 +253,6 @@ export class ChatResolver {
                     .execute();
 
                 chat.participants = users;
-            } else {
-                chat = await em
-                    .getRepository(Chat)
-                    .createQueryBuilder("chat")
-                    .leftJoinAndSelect("chat.participants", "participants")
-                    .select([
-                        "chat.id",
-                        "chat.created_at",
-                        "participants.id",
-                        "participants.name",
-                        "participants.picture",
-                    ])
-                    .where("chat.id = :id", { id: chatId })
-                    .getOne();
             }
 
             if (chat === undefined) {
@@ -244,6 +282,7 @@ export class ChatResolver {
                 creator: creator[0],
                 body,
                 chat,
+                userSeen: [creator[0].id],
             });
 
             await em.save(message);
@@ -258,7 +297,7 @@ export class ChatResolver {
             await pubSub.publish("MESSAGE_CREATED", {
                 notification: {
                     message: message,
-                    loggedUserId: "63eb77ce-1e4c-432b-9cff-9a31b1298b7c",
+                    loggedUserId: req.session.userId || "",
                 },
             });
 

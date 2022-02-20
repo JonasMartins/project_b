@@ -42,6 +42,15 @@ export const setCountUserInvitations = (count: number) => {
     };
 };
 
+export const setCountNewMessages = (count: number) => {
+    return (dispatch: Dispatch<Action>) => {
+        dispatch({
+            type: GlobalTypes.COUNT_NEW_MESSAGES,
+            payload: count,
+        });
+    };
+};
+
 export const setHasUpdateUserSettings = (hasUpdated: boolean) => {
     return (dispatch: Dispatch<Action>) => {
         dispatch({

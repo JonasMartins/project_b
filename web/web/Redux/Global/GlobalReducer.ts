@@ -10,6 +10,7 @@ export interface globalState {
     hasUpdateUserSettings: boolean;
     userConnections: GetUserConnectionsQuery | null;
     countUserInvitations: number;
+    countUserNewMessages: number;
     hasCreatedEmotion: boolean;
     createdEmotion: postEmotion | null;
 }
@@ -19,6 +20,7 @@ const initialState = {
     hasUpdateUserSettings: false,
     userConnections: null,
     countUserInvitations: 0,
+    countUserNewMessages: 0,
     hasCreatedEmotion: false,
     createdEmotion: null,
 };
@@ -47,6 +49,9 @@ export const globalReducer = (
         }
         case GlobalTypes.SET_CREATED_EMOTION: {
             return { ...state, createdEmotion: action.payload };
+        }
+        case GlobalTypes.COUNT_NEW_MESSAGES: {
+            return { ...state, countUserNewMessages: action.payload };
         }
         default:
             return state;

@@ -8,7 +8,6 @@ import {
     useDisclosure,
 } from "@chakra-ui/react";
 import CentralFeedPost from "components/CentralFeedPost";
-import SkeletonLines from "components/Layout/SkeletonLines";
 import ModalCreatePost from "components/Modal/modalCreatePost";
 import {
     GetPostsDocument,
@@ -24,6 +23,7 @@ import { bindActionCreators } from "redux";
 import { actionCreators } from "Redux/actions";
 import { RootState } from "Redux/Global/GlobalReducer";
 import { useUser } from "utils/hooks/useUser";
+import { useNewMessageNotificationSubscription } from "generated/graphql";
 
 interface CentralFeedProps {}
 
@@ -37,7 +37,13 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
         (state: RootState) => state.globalReducer.hasSubmittedPost
     );
 
-    const { setCountUserInvitations } = bindActionCreators(
+    const userNewMessages = useSelector(
+        (state: RootState) => state.globalReducer.countUserNewMessages
+    );
+
+    const newMessagesSubscription = useNewMessageNotificationSubscription();
+
+    const { setCountUserInvitations, setCountNewMessages } = bindActionCreators(
         actionCreators,
         dispatch
     );
@@ -46,10 +52,35 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
         setCountUserInvitations(count);
     };
 
+    const onSetCountUserNewMessages = (count: number) => {
+        setCountNewMessages(count);
+    };
+
     const [getCountPendingInvitations, resultgetCountPendingInvitations] =
         useGetUserPendingInvitationsCountLazyQuery({
             fetchPolicy: "cache-and-network",
         });
+
+    /**
+     * If a new Message is created and is addressed to the current
+     * logged user and this user hasn't saw the message, then it will
+     * increment the notSeen messages by this user on the redux store
+     * this quantity will be displayed on LeftPanel component
+     */
+    const handleNewMessagesSubscriptions = () => {
+        if (newMessagesSubscription.data?.newMessageNotification?.newMessage) {
+            const { newMessage } =
+                newMessagesSubscription.data.newMessageNotification;
+
+            console.log("New ", newMessage);
+
+            if (user?.id && newMessage.chat.participants.includes(user)) {
+                if (!newMessage.userSeen.includes(user?.id)) {
+                    onSetCountUserNewMessages(userNewMessages + 1);
+                }
+            }
+        }
+    };
 
     const handleGetUserConnections = useCallback(async () => {
         if (user?.id) {
@@ -60,9 +91,6 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
             });
 
             if (countPending.data?.getUserPendingInvitationsCount?.count) {
-                console.log(
-                    countPending.data.getUserPendingInvitationsCount.count
-                );
                 onSetCountUserInvitations(
                     countPending.data.getUserPendingInvitationsCount.count
                 );
@@ -89,6 +117,10 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
             refetch();
         }
     }, [hasSubmittedPost]);
+
+    useEffect(() => {
+        handleNewMessagesSubscriptions();
+    }, [newMessagesSubscription.loading]);
 
     useEffect(() => {
         handleGetUserConnections();
@@ -138,16 +170,6 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
                     />
                 </Tooltip>
             </Flex>
-
-            {/* <Box mt={5}>
-                {loading && !data?.getPosts?.posts ? (
-                    <SkeletonLines />
-                ) : (
-                    data?.getPosts?.posts?.map((post) => (
-                        <CentralFeedPost key={post.id} post={post} />
-                    ))
-                )}
-            </Box> */}
             <Box mt={5}>
                 {data?.getPosts?.posts?.map((post) => (
                     <CentralFeedPost key={post.id} post={post} />

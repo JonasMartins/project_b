@@ -143,6 +143,7 @@ export type Message = {
   creator: User;
   id: Scalars['String'];
   updatedAt: Scalars['DateTime'];
+  userSeen: Array<Scalars['String']>;
 };
 
 export type MessageResponse = {
@@ -158,6 +159,7 @@ export type MessageSubscription = {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  addUserSeenMessage: GeneralResponse;
   createComment: CommentResponse;
   createConnection: GeneralResponse;
   createEmotion: EmotionResponse;
@@ -175,6 +177,12 @@ export type Mutation = {
   updateEmotion: EmotionResponse;
   updateRequest: GeneralResponse;
   updateUserSettings: UserResponse;
+};
+
+
+export type MutationAddUserSeenMessageArgs = {
+  messageId: Scalars['String'];
+  userId: Scalars['String'];
 };
 
 
@@ -501,7 +509,7 @@ export type CreateMessageMutationVariables = Exact<{
 }>;
 
 
-export type CreateMessageMutation = { __typename?: 'Mutation', createMessage: { __typename?: 'MessageResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', message: string }> | null | undefined, message?: { __typename?: 'Message', id: string, body: string, createdAt: any } | null | undefined } };
+export type CreateMessageMutation = { __typename?: 'Mutation', createMessage: { __typename?: 'MessageResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', message: string }> | null | undefined, message?: { __typename?: 'Message', id: string, body: string, createdAt: any, chat: { __typename?: 'Chat', id: string } } | null | undefined } };
 
 export type CreatePostMutationVariables = Exact<{
   options: PostValidator;
@@ -633,7 +641,7 @@ export type LoginTestQuery = { __typename?: 'Query', loginTest: boolean };
 export type NewMessageNotificationSubscriptionVariables = Exact<{ [key: string]: never; }>;
 
 
-export type NewMessageNotificationSubscription = { __typename?: 'Subscription', newMessageNotification: { __typename?: 'MessageSubscription', newMessage?: { __typename?: 'Message', id: string, body: string, createdAt: any, creator: { __typename?: 'User', id: string, name: string, picture?: string | null | undefined }, chat: { __typename?: 'Chat', id: string } } | null | undefined } };
+export type NewMessageNotificationSubscription = { __typename?: 'Subscription', newMessageNotification: { __typename?: 'MessageSubscription', newMessage?: { __typename?: 'Message', id: string, body: string, createdAt: any, userSeen: Array<string>, creator: { __typename?: 'User', id: string, name: string, picture?: string | null | undefined }, chat: { __typename?: 'Chat', id: string, participants: Array<{ __typename?: 'User', id: string }> } } | null | undefined } };
 
 
 export const CreateConnectionDocument = gql`
@@ -743,6 +751,9 @@ export const CreateMessageDocument = gql`
       id
       body
       createdAt
+      chat {
+        id
+      }
     }
   }
 }
@@ -1610,6 +1621,7 @@ export const NewMessageNotificationDocument = gql`
       id
       body
       createdAt
+      userSeen
       creator {
         id
         name
@@ -1617,6 +1629,9 @@ export const NewMessageNotificationDocument = gql`
       }
       chat {
         id
+        participants {
+          id
+        }
       }
     }
   }

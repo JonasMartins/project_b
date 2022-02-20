@@ -2,14 +2,7 @@ import { Base } from "./base.entity";
 import { User } from "./user.entity";
 import { Emotion } from "./emotion.entity";
 import { Comment } from "./comment.entity";
-import {
-    Column,
-    Entity,
-    JoinTable,
-    ManyToOne,
-    OneToMany,
-    ManyToMany,
-} from "typeorm";
+import { Column, Entity, JoinTable, ManyToOne } from "typeorm";
 import { ObjectType, Field } from "type-graphql";
 import { Chat } from "./chat.entity";
 
@@ -26,7 +19,11 @@ export class Message extends Base {
     public creator: User;
 
     @Field(() => Chat)
-    @ManyToOne(() => Chat, (chat) => chat.messages)
+    @ManyToOne(() => Chat, (chat) => chat.messages, { onDelete: "CASCADE" })
     @JoinTable()
     public chat: Chat;
+
+    @Field(() => [String])
+    @Column({ type: "text", array: true, default: [] })
+    public userSeen: string[];
 }

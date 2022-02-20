@@ -169,6 +169,7 @@ const Chat: NextPage<ChatProps> = () => {
      * chat and current displayed messages.
      */
     const handleNewMessagesSubscriptions = () => {
+        debugger;
         if (newMessagesSubscription.data?.newMessageNotification?.newMessage) {
             const { newMessage } =
                 newMessagesSubscription.data.newMessageNotification;
@@ -250,12 +251,14 @@ const Chat: NextPage<ChatProps> = () => {
             ids.push(x.id);
         });
 
+        let chatId: string = chatMessages?.length ? currentChat.id : "";
+        debugger;
         const result = await createMessage({
             variables: {
                 body,
                 participants: ids,
                 creatorId: user.id,
-                chatId: currentChat.id,
+                chatId,
             },
             onError: () => {
                 toast({
@@ -269,9 +272,18 @@ const Chat: NextPage<ChatProps> = () => {
                 console.error(resultCreateMessage.error);
             },
         });
+
         if (!result.data?.createMessage?.message) {
             return null;
         }
+        debugger;
+        let updatedCurrentChat = update(currentChat, {
+            id: { $set: result.data.createMessage.message.chat.id },
+        });
+
+        debugger;
+        setCurrentChat(updatedCurrentChat);
+
         return result.data;
     };
 
@@ -337,10 +349,7 @@ const Chat: NextPage<ChatProps> = () => {
                 setChatMessages(chats.data.getChats.chats[0].messages);
             }
 
-            if (
-                conn?.data?.getUserConnections?.user &&
-                chats.data?.getChats?.chats
-            ) {
+            if (conn?.data?.getUserConnections?.user) {
                 setConnections({ connections: [] });
                 conn?.data?.getUserConnections.user.connections?.forEach(
                     (x) => {
@@ -480,8 +489,7 @@ const Chat: NextPage<ChatProps> = () => {
                                 <Box p={5} mt={4} mb={2}>
                                     <Formik
                                         initialValues={initialValues}
-                                        onSubmit={(values) => {
-                                            /*
+                                        onSubmit={async (values) => {
                                             const result =
                                                 await handleCreateMessage(
                                                     values.body
@@ -495,12 +503,12 @@ const Chat: NextPage<ChatProps> = () => {
                                                     values.body,
                                                     id
                                                 );
-                                            } */
-
+                                            }
+                                            /*
                                             handlAddMessageToState(
                                                 values.body,
                                                 uuidv4Like()
-                                            );
+                                            ); */
                                         }}
                                         validationSchema={MessageSchema}
                                     >

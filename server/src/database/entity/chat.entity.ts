@@ -32,7 +32,6 @@ export class Chat extends Base {
     @Field(() => [Message], { nullable: true })
     @ManyToMany(() => Message, (message) => message.chat, {
         nullable: true,
-        onDelete: "CASCADE",
     })
     @JoinTable({
         name: "chat_messages_message",

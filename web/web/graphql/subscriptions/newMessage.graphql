@@ -4,6 +4,7 @@ subscription NewMessageNotification {
             id
             body
             createdAt
+            userSeen
             creator {
                 id
                 name
@@ -11,6 +12,9 @@ subscription NewMessageNotification {
             }
             chat {
                 id
+                participants {
+                    id
+                }
             }
         }
     }

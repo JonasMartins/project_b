@@ -22,6 +22,11 @@ export type CountUserInvitations = {
     payload: number;
 };
 
+export type CountNewMessages = {
+    type: typeof GlobalTypes.COUNT_NEW_MESSAGES;
+    payload: number;
+};
+
 export type HasSubmittedPostAction = {
     type: typeof GlobalTypes.HAS_SUBMITTED_POST;
     payload: boolean;
@@ -44,6 +49,7 @@ export type Action =
     | GetUserConnections
     | CountUserInvitations
     | GetHasCreatedEmotion
-    | SetCreatedEmotion;
+    | SetCreatedEmotion
+    | CountNewMessages;
 
 export * as actionCreators from "Redux/actionCreators";

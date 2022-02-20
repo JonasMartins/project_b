@@ -21,6 +21,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "Redux/Global/GlobalReducer";
 import { useRouter } from "next/dist/client/router";
 import { css } from "@emotion/react";
+
 interface LeftPanelProps {}
 
 const gridCell = `
@@ -35,6 +36,10 @@ const LeftPanel: NextPage<LeftPanelProps> = ({}) => {
 
     const userConnections = useSelector(
         (state: RootState) => state.globalReducer.userConnections
+    );
+
+    const countUserNewMessages = useSelector(
+        (state: RootState) => state.globalReducer.countUserNewMessages
     );
     const hasUpdateUserSettings = useSelector(
         (state: RootState) => state.globalReducer.hasUpdateUserSettings
@@ -52,7 +57,12 @@ const LeftPanel: NextPage<LeftPanelProps> = ({}) => {
 
     useEffect(() => {
         handleCloseModalSettings();
-    }, [hasUpdateUserSettings, userConnections, countUserInvitations]);
+    }, [
+        hasUpdateUserSettings,
+        userConnections,
+        countUserInvitations,
+        countUserNewMessages,
+    ]);
 
     return (
         <Box>
@@ -168,7 +178,15 @@ const LeftPanel: NextPage<LeftPanelProps> = ({}) => {
                         />
                     </Tooltip>
                 </GridItem>
-                <GridItem css={css(gridCell)} />
+                <GridItem css={css(gridCell)}>
+                    {countUserNewMessages ? (
+                        <Circle size="25px" bg="red.400" color="white">
+                            {countUserNewMessages}
+                        </Circle>
+                    ) : (
+                        <></>
+                    )}
+                </GridItem>
             </Grid>
             <ModalSettings
                 isOpen={modalSettings.isOpen}
