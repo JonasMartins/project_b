@@ -43,7 +43,7 @@ import React, {
 import { BiDownArrowAlt } from "react-icons/bi";
 import { BsChatSquareDots } from "react-icons/bs";
 import { IoSend } from "react-icons/io5";
-import { MESSAGE_FRAGMENT } from "utils/cache/chat.cache";
+import update from "immutability-helper";
 import {
     getServerPathImage,
     truncateString,
@@ -207,67 +207,30 @@ const Chat: NextPage<ChatProps> = () => {
                 picture: user?.picture,
             },
         };
-        /*
-        let aux: ChatMessage[] = [];
 
-        chatMessages?.forEach((x) => {
-            aux.push(x);
-        });
-        aux.push(newMessage);
-
-        client.writeQuery({
-            query: GET_CHATS,
-            data: {
-                getChats: {
-                    __typename: "ChatsResponse",
-                    errors: null,
-                    chats: {
-                        __typename: "Chat",
-                        id: currentChat?.id,
-                        participants: currentChat?.participants,
-                        messages: aux,
-                    },
-                },
-            },
-            variables: {
-                participant: user?.id,
-            },
-        }); */
-
+        // Needed because the ui is not displaying the messages
+        // from the chats.chat.messages, there is a new state to do this
+        // which is chatMessages, so we need to put here first
         if (chatMessages?.length) {
             setChatMessages((prevMessages) => [...prevMessages!, newMessage]);
         } else {
             setChatMessages([newMessage]);
         }
 
-        if (inputMessageRef.current) {
-            inputMessageRef.current.scrollIntoView({
-                behavior: "smooth",
-                block: "nearest",
-                inline: "end",
-            });
-            inputMessageRef.current.focus();
+        let currentChatIndex = chats.indexOf(currentChat);
+        let auxChat = chats[currentChatIndex];
+        if (auxChat && !auxChat.messages) {
+            auxChat.messages = [];
         }
-    };
-
-    const handleUpdateStateFromCache = (id: string) => {
-        const newMessage: ChatMessage | null = client.readFragment({
-            id: `Message:${id}`,
-            fragment: MESSAGE_FRAGMENT,
+        const newChat = update(auxChat, {
+            messages: { $push: [newMessage] },
         });
 
-        //console.log(newMessage);
-
-        if (newMessage) {
-            if (chatMessages?.length) {
-                setChatMessages((prevMessages) => [
-                    ...prevMessages!,
-                    newMessage,
-                ]);
-            } else {
-                setChatMessages([newMessage]);
-            }
-        }
+        const chatsUpdated = update(chats, {
+            $splice: [[currentChatIndex, 1, newChat]],
+        });
+        setChats(chatsUpdated);
+        goToConverSationBottom();
     };
 
     /**
@@ -312,6 +275,17 @@ const Chat: NextPage<ChatProps> = () => {
         return result.data;
     };
 
+    const goToConverSationBottom = () => {
+        if (inputMessageRef.current) {
+            inputMessageRef.current.scrollIntoView({
+                behavior: "smooth",
+                block: "nearest",
+                inline: "end",
+            });
+            inputMessageRef.current.focus();
+        }
+    };
+
     /**
      *
      * @param chat A chat when a chat is selected (clicked)
@@ -320,6 +294,7 @@ const Chat: NextPage<ChatProps> = () => {
     const changeCurrentChatCallback = (chat: ChatType): void => {
         setCurrentChat(chat);
         setChatMessages(chat?.messages);
+        goToConverSationBottom();
     };
 
     /**
@@ -445,16 +420,7 @@ const Chat: NextPage<ChatProps> = () => {
                                         >
                                     ) => {
                                         e.preventDefault();
-                                        if (inputMessageRef.current) {
-                                            inputMessageRef.current.scrollIntoView(
-                                                {
-                                                    behavior: "smooth",
-                                                    block: "nearest",
-                                                    inline: "end",
-                                                }
-                                            );
-                                            inputMessageRef.current.focus();
-                                        }
+                                        goToConverSationBottom();
                                     }}
                                     icon={<BiDownArrowAlt />}
                                 />
@@ -514,7 +480,8 @@ const Chat: NextPage<ChatProps> = () => {
                                 <Box p={5} mt={4} mb={2}>
                                     <Formik
                                         initialValues={initialValues}
-                                        onSubmit={async (values) => {
+                                        onSubmit={(values) => {
+                                            /*
                                             const result =
                                                 await handleCreateMessage(
                                                     values.body
@@ -528,8 +495,12 @@ const Chat: NextPage<ChatProps> = () => {
                                                     values.body,
                                                     id
                                                 );
-                                                //handleUpdateStateFromCache(id);
-                                            }
+                                            } */
+
+                                            handlAddMessageToState(
+                                                values.body,
+                                                uuidv4Like()
+                                            );
                                         }}
                                         validationSchema={MessageSchema}
                                     >

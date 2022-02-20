@@ -64,3 +64,50 @@ const result = client.readFragment({
     id: "Message:d31bcbc5-9d81-4d5b-99dc-72c24858326b",
     fragment: messageFragment,
 });
+
+
+ /*
+        let aux: ChatMessage[] = [];
+
+        chatMessages?.forEach((x) => {
+            aux.push(x);
+        });
+        aux.push(newMessage);
+
+        client.writeQuery({
+            query: GET_CHATS,
+            data: {
+                getChats: {
+                    __typename: "ChatsResponse",
+                    errors: null,
+                    chats: {
+                        __typename: "Chat",
+                        id: currentChat?.id,
+                        participants: currentChat?.participants,
+                        messages: aux,
+                    },
+                },
+            },
+            variables: {
+                participant: user?.id,
+            },
+        }); */
+
+
+const handleUpdateStateFromCache = (id: string) => {
+        const newMessage: ChatMessage | null = client.readFragment({
+            id: `Message:${id}`,
+            fragment: MESSAGE_FRAGMENT,
+        });
+
+        if (newMessage) {
+            if (chatMessages?.length) {
+                setChatMessages((prevMessages) => [
+                    ...prevMessages!,
+                    newMessage,
+                ]);
+            } else {
+                setChatMessages([newMessage]);
+            }
+        }
+    };
