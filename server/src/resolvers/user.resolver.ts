@@ -413,6 +413,7 @@ export class UserResolver {
         res.cookie("pbTechBlog", req.sessionID, {
             httpOnly: true,
             maxAge: this.cookieLife,
+            sameSite: "lax",
         });
 
         return { token: "logged" };

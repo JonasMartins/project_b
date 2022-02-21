@@ -128,17 +128,26 @@ const Connections: NextPage = () => {
                         gap={4}
                     >
                         <GridItem />
-                        <GridItem bg={bgColor[colorMode]} boxShadow="lg">
+                        <GridItem
+                            bg={bgColor[colorMode]}
+                            boxShadow="lg"
+                            borderRadius="1rem"
+                        >
                             <LeftPanel />
                         </GridItem>
                         <GridItem
                             colSpan={3}
                             bg={bgColor[colorMode]}
                             boxShadow="lg"
+                            borderRadius="1rem"
                         >
                             <Invitations />
                         </GridItem>
-                        <GridItem bg={bgColor[colorMode]} boxShadow="lg">
+                        <GridItem
+                            bg={bgColor[colorMode]}
+                            boxShadow="lg"
+                            borderRadius="1rem"
+                        >
                             <Flex flexDir="column">
                                 <Flex justifyContent="center" p={2} m={2}>
                                     <Text fontWeight="thin" fontSize="2xl">

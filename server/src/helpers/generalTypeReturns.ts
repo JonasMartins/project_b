@@ -8,3 +8,12 @@ export class GeneralResponse {
     @Field(() => Boolean, { nullable: true })
     done?: Boolean;
 }
+
+@ObjectType()
+export class GeneralCountType {
+    @Field(() => [ErrorFieldHandler], { nullable: true })
+    errors?: ErrorFieldHandler[];
+
+    @Field(() => Number)
+    count?: number;
+}

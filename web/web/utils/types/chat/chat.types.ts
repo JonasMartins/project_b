@@ -99,7 +99,12 @@ export type messageSubscription =
           chat: {
               __typename?: "Chat";
               id: string;
-              participants: Array<{ __typename?: "User"; id: string }>;
+              participants: Array<{
+                  __typename?: "User";
+                  id: string;
+                  name: string;
+                  picture?: string | null | undefined;
+              }>;
           };
       }
     | null

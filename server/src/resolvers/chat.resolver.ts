@@ -17,7 +17,10 @@ import { Context } from "./../context";
 import { genericError } from "./../helpers/generalAuxMethods";
 import { User } from "./../database/entity/user.entity";
 import { Message } from "./../database/entity/message.entity";
-import { GeneralResponse } from "./../helpers/generalTypeReturns";
+import {
+    GeneralResponse,
+    GeneralCountType,
+} from "./../helpers/generalTypeReturns";
 import { PubSubEngine } from "graphql-subscriptions";
 
 interface user_chats_chat {
@@ -190,6 +193,17 @@ export class ChatResolver {
         @Ctx() { em, req }: Context
     ): Promise<MessageResponse> {
         try {
+            if (!req.session.userId) {
+                return {
+                    errors: genericError(
+                        "chatId",
+                        "createMessage",
+                        __filename,
+                        "User must be logged."
+                    ),
+                };
+            }
+
             const users = await em
                 .getRepository(User)
                 .createQueryBuilder("user")
@@ -297,13 +311,40 @@ export class ChatResolver {
             await pubSub.publish("MESSAGE_CREATED", {
                 notification: {
                     message: message,
-                    loggedUserId:
-                        req.session.userId ||
-                        "63eb77ce-1e4c-432b-9cff-9a31b1298b7c",
+                    loggedUserId: req.session.userId,
                 },
             });
 
             return { message };
+        } catch (e) {
+            return {
+                errors: genericError(
+                    "-",
+                    "createMessage",
+                    __filename,
+                    `${e.message}`
+                ),
+            };
+        }
+    }
+
+    @Query(() => GeneralCountType)
+    async getUserUnseenMessages(
+        @Arg("userId") userId: string,
+        @Ctx() { em }: Context
+    ): Promise<GeneralCountType> {
+        try {
+            const qb = await em
+                .getRepository(User)
+                .createQueryBuilder("user")
+                .leftJoinAndSelect("user.chats", "chats")
+                .leftJoinAndSelect("chats.messages", "messages")
+                .select(["messages.userSeen", "messages.id", "user.id"])
+                .where("user.id = :id", { id: userId });
+
+            const user = await qb.getRawMany();
+
+            return { count: 1 };
         } catch (e) {
             return {
                 errors: genericError(

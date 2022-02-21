@@ -641,7 +641,7 @@ export type LoginTestQuery = { __typename?: 'Query', loginTest: boolean };
 export type NewMessageNotificationSubscriptionVariables = Exact<{ [key: string]: never; }>;
 
 
-export type NewMessageNotificationSubscription = { __typename?: 'Subscription', newMessageNotification: { __typename?: 'MessageSubscription', newMessage?: { __typename?: 'Message', id: string, body: string, createdAt: any, userSeen: Array<string>, creator: { __typename?: 'User', id: string, name: string, picture?: string | null | undefined }, chat: { __typename?: 'Chat', id: string, participants: Array<{ __typename?: 'User', id: string }> } } | null | undefined } };
+export type NewMessageNotificationSubscription = { __typename?: 'Subscription', newMessageNotification: { __typename?: 'MessageSubscription', newMessage?: { __typename?: 'Message', id: string, body: string, createdAt: any, userSeen: Array<string>, creator: { __typename?: 'User', id: string, name: string, picture?: string | null | undefined }, chat: { __typename?: 'Chat', id: string, participants: Array<{ __typename?: 'User', id: string, name: string, picture?: string | null | undefined }> } } | null | undefined } };
 
 
 export const CreateConnectionDocument = gql`
@@ -1631,6 +1631,8 @@ export const NewMessageNotificationDocument = gql`
         id
         participants {
           id
+          name
+          picture
         }
       }
     }

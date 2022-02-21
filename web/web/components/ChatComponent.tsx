@@ -49,7 +49,6 @@ const Chat: NextPage<ChatProps> = ({
         if (newMessagesSubscription.data?.newMessageNotification?.newMessage) {
             const { newMessage } =
                 newMessagesSubscription.data.newMessageNotification;
-
             addNewMessage(newMessage);
         }
     };

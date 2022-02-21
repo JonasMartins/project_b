@@ -1,4 +1,3 @@
-import { useApolloClient } from "@apollo/client";
 import {
     Avatar,
     AvatarBadge,
@@ -159,38 +158,6 @@ const Chat: NextPage<ChatProps> = () => {
     };
 
     /**
-     *  When a new message is created, the loading prop on
-     * newMessagesSubscription changes, triggers the useEffect and run this
-     * method, it checks if the message belongs to this user's chats, if so,
-     * it adds the new message into the chats and possible into current displayed
-     * chat and current displayed messages.
-     */
-
-    /*
-    const handleNewMessagesSubscriptions = () => {
-        console.log(newMessagesSubscription);
-
-        if (newMessagesSubscription.data?.newMessageNotification?.newMessage) {
-            const { newMessage } =
-                newMessagesSubscription.data.newMessageNotification;
-
-            console.log("Message ", newMessage);
-            chats.forEach((x) => {
-                if (
-                    x?.id === newMessage?.chat.id &&
-                    newMessage?.creator.id !== user?.id
-                ) {
-                    if (chatMessages?.length) {
-                        setChatMessages((prev) => [...prev!, newMessage]);
-                    } else {
-                        setChatMessages([newMessage]);
-                    }
-                }
-            });
-        }
-    }; */
-
-    /**
      *
      * @param body The message body
      * this body will generate a message to be added
@@ -340,7 +307,7 @@ const Chat: NextPage<ChatProps> = () => {
                 }
             });
         }
-
+        // the chat already exist
         if (indexChat !== -1 && message && message.creator.id !== user?.id) {
             let newMessage: ChatMessage = {
                 __typename: "Message",
@@ -377,6 +344,25 @@ const Chat: NextPage<ChatProps> = () => {
                 $splice: [[indexChat, 1, newChat]],
             });
             setChats(chatsUpdated);
+        } else if (!chats && message && message.creator.id !== user?.id) {
+            debugger;
+            let chat: ChatType = message.chat;
+            if (chat) {
+                let newMessage: ChatMessage = {
+                    __typename: "Message",
+                    id: message.id,
+                    body: message.body,
+                    createdAt: message.createdAt,
+                    creator: {
+                        id: message.creator.id,
+                        name: message.creator.name,
+                        picture: message.creator.picture,
+                    },
+                };
+                setChats([chat]);
+                setCurrentChat(chat);
+                setChatMessages([newMessage]);
+            }
         }
     };
 
@@ -451,7 +437,11 @@ const Chat: NextPage<ChatProps> = () => {
                         gap={4}
                     >
                         <GridItem />
-                        <GridItem bg={bgColor[colorMode]} boxShadow="lg">
+                        <GridItem
+                            bg={bgColor[colorMode]}
+                            boxShadow="lg"
+                            borderRadius="1rem"
+                        >
                             <LeftPanel />
                         </GridItem>
                         <GridItem
@@ -462,6 +452,7 @@ const Chat: NextPage<ChatProps> = () => {
                             overflow="auto"
                             maxHeight="800px"
                             minHeight="800px"
+                            borderRadius="1rem"
                         >
                             <Tooltip
                                 hasArrow
@@ -630,7 +621,11 @@ const Chat: NextPage<ChatProps> = () => {
                         </GridItem>
                         {/* $$$$$$$$$$$$$$$$$$$$$$$$$ CONNECTIONS $$$$$$$$$$$$$$$$$$$$$$$$$  */}
 
-                        <GridItem bg={bgColor[colorMode]} boxShadow="lg">
+                        <GridItem
+                            bg={bgColor[colorMode]}
+                            boxShadow="lg"
+                            borderRadius="1rem"
+                        >
                             <Flex
                                 flexDirection="column"
                                 justifyContent="space-between"

@@ -29,19 +29,29 @@ const BasicLayout: NextPage<BasicLayoutProps> = () => {
                         templateRows="repeat(1, 1fr)"
                         templateColumns="repeat(7, 1fr)"
                         gap={4}
+                        borderRadius="1rem"
                     >
                         <GridItem />
-                        <GridItem bg={bgColor[colorMode]} boxShadow="lg">
+                        <GridItem
+                            bg={bgColor[colorMode]}
+                            boxShadow="lg"
+                            borderRadius="1rem"
+                        >
                             <LeftPanel />{" "}
                         </GridItem>
                         <GridItem
                             colSpan={3}
                             bg={bgColor[colorMode]}
                             boxShadow="lg"
+                            borderRadius="1rem"
                         >
                             <CentralFeed />{" "}
                         </GridItem>
-                        <GridItem bg={bgColor[colorMode]} boxShadow="lg">
+                        <GridItem
+                            bg={bgColor[colorMode]}
+                            boxShadow="lg"
+                            borderRadius="1rem"
+                        >
                             <RightPanel />
                         </GridItem>
                         <GridItem />
