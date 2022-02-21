@@ -6,6 +6,7 @@ import {
     Flex,
     Stack,
     useColorMode,
+    useToast,
 } from "@chakra-ui/react";
 import type { NextPage } from "next";
 import { getServerPathImage } from "utils/generalAuxFunctions";
@@ -14,20 +15,23 @@ import {
     chat as ChatType,
     messageSubscription,
 } from "utils/types/chat/chat.types";
-import { useNewMessageNotificationSubscription } from "generated/graphql";
+import update from "immutability-helper";
+import {
+    useNewMessageNotificationSubscription,
+    useUpdateUnSeenChatMutation,
+} from "generated/graphql";
 import { useCallback, useEffect, useState } from "react";
-
-interface chatsUnseeMessages {
-    chatId: string;
-    countMessages: number;
-}
+import { useSelector, useDispatch } from "react-redux";
+import { RootState } from "Redux/Global/GlobalReducer";
+import { bindActionCreators } from "redux";
+import { actionCreators } from "Redux/actions";
+import MiniBeatLoaderCustom from "components/Layout/MiniBeatLoaderCustom";
 
 interface ChatProps {
     chat: ChatType;
     changeChat: (chat: ChatType) => void;
     addNewMessage: (message: messageSubscription) => void;
     currentChatId: string;
-    countUnseenMessages: chatsUnseeMessages[];
 }
 
 const Chat: NextPage<ChatProps> = ({
@@ -35,14 +39,31 @@ const Chat: NextPage<ChatProps> = ({
     changeChat,
     currentChatId,
     addNewMessage,
-    countUnseenMessages,
 }) => {
     const user = useUser();
+    const toast = useToast();
+    const dispatch = useDispatch();
     const participants = chat?.participants.filter((x) => x.id !== user?.id);
     const { colorMode } = useColorMode();
 
+    const { setCountChatUnsawMessages, setCountNewMessages } =
+        bindActionCreators(actionCreators, dispatch);
+
+    const userNewMessages = useSelector(
+        (state: RootState) => state.globalReducer.countUserNewMessages
+    );
+
+    const [
+        setAllChatMessagesHaveBeenSeen,
+        resultSetAllChatMessagesHaveBeenSeen,
+    ] = useUpdateUnSeenChatMutation({});
+
     const newMessagesSubscription = useNewMessageNotificationSubscription();
     const [chatUnsawMessages, setChatUnsawMessages] = useState(0);
+
+    const chatsCountUnsawMessages = useSelector(
+        (state: RootState) => state.globalReducer.chatsCountUnsawMessages
+    );
 
     const handleBadgeColor = (active: boolean): string => {
         let color = "";
@@ -62,45 +83,103 @@ const Chat: NextPage<ChatProps> = ({
         }
     };
 
-    const returnCountUnseenMessagesByChat = (id: string) => {
-        let count = 0;
-        if (countUnseenMessages) {
-            countUnseenMessages.forEach((x) => {
-                if (x.chatId === id) {
-                    count = x.countMessages;
+    const handleFirstChatUpdate = useCallback(() => {
+        chatsCountUnsawMessages?.forEach((x) => {
+            if (x.chatId === chat?.id && x.chatId !== currentChatId) {
+                setChatUnsawMessages(x.countMessages);
+            }
+        });
+    }, [user?.id, chatsCountUnsawMessages?.length, currentChatId]);
+
+    const handleUpdateSeenMessages = async () => {
+        let chatToRemoveIndex = -1;
+        chatsCountUnsawMessages?.forEach((x, index) => {
+            if (currentChatId) {
+                if (x.chatId === chat?.id && x.chatId === currentChatId) {
+                    setChatUnsawMessages(0);
+                    if (userNewMessages >= x.countMessages) {
+                        chatToRemoveIndex = index;
+                        setCountNewMessages(userNewMessages - x.countMessages);
+                    }
                 }
+            }
+        });
+
+        if (chatToRemoveIndex > -1) {
+            let newChatsCountUnsawMessages = update(chatsCountUnsawMessages, {
+                $splice: [[chatToRemoveIndex, 1]],
             });
+
+            // Updating on api
+
+            if (user?.id) {
+                await setAllChatMessagesHaveBeenSeen({
+                    variables: {
+                        chatId: currentChatId,
+                        userId: user.id,
+                    },
+                    onError: () => {
+                        toast({
+                            title: "Error",
+                            description: "Something went wrong",
+                            status: "error",
+                            duration: 8000,
+                            isClosable: true,
+                            position: "top",
+                        });
+                        console.error(
+                            resultSetAllChatMessagesHaveBeenSeen.error
+                        );
+                    },
+                });
+            }
+
+            // Updating on Redux
+            newChatsCountUnsawMessages &&
+                setCountChatUnsawMessages(newChatsCountUnsawMessages);
         }
-        setChatUnsawMessages(count);
     };
 
     useEffect(() => {
-        if (chat?.id) {
-            returnCountUnseenMessagesByChat(chat.id);
-        }
         handleNewMessagesSubscriptions();
+
+        let delayFirstUnsawMessages = setTimeout(() => {
+            handleFirstChatUpdate();
+        }, 300);
+
+        let delaySetUnsawMessages = setTimeout(() => {
+            if (user?.id) {
+                handleUpdateSeenMessages();
+            }
+        }, 1000);
+
+        return () => {
+            clearTimeout(delayFirstUnsawMessages);
+            clearTimeout(delaySetUnsawMessages);
+        };
     }, [
+        user?.id,
         chat?.id,
-        countUnseenMessages.length,
+        currentChatId,
         newMessagesSubscription.loading,
         newMessagesSubscription.data?.newMessageNotification?.newMessage?.id,
     ]);
 
-    useEffect(() => {}, [chatUnsawMessages]);
-
     const content = (
         <Flex
             p={2}
-            justifyContent="center"
+            justifyContent="space-between"
             m={2}
             onClick={() => {
                 changeChat(chat);
+                setChatUnsawMessages(0);
             }}
             bg={handleBadgeColor(currentChatId === chat?.id)}
             boxShadow="base"
             borderWidth="1px"
             borderRadius="lg"
             cursor="pointer"
+            alignItems="center"
         >
             <Stack direction="row" spacing={4}>
                 <AvatarGroup size="sm" max={2}>
@@ -114,18 +193,22 @@ const Chat: NextPage<ChatProps> = ({
                         </Avatar>
                     ))}
                 </AvatarGroup>
-                {chatUnsawMessages ? (
-                    <Circle size="25px" bg="red.400" color="white">
-                        {chatUnsawMessages}
-                    </Circle>
-                ) : (
-                    <></>
-                )}
             </Stack>
+            {chatUnsawMessages ? (
+                <Circle size="25px" bg="red.400" color="white">
+                    {chatUnsawMessages}
+                </Circle>
+            ) : (
+                <></>
+            )}
         </Flex>
     );
 
-    return content;
+    return resultSetAllChatMessagesHaveBeenSeen.loading ? (
+        <MiniBeatLoaderCustom />
+    ) : (
+        content
+    );
 };
 
 export default Chat;

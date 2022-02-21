@@ -3,12 +3,24 @@ import { GlobalTypes } from "Redux/types";
 import { Action } from "Redux/actions";
 import { Dispatch } from "redux";
 import { postEmotion } from "utils/types/post/post.types";
+import { chatsUnseeMessages } from "utils/types/chat/chat.types";
 
 export const setHasCreatedEmotion = (hasCreated: boolean) => {
     return (dispatch: Dispatch<Action>) => {
         dispatch({
             type: GlobalTypes.HAS_CREATED_EMOTION,
             payload: hasCreated,
+        });
+    };
+};
+
+export const setCountChatUnsawMessages = (
+    countUnsawMessages: chatsUnseeMessages
+) => {
+    return (dispatch: Dispatch<Action>) => {
+        dispatch({
+            type: GlobalTypes.SET_CHATS_COUNT_UNSAW_MESSAGES,
+            payload: countUnsawMessages,
         });
     };
 };

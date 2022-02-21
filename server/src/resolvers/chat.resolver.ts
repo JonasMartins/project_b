@@ -125,7 +125,7 @@ export class ChatResolver {
     }
 
     @Mutation(() => GeneralResponse)
-    async addUserSeenMessage(
+    async addMessageSeenByUser(
         @Arg("messageId") messageId: string,
         @Arg("userId") userId: string,
         @Ctx() { em }: Context
@@ -137,7 +137,7 @@ export class ChatResolver {
                 return {
                     errors: genericError(
                         "messageId",
-                        "addUserSeenMessage",
+                        "addMessageSeenByUser",
                         __filename,
                         `Could not find message with id ${messageId}`
                     ),
@@ -154,7 +154,7 @@ export class ChatResolver {
             return {
                 errors: genericError(
                     "-",
-                    "addUserSeenMessage",
+                    "addMessageSeenByUser",
                     __filename,
                     `${e.message}`
                 ),
@@ -319,6 +319,72 @@ export class ChatResolver {
                 errors: genericError(
                     "-",
                     "createMessage",
+                    __filename,
+                    `${e.message}`
+                ),
+            };
+        }
+    }
+
+    /**
+     *
+     * @param userId The User id
+     * @param chatId  The chat Id
+     * @param param2
+     * @returns true if the update works well
+     * if not, it will fall into exception.
+     * Given a chat, this mutation will put the userId
+     * given in every message of this chat that dont have
+     * this id on it.
+     */
+    @Mutation(() => GeneralResponse)
+    async updateUnSeenChat(
+        @Arg("userId") userId: string,
+        @Arg("chatId") chatId: string,
+        @Ctx() { em }: Context
+    ): Promise<GeneralResponse> {
+        try {
+            const a = userId;
+            const qb = await em
+                .getRepository(Chat)
+                .createQueryBuilder("chat")
+                .leftJoinAndSelect("chat.messages", "messages")
+                .leftJoinAndSelect("chat.participants", "participants")
+                .select([
+                    "chat.id",
+                    "participants.id",
+                    "messages.id",
+                    "messages.userSeen",
+                ])
+                .where("chat.id = :id", { id: chatId });
+
+            const chat = await qb.getOne();
+            let newUserSeen: string[] = [];
+            let messagesIds: string[] = [];
+
+            chat?.participants.forEach((x) => {
+                newUserSeen.push(x.id);
+            });
+
+            chat?.messages?.forEach((x) => {
+                messagesIds.push(x.id);
+            });
+
+            if (newUserSeen.length) {
+                await em.connection
+                    .createQueryBuilder()
+                    .update(Message)
+                    .set({ userSeen: newUserSeen })
+                    .where("id IN (:...ids)", { ids: messagesIds })
+                    .execute();
+            }
+
+            return { done: true };
+        } catch (e) {
+            return {
+                errors: genericError(
+                    "-",
+                    "updateUnSeenChat",
                     __filename,
                     `${e.message}`
                 ),

@@ -1,0 +1,8 @@
+mutation AddMessageSeenByUser($userId: String!, $messageId: String!) {
+    addMessageSeenByUser(userId: $userId, messageId: $messageId) {
+        errors {
+            message
+        }
+        done
+    }
+}

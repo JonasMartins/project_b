@@ -109,3 +109,8 @@ export type messageSubscription =
       }
     | null
     | undefined;
+
+export type chatsUnseeMessages = Array<{
+    chatId: string;
+    countMessages: number;
+}>;

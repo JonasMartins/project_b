@@ -37,7 +37,6 @@ import {
 import { gql, useMutation } from "@apollo/client";
 import { useDispatch } from "react-redux";
 import Spinner from "components/Layout/Spinner";
-import { useApolloClient } from "@apollo/client";
 import { bindActionCreators } from "redux";
 import { actionCreators } from "Redux/actions";
 
@@ -69,7 +68,7 @@ const ChakraInput = (props: InputProps) => {
 
 const Settings: NextPage<SettingsProps> = ({ user }) => {
     const { colorMode } = useColorMode();
-    const client = useApolloClient();
+    // const client = useApolloClient();
     const toast = useToast();
     const initialValues: inputValues = {
         email: user!.email,
@@ -128,17 +127,17 @@ const Settings: NextPage<SettingsProps> = ({ user }) => {
         console.log("result ", result);
 
         if (result.data?.updateUserSettings?.user) {
-            client.writeQuery({
-                query: UPDATE_LOGGED_USER,
-                data: {
-                    user: {
-                        __typename: "User",
-                        name: result.data.updateUserSettings.user.name,
-                        email: result.data.updateUserSettings.user.email,
-                        picture: result.data.updateUserSettings.user.picture,
-                    },
-                },
-            });
+            // client.writeQuery({
+            //     query: UPDATE_LOGGED_USER,
+            //     data: {
+            //         user: {
+            //             __typename: "User",
+            //             name: result.data.updateUserSettings.user.name,
+            //             email: result.data.updateUserSettings.user.email,
+            //             picture: result.data.updateUserSettings.user.picture,
+            //         },
+            //     },
+            // });
             toast({
                 title: "User Updated",
                 description: "User successfully updated",

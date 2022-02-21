@@ -3,6 +3,7 @@ import { GetUserConnectionsQuery } from "generated/graphql";
 import { GlobalTypes } from "Redux/types";
 import { combineReducers } from "redux";
 import { postEmotion } from "utils/types/post/post.types";
+import { chatsUnseeMessages } from "utils/types/chat/chat.types";
 
 export interface globalState {
     isSubmittinPost: boolean;
@@ -13,6 +14,7 @@ export interface globalState {
     countUserNewMessages: number;
     hasCreatedEmotion: boolean;
     createdEmotion: postEmotion | null;
+    chatsCountUnsawMessages: chatsUnseeMessages | null;
 }
 const initialState = {
     isSubmittinPost: false,
@@ -23,7 +25,9 @@ const initialState = {
     countUserNewMessages: 0,
     hasCreatedEmotion: false,
     createdEmotion: null,
+    chatsCountUnsawMessages: null,
 };
+
 export const globalReducer = (
     state: globalState = initialState,
     action: Action
@@ -52,6 +56,9 @@ export const globalReducer = (
         }
         case GlobalTypes.COUNT_NEW_MESSAGES: {
             return { ...state, countUserNewMessages: action.payload };
+        }
+        case GlobalTypes.SET_CHATS_COUNT_UNSAW_MESSAGES: {
+            return { ...state, chatsCountUnsawMessages: action.payload };
         }
         default:
             return state;

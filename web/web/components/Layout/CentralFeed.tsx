@@ -25,6 +25,7 @@ import { actionCreators } from "Redux/actions";
 import { RootState } from "Redux/Global/GlobalReducer";
 import { useUser } from "utils/hooks/useUser";
 import { useNewMessageNotificationSubscription } from "generated/graphql";
+import { chatsUnseeMessages } from "utils/types/chat/chat.types";
 
 interface CentralFeedProps {}
 
@@ -44,10 +45,11 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
 
     const newMessagesSubscription = useNewMessageNotificationSubscription();
 
-    const { setCountUserInvitations, setCountNewMessages } = bindActionCreators(
-        actionCreators,
-        dispatch
-    );
+    const {
+        setCountUserInvitations,
+        setCountNewMessages,
+        setCountChatUnsawMessages,
+    } = bindActionCreators(actionCreators, dispatch);
 
     const onSetCountUserInvitations = (count: number) => {
         setCountUserInvitations(count);
@@ -63,7 +65,9 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
         });
 
     const [getUserUnseenMessages, resultGetUserUnseenMessages] =
-        useGetUserUnseenMessagesLazyQuery({});
+        useGetUserUnseenMessagesLazyQuery({
+            fetchPolicy: "cache-and-network",
+        });
 
     /**
      * If a new Message is created and is addressed to the current
@@ -108,12 +112,22 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
             });
 
             if (userUnseenMessages.data?.getUserUnseenMessages?.user?.chats) {
+                let unsawMessagesCountByChat: chatsUnseeMessages = [];
+
                 const { chats } =
                     userUnseenMessages.data.getUserUnseenMessages.user;
                 let countMessages = 0;
                 chats.forEach((x) => {
-                    countMessages += x.messages?.length || 0;
+                    if (x.messages?.length) {
+                        countMessages += x.messages?.length;
+                        unsawMessagesCountByChat.push({
+                            chatId: x.id,
+                            countMessages: x.messages?.length,
+                        });
+                    }
                 });
+                // setting info about unsaw messages in redux state
+                setCountChatUnsawMessages(unsawMessagesCountByChat);
                 onSetCountUserNewMessages(countMessages);
             }
 
@@ -159,6 +173,7 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
     }, [
         hasSubmittedPost,
         resultgetCountPendingInvitations.loading,
+        resultGetUserUnseenMessages.loading,
         onSetCountUserInvitations,
     ]);
 

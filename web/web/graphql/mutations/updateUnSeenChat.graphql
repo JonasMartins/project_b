@@ -1,0 +1,8 @@
+mutation UpdateUnSeenChat($chatId: String!, $userId: String!) {
+    updateUnSeenChat(chatId: $chatId, userId: $userId) {
+        errors {
+            message
+        }
+        done
+    }
+}

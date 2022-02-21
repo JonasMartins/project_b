@@ -159,7 +159,7 @@ export type MessageSubscription = {
 
 export type Mutation = {
   __typename?: 'Mutation';
-  addUserSeenMessage: GeneralResponse;
+  addMessageSeenByUser: GeneralResponse;
   createComment: CommentResponse;
   createConnection: GeneralResponse;
   createEmotion: EmotionResponse;
@@ -176,11 +176,12 @@ export type Mutation = {
   logout: Scalars['Boolean'];
   updateEmotion: EmotionResponse;
   updateRequest: GeneralResponse;
+  updateUnSeenChat: GeneralResponse;
   updateUserSettings: UserResponse;
 };
 
 
-export type MutationAddUserSeenMessageArgs = {
+export type MutationAddMessageSeenByUserArgs = {
   messageId: Scalars['String'];
   userId: Scalars['String'];
 };
@@ -270,6 +271,12 @@ export type MutationUpdateEmotionArgs = {
 export type MutationUpdateRequestArgs = {
   accepted: Scalars['Boolean'];
   requestId: Scalars['String'];
+};
+
+
+export type MutationUpdateUnSeenChatArgs = {
+  chatId: Scalars['String'];
+  userId: Scalars['String'];
 };
 
 
@@ -490,6 +497,14 @@ export type UsersResponse = {
   users?: Maybe<Array<User>>;
 };
 
+export type AddMessageSeenByUserMutationVariables = Exact<{
+  userId: Scalars['String'];
+  messageId: Scalars['String'];
+}>;
+
+
+export type AddMessageSeenByUserMutation = { __typename?: 'Mutation', addMessageSeenByUser: { __typename?: 'GeneralResponse', done?: boolean | null | undefined, errors?: Array<{ __typename?: 'ErrorFieldHandler', message: string }> | null | undefined } };
+
 export type CreateConnectionMutationVariables = Exact<{
   userRequestedId: Scalars['String'];
   userRequestorId: Scalars['String'];
@@ -574,6 +589,14 @@ export type UpdateRequestMutationVariables = Exact<{
 
 export type UpdateRequestMutation = { __typename?: 'Mutation', updateRequest: { __typename?: 'GeneralResponse', done?: boolean | null | undefined, errors?: Array<{ __typename?: 'ErrorFieldHandler', field: string, message: string, method: string }> | null | undefined } };
 
+export type UpdateUnSeenChatMutationVariables = Exact<{
+  chatId: Scalars['String'];
+  userId: Scalars['String'];
+}>;
+
+
+export type UpdateUnSeenChatMutation = { __typename?: 'Mutation', updateUnSeenChat: { __typename?: 'GeneralResponse', done?: boolean | null | undefined, errors?: Array<{ __typename?: 'ErrorFieldHandler', message: string }> | null | undefined } };
+
 export type UpdateUserSettingsMutationVariables = Exact<{
   id: Scalars['String'];
   options: UserValidator;
@@ -657,6 +680,43 @@ export type NewMessageNotificationSubscriptionVariables = Exact<{ [key: string]:
 export type NewMessageNotificationSubscription = { __typename?: 'Subscription', newMessageNotification: { __typename?: 'MessageSubscription', newMessage?: { __typename?: 'Message', id: string, body: string, createdAt: any, userSeen: Array<string>, creator: { __typename?: 'User', id: string, name: string, picture?: string | null | undefined }, chat: { __typename?: 'Chat', id: string, participants: Array<{ __typename?: 'User', id: string, name: string, picture?: string | null | undefined }> } } | null | undefined } };
 
 
+export const AddMessageSeenByUserDocument = gql`
+    mutation AddMessageSeenByUser($userId: String!, $messageId: String!) {
+  addMessageSeenByUser(userId: $userId, messageId: $messageId) {
+    errors {
+      message
+    }
+    done
+  }
+}
+    `;
+export type AddMessageSeenByUserMutationFn = Apollo.MutationFunction<AddMessageSeenByUserMutation, AddMessageSeenByUserMutationVariables>;
+
+/**
+ * __useAddMessageSeenByUserMutation__
+ *
+ * To run a mutation, you first call `useAddMessageSeenByUserMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useAddMessageSeenByUserMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [addMessageSeenByUserMutation, { data, loading, error }] = useAddMessageSeenByUserMutation({
+ *   variables: {
+ *      userId: // value for 'userId'
+ *      messageId: // value for 'messageId'
+ *   },
+ * });
+ */
+export function useAddMessageSeenByUserMutation(baseOptions?: Apollo.MutationHookOptions<AddMessageSeenByUserMutation, AddMessageSeenByUserMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<AddMessageSeenByUserMutation, AddMessageSeenByUserMutationVariables>(AddMessageSeenByUserDocument, options);
+      }
+export type AddMessageSeenByUserMutationHookResult = ReturnType<typeof useAddMessageSeenByUserMutation>;
+export type AddMessageSeenByUserMutationResult = Apollo.MutationResult<AddMessageSeenByUserMutation>;
+export type AddMessageSeenByUserMutationOptions = Apollo.BaseMutationOptions<AddMessageSeenByUserMutation, AddMessageSeenByUserMutationVariables>;
 export const CreateConnectionDocument = gql`
     mutation CreateConnection($userRequestedId: String!, $userRequestorId: String!) {
   createConnection(
@@ -1116,6 +1176,43 @@ export function useUpdateRequestMutation(baseOptions?: Apollo.MutationHookOption
 export type UpdateRequestMutationHookResult = ReturnType<typeof useUpdateRequestMutation>;
 export type UpdateRequestMutationResult = Apollo.MutationResult<UpdateRequestMutation>;
 export type UpdateRequestMutationOptions = Apollo.BaseMutationOptions<UpdateRequestMutation, UpdateRequestMutationVariables>;
+export const UpdateUnSeenChatDocument = gql`
+    mutation UpdateUnSeenChat($chatId: String!, $userId: String!) {
+  updateUnSeenChat(chatId: $chatId, userId: $userId) {
+    errors {
+      message
+    }
+    done
+  }
+}
+    `;
+export type UpdateUnSeenChatMutationFn = Apollo.MutationFunction<UpdateUnSeenChatMutation, UpdateUnSeenChatMutationVariables>;
+
+/**
+ * __useUpdateUnSeenChatMutation__
+ *
+ * To run a mutation, you first call `useUpdateUnSeenChatMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateUnSeenChatMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateUnSeenChatMutation, { data, loading, error }] = useUpdateUnSeenChatMutation({
+ *   variables: {
+ *      chatId: // value for 'chatId'
+ *      userId: // value for 'userId'
+ *   },
+ * });
+ */
+export function useUpdateUnSeenChatMutation(baseOptions?: Apollo.MutationHookOptions<UpdateUnSeenChatMutation, UpdateUnSeenChatMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpdateUnSeenChatMutation, UpdateUnSeenChatMutationVariables>(UpdateUnSeenChatDocument, options);
+      }
+export type UpdateUnSeenChatMutationHookResult = ReturnType<typeof useUpdateUnSeenChatMutation>;
+export type UpdateUnSeenChatMutationResult = Apollo.MutationResult<UpdateUnSeenChatMutation>;
+export type UpdateUnSeenChatMutationOptions = Apollo.BaseMutationOptions<UpdateUnSeenChatMutation, UpdateUnSeenChatMutationVariables>;
 export const UpdateUserSettingsDocument = gql`
     mutation UpdateUserSettings($id: String!, $options: UserValidator!, $file: Upload) {
   updateUserSettings(id: $id, options: $options, file: $file) {

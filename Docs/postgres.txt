@@ -24,3 +24,7 @@ OBS: localhost deve ser 127.0.0.1
 table details command line:
 
 \d public.user
+
+
+Update array cdm:
+update message set user_seen = '{"6f9f6d4b-5ccc-42e8-a803-c835fd67cf32"}' where id = '9355132c-d9f8-4c13-a576-3d2318a2f60d';

@@ -1,10 +1,21 @@
 import { GetUserConnectionsQuery } from "generated/graphql";
 import { GlobalTypes } from "Redux/types";
 import { postEmotion } from "utils/types/post/post.types";
+import { chatsUnseeMessages } from "utils/types/chat/chat.types";
 
 export type IsSubmittingPostAction = {
     type: typeof GlobalTypes.IS_SUBMITTING_POST;
     payload: boolean;
+};
+
+export type SetCountUnsawMessagesByChat = {
+    type: typeof GlobalTypes.SET_CHATS_COUNT_UNSAW_MESSAGES;
+    payload: chatsUnseeMessages;
+};
+
+export type CountUnsawMessagesByChat = {
+    type: typeof GlobalTypes.CHATS_COUNT_UNSAW_MESSAGES;
+    payload: chatsUnseeMessages;
 };
 
 export type SetCreatedEmotion = {
@@ -50,6 +61,7 @@ export type Action =
     | CountUserInvitations
     | GetHasCreatedEmotion
     | SetCreatedEmotion
-    | CountNewMessages;
+    | CountNewMessages
+    | SetCountUnsawMessagesByChat;
 
 export * as actionCreators from "Redux/actionCreators";
