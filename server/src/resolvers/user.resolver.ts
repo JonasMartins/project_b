@@ -20,7 +20,7 @@ import { Request } from "./../database/entity/request.entity";
 import { RequestValidator } from "./../database/validators/request.validator";
 import { Post } from "./../database/entity/post.entity";
 import { mapGetUserByIdRaw } from "./../utils/types/user/user.types";
-import { GeneralResponse } from "./../helpers/generalTypeReturns";
+import { GeneralResponse, UserResponse } from "./../helpers/generalTypeReturns";
 
 @ObjectType()
 class LoginResponse {
@@ -36,14 +36,6 @@ class CountResponse {
     errors?: ErrorFieldHandler[];
     @Field(() => Number, { nullable: true })
     count?: Number;
-}
-
-@ObjectType()
-class UserResponse {
-    @Field(() => [ErrorFieldHandler], { nullable: true })
-    errors?: ErrorFieldHandler[];
-    @Field(() => User, { nullable: true })
-    user?: User;
 }
 
 @ObjectType()

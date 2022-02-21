@@ -29,11 +29,13 @@ import {
     useCreateMessageMutation,
     useGetChatsLazyQuery,
     useGetUserConnectionsLazyQuery,
+    GetUserUnseenMessagesQuery,
 } from "generated/graphql";
 import type { NextPage } from "next";
 import React, {
     ChangeEvent,
     ComponentProps,
+    useCallback,
     useEffect,
     useRef,
     useState,
@@ -56,6 +58,8 @@ import {
 } from "utils/types/chat/chat.types";
 import { userConnectionType } from "utils/types/user/user.types";
 import * as Yup from "yup";
+import { useApolloClient } from "@apollo/client";
+import { GET_USER_UNSEEN_MESSAGES } from "utils/cache/chat.cache";
 
 interface ChatProps {}
 
@@ -69,12 +73,18 @@ interface FormValues {
     body: string;
 }
 
+interface chatsUnseeMessages {
+    chatId: string;
+    countMessages: number;
+}
+
 const Chat: NextPage<ChatProps> = () => {
     const initialValues: FormValues = {
         body: "",
     };
     const user = useUser();
     const toast = useToast();
+    const client = useApolloClient();
     const { colorMode } = useColorMode();
     const bgColor = { light: "gray.200", dark: "gray.700" };
     const [getChats, resultGetChats] = useGetChatsLazyQuery({
@@ -88,6 +98,10 @@ const Chat: NextPage<ChatProps> = () => {
     const [createMessage, resultCreateMessage] = useCreateMessageMutation({});
     const inputMessageRef = useRef<HTMLTextAreaElement>(null);
     const [searchInput, setSearchInput] = useState("");
+    const [isSettingData, setIsSettingData] = useState(true);
+    const [countMessagesUnseeByChat, setCountMessagesUnseenByChat] = useState<
+        Array<chatsUnseeMessages>
+    >([]);
 
     const [getUserConnections, resultGetUserConnectionsLazy] =
         useGetUserConnectionsLazyQuery({
@@ -403,20 +417,66 @@ const Chat: NextPage<ChatProps> = () => {
         }
     };
 
+    const handleSeeMessages = useCallback(() => {
+        const result: GetUserUnseenMessagesQuery | null = client.readQuery({
+            query: GET_USER_UNSEEN_MESSAGES,
+            variables: {
+                userId: user?.id || "",
+            },
+        });
+
+        // console.log("result ", result?.getUserUnseenMessages?.user);
+        const chatsCache = result?.getUserUnseenMessages?.user?.chats;
+        let arrChatUnseenMessages: chatsUnseeMessages[] = [];
+        let auxChatUnseenMessages: chatsUnseeMessages = {
+            chatId: "",
+            countMessages: 0,
+        };
+        if (chatsCache) {
+            chatsCache.forEach((x) => {
+                x.messages?.forEach(() => {
+                    (auxChatUnseenMessages.chatId = x.id),
+                        (auxChatUnseenMessages.countMessages += 1);
+                });
+                arrChatUnseenMessages.push(
+                    Object.assign(auxChatUnseenMessages, {})
+                );
+            });
+
+            setCountMessagesUnseenByChat(arrChatUnseenMessages);
+        }
+    }, [chats?.length]);
+
     useEffect(() => {
         handleGetChatsAndConnections();
     }, [user?.id]);
 
     useEffect(() => {}, [
         resultGetChats.loading,
+        countMessagesUnseeByChat.length,
         resultGetUserConnectionsLazy.loading,
     ]);
+
+    useEffect(() => {
+        handleSeeMessages();
+        if (
+            !resultGetUserConnectionsLazy.data?.getUserConnections?.user ||
+            !resultGetChats.data?.getChats?.chats?.length
+        ) {
+            setIsSettingData(false);
+        } else {
+            if (chats.length || connections.connections.length) {
+                setIsSettingData(false);
+            }
+        }
+    }, [chats?.length]);
 
     useEffect(() => {
         return () => {
             setChats([]);
             setCurrentChat(null);
             setChatMessages([]);
+            setCountMessagesUnseenByChat([]);
         };
     }, []);
 
@@ -650,6 +710,9 @@ const Chat: NextPage<ChatProps> = () => {
                                                 currentChatId={
                                                     currentChat?.id ?? ""
                                                 }
+                                                countUnseenMessages={
+                                                    countMessagesUnseeByChat
+                                                }
                                             />
                                         ))}
                                     </Box>
@@ -794,11 +857,7 @@ const Chat: NextPage<ChatProps> = () => {
         </Container>
     );
 
-    return resultGetChats.loading || resultGetUserConnectionsLazy.loading ? (
-        <BeatLoaderCustom />
-    ) : (
-        content
-    );
+    return isSettingData ? <BeatLoaderCustom /> : content;
 };
 
 export default Chat;

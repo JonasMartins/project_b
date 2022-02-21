@@ -13,6 +13,7 @@ import {
     GetPostsDocument,
     GetPostsQuery,
     useGetUserPendingInvitationsCountLazyQuery,
+    useGetUserUnseenMessagesLazyQuery,
 } from "generated/graphql";
 import type { NextPage } from "next";
 import React, { useCallback, useEffect } from "react";
@@ -61,6 +62,9 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
             fetchPolicy: "cache-and-network",
         });
 
+    const [getUserUnseenMessages, resultGetUserUnseenMessages] =
+        useGetUserUnseenMessagesLazyQuery({});
+
     /**
      * If a new Message is created and is addressed to the current
      * logged user and this user hasn't saw the message, then it will
@@ -84,8 +88,12 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
             }
         }
     };
-
-    const handleGetUserConnections = useCallback(async () => {
+    /**
+     *  The main setter of the page, and initial info for logged
+     *  user, setting pending invitations and unseen messages,
+     *  setting all this data and sending to redux store
+     */
+    const handleSetPageInfo = useCallback(async () => {
         if (user?.id) {
             const countPending = await getCountPendingInvitations({
                 variables: {
@@ -93,12 +101,26 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
                 },
             });
 
+            const userUnseenMessages = await getUserUnseenMessages({
+                variables: {
+                    userId: user.id,
+                },
+            });
+
+            if (userUnseenMessages.data?.getUserUnseenMessages?.user?.chats) {
+                const { chats } =
+                    userUnseenMessages.data.getUserUnseenMessages.user;
+                let countMessages = 0;
+                chats.forEach((x) => {
+                    countMessages += x.messages?.length || 0;
+                });
+                onSetCountUserNewMessages(countMessages);
+            }
+
             if (countPending.data?.getUserPendingInvitationsCount?.count) {
                 onSetCountUserInvitations(
                     countPending.data.getUserPendingInvitationsCount.count
                 );
-            } else {
-                onSetCountUserInvitations(0);
             }
         }
     }, [user?.id]);
@@ -129,7 +151,7 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
     ]);
 
     useEffect(() => {
-        handleGetUserConnections();
+        handleSetPageInfo();
     }, [loading, data]);
 
     useEffect(() => {

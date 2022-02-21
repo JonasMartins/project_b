@@ -17,11 +17,9 @@ import { Context } from "./../context";
 import { genericError } from "./../helpers/generalAuxMethods";
 import { User } from "./../database/entity/user.entity";
 import { Message } from "./../database/entity/message.entity";
-import {
-    GeneralResponse,
-    GeneralCountType,
-} from "./../helpers/generalTypeReturns";
+import { GeneralResponse, UserResponse } from "./../helpers/generalTypeReturns";
 import { PubSubEngine } from "graphql-subscriptions";
+import { mapGetUserSeenMessages } from "./../utils/types/chat/chat.map";
 
 interface user_chats_chat {
     user_id: string;
@@ -328,23 +326,29 @@ export class ChatResolver {
         }
     }
 
-    @Query(() => GeneralCountType)
+    @Query(() => UserResponse)
     async getUserUnseenMessages(
         @Arg("userId") userId: string,
         @Ctx() { em }: Context
-    ): Promise<GeneralCountType> {
+    ): Promise<UserResponse> {
         try {
             const qb = await em
                 .getRepository(User)
                 .createQueryBuilder("user")
                 .leftJoinAndSelect("user.chats", "chats")
                 .leftJoinAndSelect("chats.messages", "messages")
-                .select(["messages.userSeen", "messages.id", "user.id"])
-                .where("user.id = :id", { id: userId });
+                .select([
+                    "messages.userSeen",
+                    "chats.id",
+                    "messages.id",
+                    "user.id",
+                ])
+                .where("user.id = :id", { id: userId })
+                .orderBy("chats_id", "ASC");
 
-            const user = await qb.getRawMany();
+            const user = await mapGetUserSeenMessages(qb);
 
-            return { count: 1 };
+            return { user };
         } catch (e) {
             return {
                 errors: genericError(

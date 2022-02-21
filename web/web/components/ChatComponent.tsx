@@ -2,6 +2,7 @@ import {
     Avatar,
     AvatarBadge,
     AvatarGroup,
+    Circle,
     Flex,
     Stack,
     useColorMode,
@@ -14,13 +15,19 @@ import {
     messageSubscription,
 } from "utils/types/chat/chat.types";
 import { useNewMessageNotificationSubscription } from "generated/graphql";
-import { useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
+
+interface chatsUnseeMessages {
+    chatId: string;
+    countMessages: number;
+}
 
 interface ChatProps {
     chat: ChatType;
     changeChat: (chat: ChatType) => void;
     addNewMessage: (message: messageSubscription) => void;
     currentChatId: string;
+    countUnseenMessages: chatsUnseeMessages[];
 }
 
 const Chat: NextPage<ChatProps> = ({
@@ -28,12 +35,14 @@ const Chat: NextPage<ChatProps> = ({
     changeChat,
     currentChatId,
     addNewMessage,
+    countUnseenMessages,
 }) => {
     const user = useUser();
     const participants = chat?.participants.filter((x) => x.id !== user?.id);
     const { colorMode } = useColorMode();
 
     const newMessagesSubscription = useNewMessageNotificationSubscription();
+    const [chatUnsawMessages, setChatUnsawMessages] = useState(0);
 
     const handleBadgeColor = (active: boolean): string => {
         let color = "";
@@ -53,12 +62,31 @@ const Chat: NextPage<ChatProps> = ({
         }
     };
 
+    const returnCountUnseenMessagesByChat = (id: string) => {
+        let count = 0;
+        if (countUnseenMessages) {
+            countUnseenMessages.forEach((x) => {
+                if (x.chatId === id) {
+                    count = x.countMessages;
+                }
+            });
+        }
+        setChatUnsawMessages(count);
+    };
+
     useEffect(() => {
+        if (chat?.id) {
+            returnCountUnseenMessagesByChat(chat.id);
+        }
         handleNewMessagesSubscriptions();
     }, [
+        chat?.id,
+        countUnseenMessages.length,
         newMessagesSubscription.loading,
         newMessagesSubscription.data?.newMessageNotification?.newMessage?.id,
     ]);
+
+    useEffect(() => {}, [chatUnsawMessages]);
 
     const content = (
         <Flex
@@ -86,6 +114,13 @@ const Chat: NextPage<ChatProps> = ({
                         </Avatar>
                     ))}
                 </AvatarGroup>
+                {chatUnsawMessages ? (
+                    <Circle size="25px" bg="red.400" color="white">
+                        {chatUnsawMessages}
+                    </Circle>
+                ) : (
+                    <></>
+                )}
             </Stack>
         </Flex>
     );

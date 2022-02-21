@@ -1,0 +1,17 @@
+query GetUserUnseenMessages($userId: String!) {
+    getUserUnseenMessages(userId: $userId) {
+        errors {
+            message
+        }
+        user {
+            id
+            chats {
+                id
+                messages {
+                    id
+                    userSeen
+                }
+            }
+        }
+    }
+}

@@ -323,6 +323,7 @@ export type Query = {
   getUserConnections: UserResponse;
   getUserPendingInvitationsCount: CountResponse;
   getUserSuggestions: UsersResponse;
+  getUserUnseenMessages: UserResponse;
   getUsers: UsersResponse;
   loginTest: Scalars['Boolean'];
 };
@@ -385,6 +386,11 @@ export type QueryGetUserConnectionsArgs = {
 
 export type QueryGetUserPendingInvitationsCountArgs = {
   id: Scalars['String'];
+};
+
+
+export type QueryGetUserUnseenMessagesArgs = {
+  userId: Scalars['String'];
 };
 
 
@@ -624,6 +630,13 @@ export type GetUserPendingInvitationsCountQueryVariables = Exact<{
 
 
 export type GetUserPendingInvitationsCountQuery = { __typename?: 'Query', getUserPendingInvitationsCount: { __typename?: 'CountResponse', count?: number | null | undefined, errors?: Array<{ __typename?: 'ErrorFieldHandler', message: string, method: string, field: string }> | null | undefined } };
+
+export type GetUserUnseenMessagesQueryVariables = Exact<{
+  userId: Scalars['String'];
+}>;
+
+
+export type GetUserUnseenMessagesQuery = { __typename?: 'Query', getUserUnseenMessages: { __typename?: 'UserResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', message: string }> | null | undefined, user?: { __typename?: 'User', id: string, chats?: Array<{ __typename?: 'Chat', id: string, messages?: Array<{ __typename?: 'Message', id: string, userSeen: Array<string> }> | null | undefined }> | null | undefined } | null | undefined } };
 
 export type GetUsersQueryVariables = Exact<{
   offset: Scalars['Float'];
@@ -1532,6 +1545,53 @@ export function useGetUserPendingInvitationsCountLazyQuery(baseOptions?: Apollo.
 export type GetUserPendingInvitationsCountQueryHookResult = ReturnType<typeof useGetUserPendingInvitationsCountQuery>;
 export type GetUserPendingInvitationsCountLazyQueryHookResult = ReturnType<typeof useGetUserPendingInvitationsCountLazyQuery>;
 export type GetUserPendingInvitationsCountQueryResult = Apollo.QueryResult<GetUserPendingInvitationsCountQuery, GetUserPendingInvitationsCountQueryVariables>;
+export const GetUserUnseenMessagesDocument = gql`
+    query GetUserUnseenMessages($userId: String!) {
+  getUserUnseenMessages(userId: $userId) {
+    errors {
+      message
+    }
+    user {
+      id
+      chats {
+        id
+        messages {
+          id
+          userSeen
+        }
+      }
+    }
+  }
+}
+    `;
+
+/**
+ * __useGetUserUnseenMessagesQuery__
+ *
+ * To run a query within a React component, call `useGetUserUnseenMessagesQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetUserUnseenMessagesQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetUserUnseenMessagesQuery({
+ *   variables: {
+ *      userId: // value for 'userId'
+ *   },
+ * });
+ */
+export function useGetUserUnseenMessagesQuery(baseOptions: Apollo.QueryHookOptions<GetUserUnseenMessagesQuery, GetUserUnseenMessagesQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetUserUnseenMessagesQuery, GetUserUnseenMessagesQueryVariables>(GetUserUnseenMessagesDocument, options);
+      }
+export function useGetUserUnseenMessagesLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetUserUnseenMessagesQuery, GetUserUnseenMessagesQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetUserUnseenMessagesQuery, GetUserUnseenMessagesQueryVariables>(GetUserUnseenMessagesDocument, options);
+        }
+export type GetUserUnseenMessagesQueryHookResult = ReturnType<typeof useGetUserUnseenMessagesQuery>;
+export type GetUserUnseenMessagesLazyQueryHookResult = ReturnType<typeof useGetUserUnseenMessagesLazyQuery>;
+export type GetUserUnseenMessagesQueryResult = Apollo.QueryResult<GetUserUnseenMessagesQuery, GetUserUnseenMessagesQueryVariables>;
 export const GetUsersDocument = gql`
     query GetUsers($offset: Float!, $limit: Float!) {
   getUsers(offset: $offset, limit: $limit) {

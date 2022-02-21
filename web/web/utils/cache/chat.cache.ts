@@ -1,4 +1,23 @@
 import { gql } from "@apollo/client";
+export const GET_USER_UNSEEN_MESSAGES = gql`
+    query GetUserUnseenMessages($userId: String!) {
+        getUserUnseenMessages(userId: $userId) {
+            errors {
+                message
+            }
+            user {
+                id
+                chats {
+                    id
+                    messages {
+                        id
+                        userSeen
+                    }
+                }
+            }
+        }
+    }
+`;
 
 export const GET_CHATS = gql`
     query GetChats($participant: String!) {
