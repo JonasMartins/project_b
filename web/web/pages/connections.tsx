@@ -17,11 +17,11 @@ import Footer from "components/Layout/Footer";
 import LeftPanel from "components/Layout/LeftPanel";
 import NavBar from "components/Layout/NavBar";
 import type { NextPage } from "next";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Invitations from "components/Invitations";
 import { useUser } from "utils/hooks/useUser";
 import {
-    useGetConnectionSuggestionsQuery,
+    useGetConnectionSuggestionsLazyQuery,
     useCreateRequestMutation,
     CreateRequestMutation,
 } from "generated/graphql";
@@ -44,9 +44,10 @@ const Connections: NextPage = () => {
     const [loadEffect, setLoadEffect] = useState(false);
     const [createRequest, resultCreateRequest] = useCreateRequestMutation({});
 
-    const suggestions = useGetConnectionSuggestionsQuery({
-        fetchPolicy: "cache-and-network",
-    });
+    const [getUserSuggestions, resultGetUserSuggestions] =
+        useGetConnectionSuggestionsLazyQuery({
+            fetchPolicy: "cache-and-network",
+        });
 
     const [stateSuggestions, setStateSuggestions] = useState<
         Array<userSuggestionsType>
@@ -102,14 +103,21 @@ const Connections: NextPage = () => {
         return result.data;
     };
 
-    useEffect(() => {
+    const handleGetSuggestions = useCallback(async () => {
+        const suggestions = await getUserSuggestions();
         if (suggestions.data?.getUserSuggestions.users) {
             setStateSuggestions([]);
             suggestions.data.getUserSuggestions.users.forEach((u) => {
                 setStateSuggestions((prevSugg) => [...prevSugg, u]);
             });
         }
-    }, [user, suggestions.loading]);
+    }, [user?.id]);
+
+    useEffect(() => {
+        if (user?.id) {
+            handleGetSuggestions();
+        }
+    }, [user?.id]);
 
     const content = (
         <Container>

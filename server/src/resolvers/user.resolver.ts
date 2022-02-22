@@ -1,26 +1,27 @@
-import { User } from "./../database/entity/user.entity";
 import argon2 from "argon2";
+import { FileUpload, GraphQLUpload } from "graphql-upload";
 import {
-    Query,
-    Resolver,
-    Mutation,
     Arg,
     Ctx,
-    ObjectType,
     Field,
+    Mutation,
+    ObjectType,
+    Query,
+    Resolver,
 } from "type-graphql";
+import { Role } from "../database/entity/role.entity";
+import { UserValidator } from "../database/validators/user.validator";
 import { Context } from "./../context";
+import { Post } from "./../database/entity/post.entity";
+import { Chat } from "./../database/entity/chat.entity";
+import { Request } from "./../database/entity/request.entity";
+import { User } from "./../database/entity/user.entity";
+import { RequestValidator } from "./../database/validators/request.validator";
 import { ErrorFieldHandler } from "./../helpers/errorFieldHandler";
 import { genericError, validateEmail } from "./../helpers/generalAuxMethods";
-import { UserValidator } from "../database/validators/user.validator";
-import { Role } from "../database/entity/role.entity";
-import { FileUpload, GraphQLUpload } from "graphql-upload";
-import { HandleUpload } from "./../helpers/handleUpload.helper";
-import { Request } from "./../database/entity/request.entity";
-import { RequestValidator } from "./../database/validators/request.validator";
-import { Post } from "./../database/entity/post.entity";
-import { mapGetUserByIdRaw } from "./../utils/types/user/user.types";
 import { GeneralResponse, UserResponse } from "./../helpers/generalTypeReturns";
+import { HandleUpload } from "./../helpers/handleUpload.helper";
+import { mapGetUserByIdRaw } from "./../utils/types/user/user.types";
 
 @ObjectType()
 class LoginResponse {
@@ -537,82 +538,66 @@ export class UserResolver {
             };
         }
     }
-
+    /**
+     *
+     * @param userRequestorId
+     * @param userRequestedId
+     * @param param2
+     * @returns
+     *  Create a connection between user one and user two
+     *  also creates a chat with them as participants
+     */
     @Mutation(() => GeneralResponse)
     async createConnection(
         @Arg("userRequestorId") userRequestorId: string,
         @Arg("userRequestedId") userRequestedId: string,
         @Ctx() { em }: Context
     ): Promise<GeneralResponse> {
-        const userRepo = em.connection.getRepository(User);
-
-        let userRequestorConnections = await userRepo.findOne({
-            relations: ["connections"],
-            where: { id: userRequestorId },
-        });
-
-        if (!userRequestorConnections) {
-            return {
-                errors: genericError(
-                    "userRequestorId",
-                    "createConnection",
-                    __filename,
-                    `Could not found the user with id: ${userRequestorId}`
-                ),
-            };
-        }
-
-        let userRequestedConnections = await userRepo.findOne({
-            relations: ["connections"],
-            where: { id: userRequestedId },
-        });
-
-        if (!userRequestedConnections) {
-            return {
-                errors: genericError(
-                    "userRequestedId",
-                    "createConnection",
-                    __filename,
-                    `Could not found the user with id: ${userRequestedId}`
-                ),
-            };
-        }
-
         try {
-            if (
-                userRequestedConnections &&
-                !userRequestedConnections.connections.length
-            ) {
-                let auxUserConn: User[] = [];
-                auxUserConn.push(userRequestorConnections);
-                userRequestedConnections.connections = auxUserConn;
-            } else if (
-                userRequestedConnections &&
-                userRequestedConnections.connections.length
-            ) {
-                let auxUserConn: User[] = userRequestedConnections.connections;
-                auxUserConn.push(userRequestorConnections);
-                userRequestedConnections.connections = auxUserConn;
+            interface user_connections_user {
+                user_id_1: string;
+                user_id_2: string;
             }
 
-            if (
-                userRequestorConnections &&
-                !userRequestorConnections.connections.length
-            ) {
-                let auxUserConn: User[] = [];
-                auxUserConn.push(userRequestedConnections);
-                userRequestorConnections.connections = auxUserConn;
-            } else if (
-                userRequestorConnections &&
-                userRequestorConnections.connections.length
-            ) {
-                let auxUserConn: User[] = userRequestorConnections.connections;
-                auxUserConn.push(userRequestedConnections);
-                userRequestorConnections.connections = auxUserConn;
+            interface user_chats_chat {
+                user_id: string;
+                chat_id: string;
             }
 
-            await em.save(userRequestedConnections);
-            await em.save(userRequestorConnections);
+            let user_connections: user_connections_user = {
+                user_id_1: userRequestedId,
+                user_id_2: userRequestorId,
+            };
+
+            let chat_participants: user_chats_chat[] = [];
+
+            await em.connection
+                .createQueryBuilder()
+                .insert()
+                .into("user_connections_user")
+                .values(user_connections)
+                .execute();
+
+            const chat = new Chat();
+            await em.save(chat);
+
+            if (chat.id) {
+                chat_participants.push({
+                    chat_id: chat.id,
+                    user_id: userRequestedId,
+                });
+                chat_participants.push({
+                    chat_id: chat.id,
+                    user_id: userRequestorId,
+                });
+
+                await em.connection
+                    .createQueryBuilder()
+                    .insert()
+                    .into("user_chats_chat")
+                    .values(chat_participants)
+                    .execute();
+            }
 
             return { done: true };
         } catch (e) {
