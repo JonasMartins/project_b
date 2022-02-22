@@ -14,6 +14,7 @@ import {
     GetPostsQuery,
     useGetUserPendingInvitationsCountLazyQuery,
     useGetUserUnseenMessagesLazyQuery,
+    useNewRequestSubscriptionSubscription,
 } from "generated/graphql";
 import type { NextPage } from "next";
 import React, { useCallback, useEffect } from "react";
@@ -43,7 +44,16 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
         (state: RootState) => state.globalReducer.countUserNewMessages
     );
 
+    const countUserInvitations = useSelector(
+        (state: RootState) => state.globalReducer.countUserInvitations
+    );
+
+    const chatsCountUnsawMessages = useSelector(
+        (state: RootState) => state.globalReducer.chatsCountUnsawMessages
+    );
+
     const newMessagesSubscription = useNewMessageNotificationSubscription();
+    const newRequestsSubscription = useNewRequestSubscriptionSubscription();
 
     const {
         setCountUserInvitations,
@@ -74,8 +84,9 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
      * logged user and this user hasn't saw the message, then it will
      * increment the notSeen messages by this user on the redux store
      * this quantity will be displayed on LeftPanel component
+     *  The same logic when a user has a new request invitation
      */
-    const handleNewMessagesSubscriptions = () => {
+    const handleNewMessagesAndRequestsSubscriptions = () => {
         if (newMessagesSubscription.data?.newMessageNotification?.newMessage) {
             const { newMessage } =
                 newMessagesSubscription.data.newMessageNotification;
@@ -86,8 +97,47 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
                         found = true;
                     }
                 });
+
                 if (found && !newMessage.userSeen.includes(user.id)) {
                     onSetCountUserNewMessages(userNewMessages + 1);
+
+                    let auxChatsCountUnsawMessages = chatsCountUnsawMessages;
+                    if (
+                        auxChatsCountUnsawMessages &&
+                        auxChatsCountUnsawMessages.length
+                    ) {
+                        auxChatsCountUnsawMessages.forEach((x) => {
+                            if (x.chatId === newMessage.chat.id) {
+                                x.countMessages += 1;
+                            }
+                        });
+                        console.log(">> ", auxChatsCountUnsawMessages);
+                        setCountChatUnsawMessages(auxChatsCountUnsawMessages);
+                    } else if (!auxChatsCountUnsawMessages?.length) {
+                        if (!auxChatsCountUnsawMessages) {
+                            auxChatsCountUnsawMessages = [];
+                        }
+
+                        auxChatsCountUnsawMessages.push({
+                            chatId: newMessage.chat.id,
+                            countMessages: 1,
+                        });
+                        console.log("<< ", auxChatsCountUnsawMessages);
+                        setCountChatUnsawMessages(auxChatsCountUnsawMessages);
+                    }
+                }
+            }
+        }
+
+        /**
+         *  Updating on redux the number of comming connection requests
+         */
+        if (newRequestsSubscription.data?.newRequestSubscription?.newRequest) {
+            const { newRequest } =
+                newRequestsSubscription.data.newRequestSubscription;
+            if (user?.id) {
+                if (newRequest.requested.id === user.id) {
+                    setCountUserInvitations(countUserInvitations + 1);
                 }
             }
         }
@@ -126,6 +176,10 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
                         });
                     }
                 });
+                console.log(
+                    "unsawMessages when setting the page ",
+                    unsawMessagesCountByChat
+                );
                 // setting info about unsaw messages in redux state
                 setCountChatUnsawMessages(unsawMessagesCountByChat);
                 onSetCountUserNewMessages(countMessages);
@@ -158,13 +212,6 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
     }, [hasSubmittedPost]);
 
     useEffect(() => {
-        handleNewMessagesSubscriptions();
-    }, [
-        newMessagesSubscription.loading,
-        newMessagesSubscription.data?.newMessageNotification.newMessage?.id,
-    ]);
-
-    useEffect(() => {
         handleSetPageInfo();
     }, [loading, data]);
 
@@ -175,6 +222,15 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
         resultgetCountPendingInvitations.loading,
         resultGetUserUnseenMessages.loading,
         onSetCountUserInvitations,
+    ]);
+
+    useEffect(() => {
+        handleNewMessagesAndRequestsSubscriptions();
+    }, [
+        newMessagesSubscription.loading,
+        newRequestsSubscription.loading,
+        newMessagesSubscription.data?.newMessageNotification.newMessage?.id,
+        newRequestsSubscription.data?.newRequestSubscription?.newRequest?.id,
     ]);
 
     return (

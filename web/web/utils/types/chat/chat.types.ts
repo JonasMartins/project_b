@@ -41,6 +41,19 @@ export type GetTypesCache = {
     };
 };
 
+export type chatUnseenMessages = {
+    __typename?: "Chat" | undefined;
+    id: string;
+    messages?:
+        | {
+              __typename?: "Message" | undefined;
+              id: string;
+              userSeen: string[];
+          }[]
+        | null
+        | undefined;
+}[];
+
 export type chat =
     | {
           __typename?: "Chat" | undefined;

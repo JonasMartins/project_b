@@ -9,8 +9,6 @@ subscription NewRequestSubscription {
             }
             requested {
                 id
-                name
-                picture
             }
         }
     }

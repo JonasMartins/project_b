@@ -239,14 +239,23 @@ const Chat: NextPage<ChatProps> = () => {
         currentChat.participants.forEach((x) => {
             ids.push(x.id);
         });
-
-        let chatId: string = chatMessages?.length ? currentChat.id : "";
+        if (!currentChat.id) {
+            toast({
+                title: "Error",
+                description: "Something went wrong",
+                status: "error",
+                duration: 8000,
+                isClosable: true,
+                position: "top",
+            });
+            return null;
+        }
         const result = await createMessage({
             variables: {
                 body,
                 participants: ids,
                 creatorId: user.id,
-                chatId,
+                chatId: currentChat?.id,
             },
             onError: () => {
                 toast({

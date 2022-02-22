@@ -3051,6 +3051,29 @@
         "possibleTypes": null
       },
       {
+        "kind": "OBJECT",
+        "name": "RequestSubscription",
+        "description": null,
+        "fields": [
+          {
+            "name": "newRequest",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "OBJECT",
+              "name": "Request",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
         "kind": "INPUT_OBJECT",
         "name": "RequestValidator",
         "description": null,
@@ -3402,6 +3425,22 @@
               "ofType": {
                 "kind": "OBJECT",
                 "name": "MessageSubscription",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "newRequestSubscription",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "RequestSubscription",
                 "ofType": null
               }
             },

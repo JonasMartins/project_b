@@ -87,6 +87,11 @@ const Chat: NextPage<ChatProps> = ({
         }
     };
 
+    /**
+     * Update the other chats differents from current one
+     * it only sets to the number of unseen messages in each one
+     * of them
+     */
     const handleFirstChatUpdate = useCallback(() => {
         chatsCountUnsawMessages?.forEach((x) => {
             if (x.chatId === chat?.id && x.chatId !== currentChatId) {
@@ -96,6 +101,7 @@ const Chat: NextPage<ChatProps> = ({
     }, [user?.id, chatsCountUnsawMessages?.length, currentChatId]);
 
     const handleUpdateSeenMessages = async () => {
+        console.log("here to update unseen: ", chatsCountUnsawMessages);
         let chatToRemoveIndex = -1;
         chatsCountUnsawMessages?.forEach((x, index) => {
             if (currentChatId) {
@@ -111,12 +117,16 @@ const Chat: NextPage<ChatProps> = ({
 
         if (chatToRemoveIndex > -1) {
             let newChatsCountUnsawMessages = update(chatsCountUnsawMessages, {
-                $splice: [[chatToRemoveIndex, 1]],
+                $splice: [
+                    [
+                        chatToRemoveIndex,
+                        1,
+                        { chatId: currentChatId, countMessages: 0 },
+                    ],
+                ],
             });
 
             // Updating on api
-
-            /*
             if (user?.id) {
                 await setAllChatMessagesHaveBeenSeen({
                     variables: {
@@ -137,8 +147,8 @@ const Chat: NextPage<ChatProps> = ({
                         );
                     },
                 });
-            } */
-
+            }
+            console.log("updated unseen ", newChatsCountUnsawMessages);
             // Updating on Redux
             newChatsCountUnsawMessages &&
                 setCountChatUnsawMessages(newChatsCountUnsawMessages);
@@ -147,7 +157,7 @@ const Chat: NextPage<ChatProps> = ({
 
     useEffect(() => {
         handleNewMessagesSubscriptions();
-
+        /*
         let delayFirstUnsawMessages = setTimeout(() => {
             handleFirstChatUpdate();
         }, 300);
@@ -161,7 +171,12 @@ const Chat: NextPage<ChatProps> = ({
         return () => {
             clearTimeout(delayFirstUnsawMessages);
             clearTimeout(delaySetUnsawMessages);
-        };
+        }; */
+
+        handleFirstChatUpdate();
+        if (user?.id) {
+            handleUpdateSeenMessages();
+        }
     }, [
         user?.id,
         chat?.id,

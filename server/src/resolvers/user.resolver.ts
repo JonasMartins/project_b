@@ -644,10 +644,7 @@ export class UserResolver {
     async newRequestSubscription(
         @Root("notification") notification: RequestNotification
     ): Promise<RequestSubscription> {
-        if (
-            notification.request &&
-            notification.request.requestedId === notification.loggedUserId
-        ) {
+        if (notification.request) {
             return { newRequest: notification.request };
         } else {
             return {};
