@@ -8,12 +8,12 @@ import { RequestValidator } from "./../validators/request.validator";
 @Entity()
 export class Request extends Base {
     @Field(() => User)
-    @ManyToOne(() => User, (user) => user.requests)
+    @ManyToOne(() => User, (user) => user.requests, { eager: true })
     @JoinTable()
     public requestor: User;
 
     @Field(() => User)
-    @ManyToOne(() => User, (user) => user.invitations)
+    @ManyToOne(() => User, (user) => user.invitations, { eager: true })
     @JoinTable()
     public requested: User;
 

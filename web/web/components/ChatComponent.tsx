@@ -116,6 +116,7 @@ const Chat: NextPage<ChatProps> = ({
 
             // Updating on api
 
+            /*
             if (user?.id) {
                 await setAllChatMessagesHaveBeenSeen({
                     variables: {
@@ -136,7 +137,7 @@ const Chat: NextPage<ChatProps> = ({
                         );
                     },
                 });
-            }
+            } */
 
             // Updating on Redux
             newChatsCountUnsawMessages &&

@@ -1,0 +1,17 @@
+subscription NewRequestSubscription {
+    newRequestSubscription {
+        newRequest {
+            id
+            requestor {
+                id
+                name
+                picture
+            }
+            requested {
+                id
+                name
+                picture
+            }
+        }
+    }
+}

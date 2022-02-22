@@ -8,6 +8,10 @@ import {
     ObjectType,
     Query,
     Resolver,
+    Publisher,
+    PubSub,
+    Subscription,
+    Root,
 } from "type-graphql";
 import { Role } from "../database/entity/role.entity";
 import { UserValidator } from "../database/validators/user.validator";
@@ -22,6 +26,7 @@ import { genericError, validateEmail } from "./../helpers/generalAuxMethods";
 import { GeneralResponse, UserResponse } from "./../helpers/generalTypeReturns";
 import { HandleUpload } from "./../helpers/handleUpload.helper";
 import { mapGetUserByIdRaw } from "./../utils/types/user/user.types";
+import { PubSubEngine } from "graphql-subscriptions";
 
 @ObjectType()
 class LoginResponse {
@@ -29,6 +34,21 @@ class LoginResponse {
     errors?: ErrorFieldHandler[];
     @Field(() => String, { nullable: true })
     token?: String;
+}
+
+@ObjectType()
+class RequestSubscription {
+    @Field(() => Request, { nullable: true })
+    newRequest?: Request;
+}
+
+@ObjectType()
+class RequestNotification {
+    @Field(() => Request, { nullable: true })
+    request?: Request;
+
+    @Field(() => String)
+    loggedUserId: string;
 }
 
 @ObjectType()
@@ -564,10 +584,17 @@ export class UserResolver {
                 chat_id: string;
             }
 
-            let user_connections: user_connections_user = {
+            let user_connections: user_connections_user[] = [];
+
+            user_connections.push({
                 user_id_1: userRequestedId,
                 user_id_2: userRequestorId,
-            };
+            });
+
+            user_connections.push({
+                user_id_1: userRequestorId,
+                user_id_2: userRequestedId,
+            });
 
             let chat_participants: user_chats_chat[] = [];
 
@@ -611,12 +638,39 @@ export class UserResolver {
             };
         }
     }
+    @Subscription(() => RequestSubscription, {
+        topics: "REQUEST_SENDED",
+    })
+    async newRequestSubscription(
+        @Root("notification") notification: RequestNotification
+    ): Promise<RequestSubscription> {
+        if (
+            notification.request &&
+            notification.request.requestedId === notification.loggedUserId
+        ) {
+            return { newRequest: notification.request };
+        } else {
+            return {};
+        }
+    }
 
     @Mutation(() => GeneralResponse)
     async createRequest(
         @Arg("options") options: RequestValidator,
-        @Ctx() { em }: Context
+        @PubSub() pubSub: PubSubEngine,
+        @Ctx() { em, req }: Context
     ): Promise<GeneralResponse> {
+        if (!req.session.userId) {
+            return {
+                errors: genericError(
+                    "-",
+                    "createRequest",
+                    __filename,
+                    "Must be logged in."
+                ),
+            };
+        }
+
         try {
             const request = await em.create(Request, {
                 requestedId: options.requestedId,
@@ -624,6 +678,19 @@ export class UserResolver {
             });
 
             await em.save(request);
+            if (request.id) {
+                // this is to eager prop to get the requestor and requested as
+                // user object
+                const newRequest = await em.findOne(Request, {
+                    id: request.id,
+                });
+                await pubSub.publish("REQUEST_SENDED", {
+                    notification: {
+                        request: newRequest,
+                        loggedUserId: req.session.userId,
+                    },
+                });
+            }
 
             return { done: true };
         } catch (e) {

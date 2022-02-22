@@ -10,7 +10,6 @@ import {
     PubSub,
     Subscription,
     Root,
-    Publisher,
 } from "type-graphql";
 import { Chat } from "./../database/entity/chat.entity";
 import { Context } from "./../context";
