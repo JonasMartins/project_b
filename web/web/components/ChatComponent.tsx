@@ -80,6 +80,10 @@ const Chat: NextPage<ChatProps> = ({
             const { newMessage } =
                 newMessagesSubscription.data.newMessageNotification;
             addNewMessage(newMessage);
+            if (currentChatId && newMessage.chat.id !== currentChatId) {
+                setChatUnsawMessages(chatUnsawMessages + 1);
+                setCountNewMessages(userNewMessages + 1);
+            }
         }
     };
 
