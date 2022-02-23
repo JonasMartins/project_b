@@ -71,6 +71,7 @@ const PostEmotionsRecord: NextPage<PostEmotionsRecordProps> = ({
         DeleteEmotionDocument
     );
 
+    /*
     const handleRemoveEmotion = async (
         id: string
     ): Promise<DeleteEmotionMutation> => {
@@ -86,11 +87,7 @@ const PostEmotionsRecord: NextPage<PostEmotionsRecordProps> = ({
             throw new Error(deleteResult.error?.message);
         }
         return result.data;
-    };
-
-    if (!post.emotions) {
-        return <></>;
-    }
+    }; */
 
     const [userReactions, setUserReactions] = useState<EmotionCreator>({
         ANGRY: new Set([]),
@@ -249,9 +246,9 @@ const PostEmotionsRecord: NextPage<PostEmotionsRecordProps> = ({
                 }
             });
         }
-    }, [post.emotions.length, user?.id]);
+    }, [post.emotions?.length, user?.id]);
 
-    return (
+    const content = (
         <Flex mt={3} justifyContent="space-between" alignItems="center">
             <Flex>
                 {loadEffect ? (
@@ -263,6 +260,7 @@ const PostEmotionsRecord: NextPage<PostEmotionsRecordProps> = ({
                             variant="outline"
                             size="sm"
                             mr={1}
+                            key={item.id}
                         >
                             <Text
                                 textColor={
@@ -295,7 +293,7 @@ const PostEmotionsRecord: NextPage<PostEmotionsRecordProps> = ({
                         />
                     </PopoverTrigger>
                     <PopoverContent>
-                        <PopoverHeader>Post's reaction</PopoverHeader>
+                        <PopoverHeader>{`Post's reaction`}</PopoverHeader>
                         <PopoverArrow />
                         <PopoverCloseButton />
                         <PopoverBody>
@@ -509,6 +507,8 @@ const PostEmotionsRecord: NextPage<PostEmotionsRecordProps> = ({
             </Flex>
         </Flex>
     );
+
+    return !post.emotions ? <></> : content;
 };
 
 export default PostEmotionsRecord;

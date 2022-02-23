@@ -301,10 +301,9 @@ const Settings: NextPage<SettingsProps> = ({ user }) => {
                                         name="file"
                                         {...getInputProps()}
                                     />
-                                    <p>
+                                    <p>{`
                                         Drag 'n' drop some file here, or click
-                                        to select a file.
-                                    </p>
+                                        to select a file.`}</p>
                                 </div>
                                 <Flex style={thumbsContainer}>
                                     {acceptedFiles.map((file) => (
@@ -333,7 +332,7 @@ const Settings: NextPage<SettingsProps> = ({ user }) => {
                                 </Flex>
                                 <Flex flexDir="column">
                                     {fileRejections.map(({ file, errors }) => (
-                                        <Flex flexDir="column">
+                                        <Flex flexDir="column" key={file.name}>
                                             <Text
                                                 fontSize="md"
                                                 fontStyle="bold"

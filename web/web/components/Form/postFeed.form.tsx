@@ -196,8 +196,8 @@ const PostFeed: NextPage = () => {
                                     {...getInputProps()}
                                 />
                                 <p>
-                                    Drag 'n' drop some files here, or click to
-                                    select files
+                                    {` Drag 'n' drop some files here, or click to
+                                    select files `}
                                 </p>
                             </div>
                             <Flex style={thumbsContainer}>
@@ -224,7 +224,7 @@ const PostFeed: NextPage = () => {
                             </Flex>
                             <Flex flexDir="column">
                                 {fileRejections.map(({ file, errors }) => (
-                                    <Flex flexDir="column">
+                                    <Flex flexDir="column" key={file.name}>
                                         <Text
                                             fontSize="md"
                                             fontStyle="bold"

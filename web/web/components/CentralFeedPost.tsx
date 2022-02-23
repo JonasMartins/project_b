@@ -64,7 +64,7 @@ const CentralFeedPost: NextPage<CentralFeedPostProps> = ({ post }) => {
             <Flex mt={2}>
                 {post.files?.length ? (
                     post.files.map((file) => (
-                        <Box p={1} m={0}>
+                        <Box p={1} m={0} key={file}>
                             <Image
                                 src={getServerPathImage(file)}
                                 boxSize="52px"

@@ -8,23 +8,23 @@ import {
     useColorMode,
     useToast,
 } from "@chakra-ui/react";
+import {
+    useNewMessageNotificationSubscription,
+    useUpdateUnSeenChatMutation,
+} from "generated/graphql";
+import update from "immutability-helper";
 import type { NextPage } from "next";
+import { memo, useCallback, useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { bindActionCreators } from "redux";
+import { actionCreators } from "Redux/actions";
+import { RootState } from "Redux/Global/GlobalReducer";
 import { getServerPathImage } from "utils/generalAuxFunctions";
 import { useUser } from "utils/hooks/useUser";
 import {
     chat as ChatType,
     messageSubscription,
 } from "utils/types/chat/chat.types";
-import update from "immutability-helper";
-import {
-    useNewMessageNotificationSubscription,
-    useUpdateUnSeenChatMutation,
-} from "generated/graphql";
-import { memo, useCallback, useEffect, useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { RootState } from "Redux/Global/GlobalReducer";
-import { bindActionCreators } from "redux";
-import { actionCreators } from "Redux/actions";
 
 interface ChatProps {
     chat: ChatType;
@@ -80,20 +80,20 @@ const Chat: NextPage<ChatProps> = ({
         return color;
     };
 
-    const handleNewMessagesSubscriptions = useCallback(() => {
+    const handleNewMessagesSubscriptions = () => {
         if (newMessagesSubscription.data?.newMessageNotification?.newMessage) {
             const { newMessage } =
                 newMessagesSubscription.data.newMessageNotification;
-            console.log("times called");
-
             if (!messagesSended.includes(newMessage.id)) {
                 addNewMessage(newMessage);
                 AddNewMessageToStore(newMessage.id);
-                if (chat?.id && newMessage.chat.id === chat.id) {
-                    if (newMessage.chat.id !== currentChatId) {
+
+                if (user?.id && newMessage.creator.id !== user?.id) {
+                    if (
+                        chat?.id === newMessage.chat.id &&
+                        newMessage.chat.id !== currentChatId
+                    ) {
                         setChatUnsawMessages(chatUnsawMessages + 1);
-                    }
-                    if (newMessage.creator.id !== user?.id) {
                         setCountNewMessages(userNewMessages + 1);
                     }
                 }
@@ -101,20 +101,7 @@ const Chat: NextPage<ChatProps> = ({
                 console.log("tentativa de adicionar mensage repetida");
             }
         }
-    }, [newMessagesSubscription.data?.newMessageNotification?.newMessage?.id]);
-
-    /**
-     * Update the other chats differents from current one
-     * it only sets to the number of unseen messages in each one
-     * of them
-     */
-    const handleFirstChatUpdate = useCallback(() => {
-        chatsCountUnsawMessages?.forEach((x) => {
-            if (x.chatId === chat?.id && x.chatId !== currentChatId) {
-                setChatUnsawMessages(x.countMessages);
-            }
-        });
-    }, [user?.id, chatsCountUnsawMessages?.length, currentChatId]);
+    };
 
     const handleUpdateSeenMessages = async () => {
         let chatToRemoveIndex = -1;
@@ -123,9 +110,10 @@ const Chat: NextPage<ChatProps> = ({
                 if (x.chatId === chat?.id && x.chatId === currentChatId) {
                     setChatUnsawMessages(0);
                     if (userNewMessages >= x.countMessages) {
-                        console.log("deminui no left panel");
                         chatToRemoveIndex = index;
-                        setCountNewMessages(userNewMessages - x.countMessages);
+                        setCountNewMessages(
+                            userNewMessages - Math.max(1, x.countMessages)
+                        );
                     }
                 }
             }
@@ -142,58 +130,56 @@ const Chat: NextPage<ChatProps> = ({
                 ],
             });
 
-            // Updating on api
-            if (user?.id) {
-                await setAllChatMessagesHaveBeenSeen({
-                    variables: {
-                        chatId: currentChatId,
-                        userId: user.id,
-                    },
-                    onError: () => {
-                        toast({
-                            title: "Error",
-                            description: "Something went wrong",
-                            status: "error",
-                            duration: 8000,
-                            isClosable: true,
-                            position: "top",
-                        });
-                        console.error(
-                            resultSetAllChatMessagesHaveBeenSeen.error
-                        );
-                    },
-                });
-            }
+            updateUnSeenOnApi();
+
             // Updating on Redux
             newChatsCountUnsawMessages &&
                 setCountChatUnsawMessages(newChatsCountUnsawMessages);
         }
     };
 
+    const updateUnSeenOnApi = async () => {
+        // Updating on api
+        if (user?.id) {
+            console.log("update on api ?");
+            await setAllChatMessagesHaveBeenSeen({
+                variables: {
+                    chatId: currentChatId,
+                    userId: user.id,
+                },
+                onError: () => {
+                    toast({
+                        title: "Error",
+                        description: "Something went wrong",
+                        status: "error",
+                        duration: 8000,
+                        isClosable: true,
+                        position: "top",
+                    });
+                    console.error(resultSetAllChatMessagesHaveBeenSeen.error);
+                },
+            });
+        }
+    };
+
     useEffect(() => {
         handleNewMessagesSubscriptions();
 
-        let delayFirstUnsawMessages = setTimeout(() => {
-            handleFirstChatUpdate();
-        }, 300);
-
-        let delaySetUnsawMessages = setTimeout(() => {
-            if (user?.id) {
-                handleUpdateSeenMessages();
-            }
-        }, 700);
-
-        return () => {
-            clearTimeout(delayFirstUnsawMessages);
-            clearTimeout(delaySetUnsawMessages);
-        };
+        return () => {};
     }, [
         user?.id,
-        chat?.id,
-        currentChatId,
         newMessagesSubscription.loading,
         newMessagesSubscription.data?.newMessageNotification?.newMessage?.id,
     ]);
+
+    useEffect(() => {
+        let delaySetUnsawMessages = setTimeout(() => {
+            handleUpdateSeenMessages();
+        }, 200);
+        return () => {
+            clearTimeout(delaySetUnsawMessages);
+        };
+    }, [currentChatId, chat?.id, user?.id]);
 
     const content = (
         <Flex

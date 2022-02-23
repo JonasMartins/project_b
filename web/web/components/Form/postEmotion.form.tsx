@@ -107,7 +107,7 @@ const PostEmotion: NextPage<PostEmotionProps> = ({
                     />
                 </PopoverTrigger>
                 <PopoverContent>
-                    <PopoverHeader>Post's reaction</PopoverHeader>
+                    <PopoverHeader>{`Post's reaction`}</PopoverHeader>
                     <PopoverArrow />
                     <PopoverCloseButton />
                     <PopoverBody>

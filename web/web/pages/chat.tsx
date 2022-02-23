@@ -249,7 +249,7 @@ const Chat: NextPage<ChatProps> = () => {
             ids.push(x.id);
         });
 
-        let chatId: string = chatMessages?.length ? currentChat.id : "";
+        let chatId: string = currentChat.id;
         const result = await createMessage({
             variables: {
                 body,
@@ -300,6 +300,7 @@ const Chat: NextPage<ChatProps> = () => {
      */
     const changeCurrentChatCallback = (chat: ChatType): void => {
         setCurrentChat(chat);
+        setChatMessages([]);
         setChatMessages(chat?.messages);
         goToConverSationBottom();
     };
@@ -416,10 +417,11 @@ const Chat: NextPage<ChatProps> = () => {
         handleGetChatsAndConnections();
     }, [user?.id]);
 
+    /*
     useEffect(() => {}, [
         resultGetChats.loading,
         resultGetUserConnectionsLazy.loading,
-    ]);
+    ]); */
 
     useEffect(() => {
         if (

@@ -106,7 +106,8 @@ export class ChatResolver {
                     "participant.name",
                     "participant.picture",
                 ])
-                .where("chat.id IN (:...ids)", { ids: str_chat_ids });
+                .where("chat.id IN (:...ids)", { ids: str_chat_ids })
+                .orderBy("message.createdAt", "ASC");
 
             const chats = await qb.getMany();
 
