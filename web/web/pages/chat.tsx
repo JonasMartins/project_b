@@ -30,9 +30,9 @@ import {
     useGetChatsLazyQuery,
     useGetUserConnectionsLazyQuery,
 } from "generated/graphql";
+import update from "immutability-helper";
 import type { NextPage } from "next";
 import React, {
-    memo,
     ChangeEvent,
     ComponentProps,
     useEffect,
@@ -42,7 +42,9 @@ import React, {
 import { BiDownArrowAlt } from "react-icons/bi";
 import { BsChatSquareDots } from "react-icons/bs";
 import { IoSend } from "react-icons/io5";
-import update from "immutability-helper";
+import { useDispatch } from "react-redux";
+import { bindActionCreators } from "redux";
+import { actionCreators } from "Redux/actions";
 import {
     getServerPathImage,
     truncateString,
@@ -52,8 +54,8 @@ import { useUser } from "utils/hooks/useUser";
 import {
     chat as ChatType,
     message as ChatMessage,
-    participant as participantType,
     messageSubscription,
+    participant as participantType,
 } from "utils/types/chat/chat.types";
 import { userConnectionType } from "utils/types/user/user.types";
 import * as Yup from "yup";
@@ -74,15 +76,14 @@ const Chat: NextPage<ChatProps> = () => {
     const initialValues: FormValues = {
         body: "",
     };
-    let commingNewMessages: string[] = [];
     const user = useUser();
     const toast = useToast();
+    const dispatch = useDispatch();
     const { colorMode } = useColorMode();
     const bgColor = { light: "gray.200", dark: "gray.700" };
     const [getChats, resultGetChats] = useGetChatsLazyQuery({
         fetchPolicy: "cache-and-network",
     });
-
     const [chats, setChats] = useState<Array<ChatType>>([]);
     const [chatMessages, setChatMessages] = useState<
         Array<ChatMessage> | null | undefined
@@ -92,6 +93,11 @@ const Chat: NextPage<ChatProps> = () => {
     const inputMessageRef = useRef<HTMLTextAreaElement>(null);
     const [searchInput, setSearchInput] = useState("");
     const [isSettingData, setIsSettingData] = useState(true);
+
+    const { ClearMessagesFromStore } = bindActionCreators(
+        actionCreators,
+        dispatch
+    );
 
     const [getUserConnections, resultGetUserConnectionsLazy] =
         useGetUserConnectionsLazyQuery({
@@ -242,23 +248,14 @@ const Chat: NextPage<ChatProps> = () => {
         currentChat.participants.forEach((x) => {
             ids.push(x.id);
         });
-        if (!currentChat.id) {
-            toast({
-                title: "Error",
-                description: "Something went wrong",
-                status: "error",
-                duration: 8000,
-                isClosable: true,
-                position: "top",
-            });
-            return null;
-        }
+
+        let chatId: string = chatMessages?.length ? currentChat.id : "";
         const result = await createMessage({
             variables: {
                 body,
                 participants: ids,
                 creatorId: user.id,
-                chatId: currentChat?.id,
+                chatId,
             },
             onError: () => {
                 toast({
@@ -310,7 +307,6 @@ const Chat: NextPage<ChatProps> = () => {
     const addNewCommingMessageCallback = (
         message: messageSubscription
     ): void => {
-        console.log("here!");
         let indexChat = -1;
         if (message) {
             let chatId = message.chat.id;
@@ -350,10 +346,8 @@ const Chat: NextPage<ChatProps> = () => {
                         ...prevMessages!,
                         newMessage,
                     ]);
-                    commingNewMessages.push(newMessage.id);
                 } else {
                     setChatMessages([newMessage]);
-                    commingNewMessages.push(newMessage.id);
                 }
             }
             const chatsUpdated = update(chats, {
@@ -442,6 +436,7 @@ const Chat: NextPage<ChatProps> = () => {
 
     useEffect(() => {
         return () => {
+            ClearMessagesFromStore();
             setChats([]);
             setCurrentChat(null);
             setChatMessages([]);
@@ -825,4 +820,4 @@ const Chat: NextPage<ChatProps> = () => {
     return isSettingData ? <BeatLoaderCustom /> : content;
 };
 
-export default memo(Chat);
+export default Chat;

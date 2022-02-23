@@ -8,6 +8,15 @@ export type IsSubmittingPostAction = {
     payload: boolean;
 };
 
+export type AddMessageToStore = {
+    type: typeof GlobalTypes.ADD_MESSAGE_SENDED_TO_STORE;
+    payload: string;
+};
+
+export type ClearMessagesFromStore = {
+    type: typeof GlobalTypes.CLEAR_MESSAGES_FROM_STORE;
+};
+
 export type SetCountUnsawMessagesByChat = {
     type: typeof GlobalTypes.SET_CHATS_COUNT_UNSAW_MESSAGES;
     payload: chatsUnseeMessages;
@@ -62,6 +71,8 @@ export type Action =
     | GetHasCreatedEmotion
     | SetCreatedEmotion
     | CountNewMessages
-    | SetCountUnsawMessagesByChat;
+    | SetCountUnsawMessagesByChat
+    | AddMessageToStore
+    | ClearMessagesFromStore;
 
 export * as actionCreators from "Redux/actionCreators";

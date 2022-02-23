@@ -45,13 +45,19 @@ const Chat: NextPage<ChatProps> = ({
     const participants = chat?.participants.filter((x) => x.id !== user?.id);
     const { colorMode } = useColorMode();
 
-    const { setCountChatUnsawMessages, setCountNewMessages } =
-        bindActionCreators(actionCreators, dispatch);
+    const {
+        setCountChatUnsawMessages,
+        setCountNewMessages,
+        AddNewMessageToStore,
+    } = bindActionCreators(actionCreators, dispatch);
 
     const userNewMessages = useSelector(
         (state: RootState) => state.globalReducer.countUserNewMessages
     );
 
+    const messagesSended = useSelector(
+        (state: RootState) => state.globalReducer.messagesSended
+    );
     const [
         setAllChatMessagesHaveBeenSeen,
         resultSetAllChatMessagesHaveBeenSeen,
@@ -79,14 +85,20 @@ const Chat: NextPage<ChatProps> = ({
             const { newMessage } =
                 newMessagesSubscription.data.newMessageNotification;
             console.log("times called");
-            addNewMessage(newMessage);
-            if (chat?.id && newMessage.chat.id === chat.id) {
-                if (newMessage.chat.id !== currentChatId) {
-                    setChatUnsawMessages(chatUnsawMessages + 1);
+
+            if (!messagesSended.includes(newMessage.id)) {
+                addNewMessage(newMessage);
+                AddNewMessageToStore(newMessage.id);
+                if (chat?.id && newMessage.chat.id === chat.id) {
+                    if (newMessage.chat.id !== currentChatId) {
+                        setChatUnsawMessages(chatUnsawMessages + 1);
+                    }
+                    if (newMessage.creator.id !== user?.id) {
+                        setCountNewMessages(userNewMessages + 1);
+                    }
                 }
-                if (newMessage.creator.id !== user?.id) {
-                    setCountNewMessages(userNewMessages + 1);
-                }
+            } else {
+                console.log("tentativa de adicionar mensage repetida");
             }
         }
     }, [newMessagesSubscription.data?.newMessageNotification?.newMessage?.id]);
@@ -159,20 +171,29 @@ const Chat: NextPage<ChatProps> = ({
     };
 
     useEffect(() => {
-        handleFirstChatUpdate();
+        handleNewMessagesSubscriptions();
 
-        if (user?.id) {
-            handleUpdateSeenMessages();
-        }
-    }, [user?.id, chat?.id, currentChatId]);
+        let delayFirstUnsawMessages = setTimeout(() => {
+            handleFirstChatUpdate();
+        }, 300);
 
-    useEffect(() => {
-        if (
-            newMessagesSubscription.data?.newMessageNotification?.newMessage?.id
-        ) {
-            handleNewMessagesSubscriptions();
-        }
-    }, [newMessagesSubscription.loading]);
+        let delaySetUnsawMessages = setTimeout(() => {
+            if (user?.id) {
+                handleUpdateSeenMessages();
+            }
+        }, 700);
+
+        return () => {
+            clearTimeout(delayFirstUnsawMessages);
+            clearTimeout(delaySetUnsawMessages);
+        };
+    }, [
+        user?.id,
+        chat?.id,
+        currentChatId,
+        newMessagesSubscription.loading,
+        newMessagesSubscription.data?.newMessageNotification?.newMessage?.id,
+    ]);
 
     const content = (
         <Flex

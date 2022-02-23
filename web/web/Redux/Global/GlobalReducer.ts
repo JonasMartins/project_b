@@ -15,6 +15,7 @@ export interface globalState {
     hasCreatedEmotion: boolean;
     createdEmotion: postEmotion | null;
     chatsCountUnsawMessages: chatsUnseeMessages | null;
+    messagesSended: string[];
 }
 const initialState = {
     isSubmittinPost: false,
@@ -26,6 +27,7 @@ const initialState = {
     hasCreatedEmotion: false,
     createdEmotion: null,
     chatsCountUnsawMessages: null,
+    messagesSended: [],
 };
 
 export const globalReducer = (
@@ -59,6 +61,18 @@ export const globalReducer = (
         }
         case GlobalTypes.SET_CHATS_COUNT_UNSAW_MESSAGES: {
             return { ...state, chatsCountUnsawMessages: action.payload };
+        }
+        case GlobalTypes.ADD_MESSAGE_SENDED_TO_STORE: {
+            return {
+                ...state,
+                messagesSended: [action.payload, ...state.messagesSended],
+            };
+        }
+        case GlobalTypes.CLEAR_MESSAGES_FROM_STORE: {
+            return {
+                ...state,
+                messagesSended: [],
+            };
         }
         default:
             return state;

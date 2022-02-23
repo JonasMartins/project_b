@@ -14,6 +14,23 @@ export const setHasCreatedEmotion = (hasCreated: boolean) => {
     };
 };
 
+export const AddNewMessageToStore = (newMessageId: string) => {
+    return (dispatch: Dispatch<Action>) => {
+        dispatch({
+            type: GlobalTypes.ADD_MESSAGE_SENDED_TO_STORE,
+            payload: newMessageId,
+        });
+    };
+};
+
+export const ClearMessagesFromStore = () => {
+    return (dispatch: Dispatch<Action>) => {
+        dispatch({
+            type: GlobalTypes.CLEAR_MESSAGES_FROM_STORE,
+        });
+    };
+};
+
 export const setCountChatUnsawMessages = (
     countUnsawMessages: chatsUnseeMessages
 ) => {
