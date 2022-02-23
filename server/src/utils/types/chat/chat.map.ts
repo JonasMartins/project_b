@@ -23,7 +23,10 @@ export const mapGetUserSeenMessages = async (
     if (qbRaw.length) {
         user.id = qbRaw[0].user_id;
         qbRaw.forEach((x) => {
-            if (!x.messages_user_seen.includes(x.user_id)) {
+            if (
+                x.messages_user_seen &&
+                !x.messages_user_seen.includes(x.user_id)
+            ) {
                 if (x.chats_id !== currentChatId) {
                     chat = new Chat();
                     chat.id = x.chats_id;

@@ -45,7 +45,9 @@ const Invitations: NextPage<InvitationsProps> = ({}) => {
         useCreateConnectionMutation({});
 
     const [getUserConnections, resultGetUserConnectionsLazy] =
-        useGetUserConnectionsLazyQuery({});
+        useGetUserConnectionsLazyQuery({
+            fetchPolicy: "cache-and-network",
+        });
 
     const dispatch = useDispatch();
     const { setCountUserInvitations } = bindActionCreators(
@@ -200,7 +202,7 @@ const Invitations: NextPage<InvitationsProps> = ({}) => {
 
     useEffect(() => {
         handleGetData();
-    }, [user, resultGetUserConnectionsLazy.loading]);
+    }, [user]);
 
     const noInvitations = (
         <Flex justifyContent="center" p={2} m={2}>

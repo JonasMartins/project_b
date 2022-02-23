@@ -32,6 +32,7 @@ import {
 } from "generated/graphql";
 import type { NextPage } from "next";
 import React, {
+    memo,
     ChangeEvent,
     ComponentProps,
     useEffect,
@@ -73,6 +74,7 @@ const Chat: NextPage<ChatProps> = () => {
     const initialValues: FormValues = {
         body: "",
     };
+    let commingNewMessages: string[] = [];
     const user = useUser();
     const toast = useToast();
     const { colorMode } = useColorMode();
@@ -80,6 +82,7 @@ const Chat: NextPage<ChatProps> = () => {
     const [getChats, resultGetChats] = useGetChatsLazyQuery({
         fetchPolicy: "cache-and-network",
     });
+
     const [chats, setChats] = useState<Array<ChatType>>([]);
     const [chatMessages, setChatMessages] = useState<
         Array<ChatMessage> | null | undefined
@@ -307,6 +310,7 @@ const Chat: NextPage<ChatProps> = () => {
     const addNewCommingMessageCallback = (
         message: messageSubscription
     ): void => {
+        console.log("here!");
         let indexChat = -1;
         if (message) {
             let chatId = message.chat.id;
@@ -346,8 +350,10 @@ const Chat: NextPage<ChatProps> = () => {
                         ...prevMessages!,
                         newMessage,
                     ]);
+                    commingNewMessages.push(newMessage.id);
                 } else {
                     setChatMessages([newMessage]);
+                    commingNewMessages.push(newMessage.id);
                 }
             }
             const chatsUpdated = update(chats, {
@@ -355,7 +361,6 @@ const Chat: NextPage<ChatProps> = () => {
             });
             setChats(chatsUpdated);
         } else if (!chats && message && message.creator.id !== user?.id) {
-            debugger;
             let chat: ChatType = message.chat;
             if (chat) {
                 let newMessage: ChatMessage = {
@@ -820,4 +825,4 @@ const Chat: NextPage<ChatProps> = () => {
     return isSettingData ? <BeatLoaderCustom /> : content;
 };
 
-export default Chat;
+export default memo(Chat);

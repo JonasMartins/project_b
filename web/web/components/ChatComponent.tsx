@@ -20,12 +20,11 @@ import {
     useNewMessageNotificationSubscription,
     useUpdateUnSeenChatMutation,
 } from "generated/graphql";
-import { useCallback, useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "Redux/Global/GlobalReducer";
 import { bindActionCreators } from "redux";
 import { actionCreators } from "Redux/actions";
-import MiniBeatLoaderCustom from "components/Layout/MiniBeatLoaderCustom";
 
 interface ChatProps {
     chat: ChatType;
@@ -75,17 +74,22 @@ const Chat: NextPage<ChatProps> = ({
         return color;
     };
 
-    const handleNewMessagesSubscriptions = () => {
+    const handleNewMessagesSubscriptions = useCallback(() => {
         if (newMessagesSubscription.data?.newMessageNotification?.newMessage) {
             const { newMessage } =
                 newMessagesSubscription.data.newMessageNotification;
+            console.log("times called");
             addNewMessage(newMessage);
-            if (currentChatId && newMessage.chat.id !== currentChatId) {
-                setChatUnsawMessages(chatUnsawMessages + 1);
-                setCountNewMessages(userNewMessages + 1);
+            if (chat?.id && newMessage.chat.id === chat.id) {
+                if (newMessage.chat.id !== currentChatId) {
+                    setChatUnsawMessages(chatUnsawMessages + 1);
+                }
+                if (newMessage.creator.id !== user?.id) {
+                    setCountNewMessages(userNewMessages + 1);
+                }
             }
         }
-    };
+    }, [newMessagesSubscription.data?.newMessageNotification?.newMessage?.id]);
 
     /**
      * Update the other chats differents from current one
@@ -101,13 +105,13 @@ const Chat: NextPage<ChatProps> = ({
     }, [user?.id, chatsCountUnsawMessages?.length, currentChatId]);
 
     const handleUpdateSeenMessages = async () => {
-        console.log("here to update unseen: ", chatsCountUnsawMessages);
         let chatToRemoveIndex = -1;
         chatsCountUnsawMessages?.forEach((x, index) => {
             if (currentChatId) {
                 if (x.chatId === chat?.id && x.chatId === currentChatId) {
                     setChatUnsawMessages(0);
                     if (userNewMessages >= x.countMessages) {
+                        console.log("deminui no left panel");
                         chatToRemoveIndex = index;
                         setCountNewMessages(userNewMessages - x.countMessages);
                     }
@@ -148,7 +152,6 @@ const Chat: NextPage<ChatProps> = ({
                     },
                 });
             }
-            console.log("updated unseen ", newChatsCountUnsawMessages);
             // Updating on Redux
             newChatsCountUnsawMessages &&
                 setCountChatUnsawMessages(newChatsCountUnsawMessages);
@@ -156,34 +159,20 @@ const Chat: NextPage<ChatProps> = ({
     };
 
     useEffect(() => {
-        handleNewMessagesSubscriptions();
-        /*
-        let delayFirstUnsawMessages = setTimeout(() => {
-            handleFirstChatUpdate();
-        }, 300);
-
-        let delaySetUnsawMessages = setTimeout(() => {
-            if (user?.id) {
-                handleUpdateSeenMessages();
-            }
-        }, 1000);
-
-        return () => {
-            clearTimeout(delayFirstUnsawMessages);
-            clearTimeout(delaySetUnsawMessages);
-        }; */
-
         handleFirstChatUpdate();
+
         if (user?.id) {
             handleUpdateSeenMessages();
         }
-    }, [
-        user?.id,
-        chat?.id,
-        currentChatId,
-        newMessagesSubscription.loading,
-        newMessagesSubscription.data?.newMessageNotification?.newMessage?.id,
-    ]);
+    }, [user?.id, chat?.id, currentChatId]);
+
+    useEffect(() => {
+        if (
+            newMessagesSubscription.data?.newMessageNotification?.newMessage?.id
+        ) {
+            handleNewMessagesSubscriptions();
+        }
+    }, [newMessagesSubscription.loading]);
 
     const content = (
         <Flex
@@ -224,11 +213,7 @@ const Chat: NextPage<ChatProps> = ({
         </Flex>
     );
 
-    return resultSetAllChatMessagesHaveBeenSeen.loading ? (
-        <MiniBeatLoaderCustom />
-    ) : (
-        content
-    );
+    return content;
 };
 
-export default Chat;
+export default memo(Chat);

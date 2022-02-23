@@ -27,6 +27,7 @@ import { RootState } from "Redux/Global/GlobalReducer";
 import { useUser } from "utils/hooks/useUser";
 import { useNewMessageNotificationSubscription } from "generated/graphql";
 import { chatsUnseeMessages } from "utils/types/chat/chat.types";
+import BeatLoaderCustom from "./BeatLoaderCustom";
 
 interface CentralFeedProps {}
 
@@ -99,19 +100,40 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
                 });
 
                 if (found && !newMessage.userSeen.includes(user.id)) {
+                    // Updating the count
                     onSetCountUserNewMessages(userNewMessages + 1);
 
                     let auxChatsCountUnsawMessages = chatsCountUnsawMessages;
+
+                    /**
+                     *  If there is messages unseen, if comes another one,
+                     *  increments the object with specific chat
+                     *  if the object in redux that keeps the state the
+                     *  chats and unseen messages is empty, this code
+                     *  creates it and store the data from comming data
+                     */
                     if (
                         auxChatsCountUnsawMessages &&
                         auxChatsCountUnsawMessages.length
                     ) {
+                        let alreadyHave = false;
                         auxChatsCountUnsawMessages.forEach((x) => {
                             if (x.chatId === newMessage.chat.id) {
+                                alreadyHave = true;
                                 x.countMessages += 1;
                             }
                         });
-                        console.log(">> ", auxChatsCountUnsawMessages);
+
+                        // means that the new message comes
+                        // from a new conversation
+                        if (!alreadyHave) {
+                            auxChatsCountUnsawMessages.push({
+                                chatId: newMessage.chat.id,
+                                countMessages: 1,
+                            });
+                        }
+
+                        console.log("new unseen ", auxChatsCountUnsawMessages);
                         setCountChatUnsawMessages(auxChatsCountUnsawMessages);
                     } else if (!auxChatsCountUnsawMessages?.length) {
                         if (!auxChatsCountUnsawMessages) {
@@ -122,7 +144,7 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
                             chatId: newMessage.chat.id,
                             countMessages: 1,
                         });
-                        console.log("<< ", auxChatsCountUnsawMessages);
+                        console.log("new unseen ", auxChatsCountUnsawMessages);
                         setCountChatUnsawMessages(auxChatsCountUnsawMessages);
                     }
                 }
@@ -167,6 +189,7 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
                 const { chats } =
                     userUnseenMessages.data.getUserUnseenMessages.user;
                 let countMessages = 0;
+
                 chats.forEach((x) => {
                     if (x.messages?.length) {
                         countMessages += x.messages?.length;
@@ -176,11 +199,9 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
                         });
                     }
                 });
-                console.log(
-                    "unsawMessages when setting the page ",
-                    unsawMessagesCountByChat
-                );
+
                 // setting info about unsaw messages in redux state
+                console.log("initial unseen ", unsawMessagesCountByChat);
                 setCountChatUnsawMessages(unsawMessagesCountByChat);
                 onSetCountUserNewMessages(countMessages);
             }
@@ -233,7 +254,7 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
         newRequestsSubscription.data?.newRequestSubscription?.newRequest?.id,
     ]);
 
-    return (
+    const content = (
         <Flex flexGrow={1} flexDir="column" m={5}>
             <Flex justifyContent="space-between">
                 <Tooltip
@@ -280,6 +301,14 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
                 onClose={modalCreatePostDisclousure.onClose}
             />
         </Flex>
+    );
+
+    return resultGetUserUnseenMessages.loading ||
+        resultGetUserUnseenMessages.loading ||
+        resultgetCountPendingInvitations.loading ? (
+        <BeatLoaderCustom />
+    ) : (
+        content
     );
 };
 export default CentralFeed;
