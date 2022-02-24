@@ -13,6 +13,10 @@ query GetUserById($post_limit: Float, $post_offset: Float, $id: String!) {
             posts {
                 id
                 body
+                emotions {
+                    id
+                    type
+                }
                 comments {
                     id
                     body

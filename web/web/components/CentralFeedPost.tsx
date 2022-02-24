@@ -28,7 +28,6 @@ const CentralFeedPost: NextPage<CentralFeedPostProps> = ({ post }) => {
     useEffect(() => {
         if (createdEmotion) {
             if (createdEmotion.post.id === post.id) {
-                console.log("Created Emotion: ", createdEmotion);
                 let emotionObj: emotionElement = {
                     id: createdEmotion.id,
                     type: createdEmotion.type,
@@ -60,7 +59,6 @@ const CentralFeedPost: NextPage<CentralFeedPostProps> = ({ post }) => {
             flexDir="column"
         >
             <Text>{post.body}</Text>
-
             <Flex mt={2}>
                 {post.files?.length ? (
                     post.files.map((file) => (
@@ -75,7 +73,7 @@ const CentralFeedPost: NextPage<CentralFeedPostProps> = ({ post }) => {
                     <></>
                 )}
             </Flex>
-            {user && <PostEmotionsRecord post={post} user={user} />}
+            `{user && <PostEmotionsRecord post={post} user={user} />}
         </Flex>
     );
 };

@@ -143,6 +143,8 @@ export class UserResolver {
                             .from(Post, "p")
                             .leftJoinAndSelect("p.comments", "comment")
                             .leftJoinAndSelect("p.creator", "p_creator")
+                            .leftJoinAndSelect("p.emotions", "e")
+                            .leftJoinAndSelect("e.creator", "u2")
                             .leftJoinAndSelect("comment.replies", "reply")
                             .leftJoinAndSelect("reply.author", "reply_author")
                             .leftJoinAndSelect(
@@ -156,6 +158,10 @@ export class UserResolver {
                                 "p.created_at as p_created_at",
                                 "p_creator.name",
                                 "p_creator.picture",
+                                "e.id",
+                                "e.type",
+                                "u2.id",
+                                "u2.name",
                                 "comment.id",
                                 "comment.body",
                                 "comment_author.id",
@@ -186,6 +192,10 @@ export class UserResolver {
                     "post.p_creator_id",
                     "post.p_creator_picture",
                     "post.p_creator_name",
+                    "post.e_id",
+                    "post.e_type",
+                    "post.u2_id",
+                    "post.u2_name",
                     "post.reply_id",
                     "post.reply_body",
                     "post.reply_author_id",

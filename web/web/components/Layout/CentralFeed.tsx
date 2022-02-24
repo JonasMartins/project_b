@@ -201,7 +201,6 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
                 });
 
                 // setting info about unsaw messages in redux state
-                console.log("initial unseen ", unsawMessagesCountByChat);
                 setCountChatUnsawMessages(unsawMessagesCountByChat);
                 onSetCountUserNewMessages(countMessages);
             }

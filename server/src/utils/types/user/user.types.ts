@@ -2,6 +2,8 @@ import { SelectQueryBuilder } from "typeorm";
 import { Post } from "./../../../database/entity/post.entity";
 import { User } from "./../../../database/entity/user.entity";
 import { Comment } from "./../../../database/entity/comment.entity";
+import { Emotion } from "./../../../database/entity/emotion.entity";
+import { EmotionType } from "./../../../database/enum/emotionType.enum";
 
 export interface userPostsCommentsRepliesRaw {
     user_id: string;
@@ -20,6 +22,8 @@ export interface userPostsCommentsRepliesRaw {
     p_creator_id: string;
     p_creator_name: string;
     p_creator_picture: string;
+    e_id: string;
+    e_type: string;
     comment_id: string;
     comment_body: string;
     comment_created_at: Date;
@@ -36,7 +40,6 @@ export const mapGetUserByIdRaw = async (
     let posts: Post[] = [];
     let reply_author = new User();
     let comment_author = new User();
-
     let currentPostId = "";
 
     let post: Post;
@@ -48,7 +51,20 @@ export const mapGetUserByIdRaw = async (
             post.createdAt = rawObj.p_created_at;
 
             let _comments = new Array<Comment>();
+            let _emotions = new Array<Emotion>();
+
             post.comments = _comments;
+            post.emotions = _emotions;
+        }
+
+        if (rawObj.e_id) {
+            let emotion = new Emotion();
+            emotion.id = rawObj.e_id;
+            emotion.type = getCorrectEnumEmotionType(rawObj.e_type);
+
+            if (!post.emotions.find((x) => x.id === emotion.id)) {
+                post.emotions.push(emotion);
+            }
         }
 
         if (rawObj.comment_id) {
@@ -97,4 +113,46 @@ export const mapGetUserByIdRaw = async (
     }
 
     return user;
+};
+
+const getCorrectEnumEmotionType = (value: string): EmotionType => {
+    let result: EmotionType = EmotionType.ANGRY;
+    switch (value) {
+        case "FIRE":
+            result = EmotionType.FIRE;
+            break;
+        case "HEART":
+            result = EmotionType.HEART;
+            break;
+        case "HEART_EYE":
+            result = EmotionType.HEART_EYE;
+            break;
+        case "PREY":
+            result = EmotionType.PREY;
+            break;
+        case "SAD":
+            result = EmotionType.SAD;
+            break;
+        case "SMILE":
+            result = EmotionType.SMILE;
+            break;
+        case "SUN_GLASS":
+            result = EmotionType.SUN_GLASS;
+            break;
+        case "SURPRISE":
+            result = EmotionType.SURPRISE;
+            break;
+        case "THUMBSDOWN":
+            result = EmotionType.THUMBSDOWN;
+            break;
+        case "THUMBSUP":
+            result = EmotionType.THUMBSUP;
+            break;
+        case "VOMIT":
+            result = EmotionType.VOMIT;
+            break;
+        default:
+            result = EmotionType.ANGRY;
+    }
+    return result;
 };

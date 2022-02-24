@@ -15,6 +15,26 @@ export type postEmotion = {
     post: { __typename?: "Post"; id: string };
 };
 
+export type getPostsByUserType = {
+    __typename?: "Post";
+    id: string;
+    body: string;
+    files?: Array<string> | null | undefined;
+    emotions?:
+        | Array<{
+              __typename?: "Emotion";
+              id: string;
+              type: EmotionType;
+              creator: {
+                  __typename?: "User";
+                  id: string;
+                  name: string;
+              };
+          }>
+        | null
+        | undefined;
+};
+
 export type getPostsType = {
     __typename?: "Post";
     id: string;
