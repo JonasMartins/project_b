@@ -14,7 +14,6 @@ import {
     PopoverContent,
     PopoverHeader,
     PopoverTrigger,
-    Link,
 } from "@chakra-ui/react";
 import {
     DeleteEmotionDocument,
@@ -193,8 +192,8 @@ const PostEmotionsRecord: NextPage<PostEmotionsRecordProps> = ({
                 colorScheme="white"
             >
                 <IconButton
-                    isRound={true}
                     aria-label="connected"
+                    size="lg"
                     isDisabled={loadEffect}
                     icon={<FaUserCheck color="#E426FF" />}
                     m={1}
@@ -210,7 +209,7 @@ const PostEmotionsRecord: NextPage<PostEmotionsRecordProps> = ({
                 colorScheme="white"
             >
                 <IconButton
-                    isRound={true}
+                    size="lg"
                     aria-label="connect"
                     isDisabled={loadEffect}
                     icon={<HiUserAdd color="#E426FF" />}

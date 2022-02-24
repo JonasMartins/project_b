@@ -3,6 +3,7 @@ import {
     Box,
     Flex,
     IconButton,
+    Skeleton,
     Tooltip,
     useColorMode,
     useDisclosure,
@@ -17,7 +18,7 @@ import {
     useNewRequestSubscriptionSubscription,
 } from "generated/graphql";
 import type { NextPage } from "next";
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { FiRefreshCcw } from "react-icons/fi";
 import { IoAddOutline } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
@@ -36,6 +37,7 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
     const user = useUser();
     const dispatch = useDispatch();
     const modalCreatePostDisclousure = useDisclosure();
+    const [loadEffect, setLoadEffect] = useState(false);
 
     const hasSubmittedPost = useSelector(
         (state: RootState) => state.globalReducer.hasSubmittedPost
@@ -232,7 +234,14 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
     }, [hasSubmittedPost]);
 
     useEffect(() => {
+        setLoadEffect(true);
         handleSetPageInfo();
+        let load = setTimeout(() => {
+            setLoadEffect(false);
+        }, 500);
+        return () => {
+            clearTimeout(load);
+        };
     }, [loading, data]);
 
     useEffect(() => {
@@ -291,7 +300,9 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
             </Flex>
             <Box mt={5}>
                 {data?.getPosts?.posts?.map((post) => (
-                    <CentralFeedPost key={post.id} post={post} />
+                    <Skeleton isLoaded={!loadEffect}>
+                        <CentralFeedPost key={post.id} post={post} />
+                    </Skeleton>
                 ))}
             </Box>
 
@@ -302,12 +313,6 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
         </Flex>
     );
 
-    return resultGetUserUnseenMessages.loading ||
-        resultGetUserUnseenMessages.loading ||
-        resultgetCountPendingInvitations.loading ? (
-        <BeatLoaderCustom />
-    ) : (
-        content
-    );
+    return loadEffect ? <BeatLoaderCustom /> : content;
 };
 export default CentralFeed;
