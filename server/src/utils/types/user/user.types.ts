@@ -22,8 +22,11 @@ export interface userPostsCommentsRepliesRaw {
     p_creator_id: string;
     p_creator_name: string;
     p_creator_picture: string;
+    p_files: string[];
     e_id: string;
     e_type: string;
+    u2_id: string;
+    u2_name: string;
     comment_id: string;
     comment_body: string;
     comment_created_at: Date;
@@ -39,7 +42,9 @@ export const mapGetUserByIdRaw = async (
 
     let posts: Post[] = [];
     let reply_author = new User();
+    let emotion_creator = new User();
     let comment_author = new User();
+    let post_creator = new User();
     let currentPostId = "";
 
     let post: Post;
@@ -49,6 +54,11 @@ export const mapGetUserByIdRaw = async (
             post.id = rawObj.p_id;
             post.body = rawObj.p_body;
             post.createdAt = rawObj.p_created_at;
+            post.files = rawObj.p_files;
+            post_creator.id = rawObj.user_id;
+            post_creator.name = rawObj.user_name;
+            post_creator.picture = rawObj.user_picture;
+            post.creator = post_creator;
 
             let _comments = new Array<Comment>();
             let _emotions = new Array<Emotion>();
@@ -61,7 +71,9 @@ export const mapGetUserByIdRaw = async (
             let emotion = new Emotion();
             emotion.id = rawObj.e_id;
             emotion.type = getCorrectEnumEmotionType(rawObj.e_type);
-
+            emotion_creator.id = rawObj.u2_id;
+            emotion_creator.name = rawObj.u2_name;
+            emotion.creator = emotion_creator;
             if (!post.emotions.find((x) => x.id === emotion.id)) {
                 post.emotions.push(emotion);
             }

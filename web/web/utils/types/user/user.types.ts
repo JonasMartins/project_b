@@ -1,3 +1,5 @@
+import { EmotionType } from "generated/graphql";
+
 export type userGetUserByIdType =
     | {
           __typename?: "User" | undefined;
@@ -5,6 +7,7 @@ export type userGetUserByIdType =
           name: string;
           email: string;
           picture?: string | null | undefined;
+          files?: Array<string> | null | undefined;
           posts?:
               | Array<{
                     __typename?: "Post";
@@ -24,6 +27,25 @@ export type userGetUserByIdType =
                           }>
                         | null
                         | undefined;
+                    emotions?:
+                        | Array<{
+                              __typename?: "Emotion";
+                              id: string;
+                              type: EmotionType;
+                              creator: {
+                                  __typename?: "User";
+                                  id: string;
+                                  name: string;
+                              };
+                          }>
+                        | null
+                        | undefined;
+                    creator: {
+                        __typename?: "User";
+                        id: string;
+                        name: string;
+                        picture?: string | null | undefined;
+                    };
                 }>
               | null
               | undefined;

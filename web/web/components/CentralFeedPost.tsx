@@ -73,7 +73,7 @@ const CentralFeedPost: NextPage<CentralFeedPostProps> = ({ post }) => {
                     <></>
                 )}
             </Flex>
-            `{user && <PostEmotionsRecord post={post} user={user} />}
+            {user && <PostEmotionsRecord post={post} user={user} />}
         </Flex>
     );
 };

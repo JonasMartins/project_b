@@ -18,6 +18,7 @@ import BeatLoader from "react-spinners/BeatLoader";
 import { useGetUserByIdLazyQuery } from "generated/graphql";
 import { userGetUserByIdType } from "utils/types/user/user.types";
 import { getServerPathImage } from "utils/generalAuxFunctions";
+import CentralFeedPost from "components/CentralFeedPost";
 
 interface userPageProps {}
 
@@ -94,14 +95,14 @@ const UserPage: NextPage<userPageProps> = () => {
                                         mr={2}
                                     />
 
-                                    <Text fontWeight="thin" fontSize="lg">
+                                    <Text fontWeight="light" fontSize="lg">
                                         {userData.name}
                                     </Text>
                                 </Flex>
                             )}
-                            <Box mt={5}>
+                            <Box mt={5} p={4}>
                                 {userData?.posts?.map((x) => (
-                                    <p>{x.body}</p>
+                                    <CentralFeedPost key={x.id} post={x} />
                                 ))}
                             </Box>
                         </GridItem>

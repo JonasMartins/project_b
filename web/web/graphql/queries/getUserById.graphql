@@ -13,9 +13,19 @@ query GetUserById($post_limit: Float, $post_offset: Float, $id: String!) {
             posts {
                 id
                 body
+                files
+                creator {
+                    id
+                    name
+                    picture
+                }
                 emotions {
                     id
                     type
+                    creator {
+                        id
+                        name
+                    }
                 }
                 comments {
                     id

@@ -154,6 +154,7 @@ export class UserResolver {
                             .select([
                                 "p.id",
                                 "p.body",
+                                "p.files",
                                 "p.creator_id as p_creator_id",
                                 "p.created_at as p_created_at",
                                 "p_creator.name",
@@ -190,6 +191,7 @@ export class UserResolver {
                     "post.p_body",
                     "post.p_created_at",
                     "post.p_creator_id",
+                    "post.p_files",
                     "post.p_creator_picture",
                     "post.p_creator_name",
                     "post.e_id",

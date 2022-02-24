@@ -21,6 +21,8 @@ import { useSelector } from "react-redux";
 import { RootState } from "Redux/Global/GlobalReducer";
 import { useRouter } from "next/dist/client/router";
 import { css } from "@emotion/react";
+import { FaUser } from "react-icons/fa";
+import { useUser } from "utils/hooks/useUser";
 
 interface LeftPanelProps {}
 
@@ -33,7 +35,7 @@ const gridCell = `
 const LeftPanel: NextPage<LeftPanelProps> = ({}) => {
     const modalSettings = useDisclosure();
     const router = useRouter();
-
+    const user = useUser();
     const userConnections = useSelector(
         (state: RootState) => state.globalReducer.userConnections
     );
@@ -66,7 +68,7 @@ const LeftPanel: NextPage<LeftPanelProps> = ({}) => {
 
     return (
         <Box>
-            <Grid templateRows="repeat(5,1fr)" templateColumns="repeat(3,1fr)">
+            <Grid templateRows="repeat(6,1fr)" templateColumns="repeat(3,1fr)">
                 <GridItem />
                 <GridItem css={css(gridCell)}>
                     <Tooltip
@@ -90,27 +92,30 @@ const LeftPanel: NextPage<LeftPanelProps> = ({}) => {
                 <GridItem css={css(gridCell)} />
 
                 <GridItem />
+
                 <GridItem css={css(gridCell)}>
                     <Tooltip
                         hasArrow
-                        aria-label="settings"
-                        label="Seetings"
+                        aria-label="My Profile"
+                        label="My Profile"
                         colorScheme="white"
                     >
                         <IconButton
                             isRound={true}
-                            aria-label="Settings"
+                            aria-label="My Profile"
                             size="lg"
-                            icon={<IoIosSettings />}
+                            icon={<FaUser />}
                             onClick={() => {
-                                modalSettings.onOpen();
+                                router.push(`/user/${user?.id}`);
                             }}
+                            mt={3}
                         />
                     </Tooltip>
                 </GridItem>
                 <GridItem css={css(gridCell)} />
 
                 <GridItem />
+
                 <GridItem css={css(gridCell)}>
                     <Tooltip
                         hasArrow
@@ -187,6 +192,29 @@ const LeftPanel: NextPage<LeftPanelProps> = ({}) => {
                         <></>
                     )}
                 </GridItem>
+                <GridItem />
+
+                <GridItem css={css(gridCell)}>
+                    <Tooltip
+                        hasArrow
+                        aria-label="settings"
+                        label="Seetings"
+                        colorScheme="white"
+                    >
+                        <IconButton
+                            isRound={true}
+                            aria-label="Settings"
+                            size="lg"
+                            icon={<IoIosSettings />}
+                            onClick={() => {
+                                modalSettings.onOpen();
+                            }}
+                        />
+                    </Tooltip>
+                </GridItem>
+                <GridItem css={css(gridCell)} />
+
+                <GridItem />
             </Grid>
             <ModalSettings
                 isOpen={modalSettings.isOpen}
