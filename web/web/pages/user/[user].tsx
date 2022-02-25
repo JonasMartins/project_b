@@ -9,11 +9,9 @@ import {
     Flex,
     Grid,
     GridItem,
-    IconButton,
     Image,
     Skeleton,
     Text,
-    Tooltip,
     useColorMode,
 } from "@chakra-ui/react";
 import CentralFeedPost from "components/CentralFeedPost";

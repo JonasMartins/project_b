@@ -63,6 +63,31 @@ export type getPostsByUserType = {
         | undefined;
 };
 
+export type singlePostComment = {
+    __typename?: "Comment";
+    id: string;
+    body: string;
+    createdAt: any;
+    author: {
+        __typename?: "User";
+        id: string;
+        name: string;
+        picture?: string | null | undefined;
+    };
+    replies: Array<{
+        __typename?: "Comment";
+        id: string;
+        body: string;
+        createdAt: any;
+        author: {
+            __typename?: "User";
+            id: string;
+            name: string;
+            picture?: string | null | undefined;
+        };
+    }>;
+};
+
 export type getPostsCommentsType = {
     comments?:
         | Array<{

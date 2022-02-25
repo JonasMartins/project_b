@@ -1,11 +1,4 @@
-import {
-    Box,
-    Flex,
-    Text,
-    useColorMode,
-    Image,
-    useDisclosure,
-} from "@chakra-ui/react";
+import { Box, Flex, Text, useColorMode, Image } from "@chakra-ui/react";
 import type { NextPage } from "next";
 import PostEmotionsRecord from "components/PostEmotionsRecord";
 import { getPostsType } from "utils/types/post/post.types";
@@ -25,7 +18,6 @@ interface CentralFeedPostProps {
 const CentralFeedPost: NextPage<CentralFeedPostProps> = ({ post }) => {
     const user = useUser();
     const { colorMode } = useColorMode();
-    const { isOpen, onToggle } = useDisclosure();
 
     const createdEmotion = useSelector(
         (state: RootState) => state.globalReducer.createdEmotion
