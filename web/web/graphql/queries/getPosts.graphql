@@ -9,6 +9,7 @@ query GetPosts($offset: Float!, $limit: Float!) {
             id
             body
             files
+            createdAt
             creator {
                 id
                 name
@@ -25,6 +26,7 @@ query GetPosts($offset: Float!, $limit: Float!) {
             comments {
                 id
                 body
+                createdAt
                 author {
                     id
                     name
@@ -33,6 +35,7 @@ query GetPosts($offset: Float!, $limit: Float!) {
                 replies {
                     id
                     body
+                    createdAt
                     author {
                         id
                         name

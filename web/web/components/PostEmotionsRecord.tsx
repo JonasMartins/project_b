@@ -66,11 +66,11 @@ const PostEmotionsRecord: NextPage<PostEmotionsRecordProps> = ({
     const { colorMode } = useColorMode();
     const [loadEffect, setLoadEffect] = useState(false);
     const color = { dark: "#FFFFFF", light: "#16161D" };
+    /*
     const [deleteEmotion, deleteResult] = useMutation<DeleteEmotionMutation>(
         DeleteEmotionDocument
     );
 
-    /*
     const handleRemoveEmotion = async (
         id: string
     ): Promise<DeleteEmotionMutation> => {

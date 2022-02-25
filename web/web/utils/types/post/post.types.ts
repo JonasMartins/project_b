@@ -19,12 +19,14 @@ export type getPostsByUserType = {
     __typename?: "Post";
     id: string;
     body: string;
+    createdAt: any;
     files?: Array<string> | null | undefined;
     comments?:
         | Array<{
               __typename?: "Comment";
               id: string;
               body: string;
+              createdAt: any;
               author: {
                   __typename?: "User";
                   id: string;
@@ -35,6 +37,7 @@ export type getPostsByUserType = {
                   __typename?: "Comment";
                   id: string;
                   body: string;
+                  createdAt: any;
                   author: {
                       __typename?: "User";
                       id: string;
@@ -60,16 +63,13 @@ export type getPostsByUserType = {
         | undefined;
 };
 
-export type getPostsType = {
-    __typename?: "Post";
-    id: string;
-    body: string;
-    files?: Array<string> | null | undefined;
+export type getPostsCommentsType = {
     comments?:
         | Array<{
               __typename?: "Comment";
               id: string;
               body: string;
+              createdAt: any;
               author: {
                   __typename?: "User";
                   id: string;
@@ -80,6 +80,42 @@ export type getPostsType = {
                   __typename?: "Comment";
                   id: string;
                   body: string;
+                  createdAt: any;
+                  author: {
+                      __typename?: "User";
+                      id: string;
+                      name: string;
+                      picture?: string | null | undefined;
+                  };
+              }>;
+          }>
+        | null
+        | undefined;
+};
+
+export type getPostsType = {
+    __typename?: "Post";
+    id: string;
+    body: string;
+    files?: Array<string> | null | undefined;
+    createdAt: any;
+    comments?:
+        | Array<{
+              __typename?: "Comment";
+              id: string;
+              body: string;
+              createdAt: any;
+              author: {
+                  __typename?: "User";
+                  id: string;
+                  name: string;
+                  picture?: string | null | undefined;
+              };
+              replies: Array<{
+                  __typename?: "Comment";
+                  id: string;
+                  body: string;
+                  createdAt: any;
                   author: {
                       __typename?: "User";
                       id: string;

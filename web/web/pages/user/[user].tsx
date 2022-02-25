@@ -25,7 +25,6 @@ import { useGetUserByIdLazyQuery } from "generated/graphql";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import React, { useCallback, useEffect, useState } from "react";
-import { AiOutlineEye } from "react-icons/ai";
 import { BsPeopleFill } from "react-icons/bs";
 import BeatLoader from "react-spinners/BeatLoader";
 import { getServerPathImage } from "utils/generalAuxFunctions";
@@ -207,13 +206,13 @@ const UserPage: NextPage<userPageProps> = () => {
                                     </Flex>
                                 </React.Fragment>
                             )}
-                            {/* <Box mt={5} p={4}>
+                            <Box mt={5} p={4}>
                                 {userData?.posts?.map((x) => (
                                     <Skeleton isLoaded={!loadEffect}>
                                         <CentralFeedPost key={x.id} post={x} />
                                     </Skeleton>
                                 ))}
-                            </Box> */}
+                            </Box>
                         </GridItem>
                         <GridItem
                             bg={bgColor[colorMode]}

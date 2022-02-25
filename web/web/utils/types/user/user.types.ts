@@ -22,17 +22,31 @@ export type userGetUserByIdType =
                     __typename?: "Post";
                     id: string;
                     body: string;
+                    createdAt: any;
                     comments?:
                         | Array<{
                               __typename?: "Comment";
                               id: string;
                               body: string;
+                              createdAt: any;
                               author: {
                                   __typename?: "User";
                                   id: string;
                                   name: string;
                                   picture?: string | null | undefined;
                               };
+                              replies: Array<{
+                                  __typename?: "Comment";
+                                  id: string;
+                                  body: string;
+                                  createdAt: any;
+                                  author: {
+                                      __typename?: "User";
+                                      id: string;
+                                      name: string;
+                                      picture?: string | null | undefined;
+                                  };
+                              }>;
                           }>
                         | null
                         | undefined;

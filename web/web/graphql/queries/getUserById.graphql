@@ -19,6 +19,7 @@ query GetUserById($post_limit: Float, $post_offset: Float, $id: String!) {
                 id
                 body
                 files
+                createdAt
                 creator {
                     id
                     name
@@ -35,10 +36,21 @@ query GetUserById($post_limit: Float, $post_offset: Float, $id: String!) {
                 comments {
                     id
                     body
+                    createdAt
                     author {
                         id
                         name
                         picture
+                    }
+                    replies {
+                        id
+                        body
+                        createdAt
+                        author {
+                            id
+                            name
+                            picture
+                        }
                     }
                 }
             }
