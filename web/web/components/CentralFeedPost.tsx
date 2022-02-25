@@ -1,13 +1,31 @@
-import { Box, Flex, Text, useColorMode, Image } from "@chakra-ui/react";
+import {
+    Box,
+    Flex,
+    Text,
+    useColorMode,
+    Image,
+    Button,
+    Tooltip,
+    useDisclosure,
+    Collapse,
+    Popover,
+    PopoverBody,
+    PopoverContent,
+    PopoverArrow,
+    PopoverTrigger,
+} from "@chakra-ui/react";
 import type { NextPage } from "next";
 import PostEmotionsRecord from "components/PostEmotionsRecord";
-import { getPostsType } from "utils/types/post/post.types";
+import { getPostsType, getPostsByUserType } from "utils/types/post/post.types";
 import { useUser } from "utils/hooks/useUser";
 import { useEffect } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "Redux/Global/GlobalReducer";
 import { emotion as emotionElement } from "utils/types/post/post.types";
 import { getServerPathImage } from "utils/generalAuxFunctions";
+import { BsChatDots } from "react-icons/bs";
+import NexLink from "next/link";
+import { formatRelative } from "date-fns";
 
 interface CentralFeedPostProps {
     post: getPostsType;
@@ -16,6 +34,7 @@ interface CentralFeedPostProps {
 const CentralFeedPost: NextPage<CentralFeedPostProps> = ({ post }) => {
     const user = useUser();
     const { colorMode } = useColorMode();
+    const { isOpen, onToggle } = useDisclosure();
 
     const createdEmotion = useSelector(
         (state: RootState) => state.globalReducer.createdEmotion
@@ -74,6 +93,78 @@ const CentralFeedPost: NextPage<CentralFeedPostProps> = ({ post }) => {
                 )}
             </Flex>
             {user && <PostEmotionsRecord post={post} user={user} />}
+            <Flex mt={2}>
+                <Flex flexDir="column" width="100%">
+                    <Button
+                        aria-label="comments"
+                        leftIcon={<BsChatDots />}
+                        onClick={onToggle}
+                        mb={3}
+                    >
+                        {post.comments?.length ?? 0}
+                    </Button>
+                    <Collapse in={isOpen} animateOpacity>
+                        {post.comments?.map((x) => {
+                            return (
+                                <Flex
+                                    p={3}
+                                    mt={1}
+                                    boxShadow="md"
+                                    borderRadius="1rem"
+                                    flexDir="column"
+                                >
+                                    <Text>{x.body}</Text>
+                                    <Flex justifyContent="flex-end">
+                                        <Popover
+                                            placement="top-end"
+                                            trigger="hover"
+                                        >
+                                            <PopoverTrigger>
+                                                <Image
+                                                    mr={2}
+                                                    borderRadius="full"
+                                                    boxSize="32px"
+                                                    src={getServerPathImage(
+                                                        x.author.picture
+                                                    )}
+                                                />
+                                            </PopoverTrigger>
+                                            <PopoverContent>
+                                                <PopoverArrow />
+                                                <PopoverBody>
+                                                    <NexLink
+                                                        href={`/user/${x.author.id}`}
+                                                    >
+                                                        <Flex
+                                                            justifyContent="flex-start"
+                                                            p={2}
+                                                            alignItems="center"
+                                                        >
+                                                            <Flex alignItems="center">
+                                                                <Image
+                                                                    cursor="pointer"
+                                                                    mr={2}
+                                                                    borderRadius="full"
+                                                                    boxSize="32px"
+                                                                    src={getServerPathImage(
+                                                                        x.author
+                                                                            .picture
+                                                                    )}
+                                                                />
+                                                                {x.author.name}
+                                                            </Flex>
+                                                        </Flex>
+                                                    </NexLink>
+                                                </PopoverBody>
+                                            </PopoverContent>
+                                        </Popover>
+                                    </Flex>
+                                </Flex>
+                            );
+                        })}
+                    </Collapse>
+                </Flex>
+            </Flex>
         </Flex>
     );
 };

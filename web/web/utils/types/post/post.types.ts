@@ -20,6 +20,31 @@ export type getPostsByUserType = {
     id: string;
     body: string;
     files?: Array<string> | null | undefined;
+    comments?:
+        | Array<{
+              __typename?: "Comment";
+              id: string;
+              body: string;
+              author: {
+                  __typename?: "User";
+                  id: string;
+                  name: string;
+                  picture?: string | null | undefined;
+              };
+              replies: Array<{
+                  __typename?: "Comment";
+                  id: string;
+                  body: string;
+                  author: {
+                      __typename?: "User";
+                      id: string;
+                      name: string;
+                      picture?: string | null | undefined;
+                  };
+              }>;
+          }>
+        | null
+        | undefined;
     emotions?:
         | Array<{
               __typename?: "Emotion";
@@ -40,6 +65,31 @@ export type getPostsType = {
     id: string;
     body: string;
     files?: Array<string> | null | undefined;
+    comments?:
+        | Array<{
+              __typename?: "Comment";
+              id: string;
+              body: string;
+              author: {
+                  __typename?: "User";
+                  id: string;
+                  name: string;
+                  picture?: string | null | undefined;
+              };
+              replies: Array<{
+                  __typename?: "Comment";
+                  id: string;
+                  body: string;
+                  author: {
+                      __typename?: "User";
+                      id: string;
+                      name: string;
+                      picture?: string | null | undefined;
+                  };
+              }>;
+          }>
+        | null
+        | undefined;
     emotions?:
         | Array<{
               __typename?: "Emotion";

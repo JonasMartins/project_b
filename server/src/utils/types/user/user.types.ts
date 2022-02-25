@@ -1,4 +1,4 @@
-import { SelectQueryBuilder } from "typeorm";
+import { Connection, SelectQueryBuilder } from "typeorm";
 import { Post } from "./../../../database/entity/post.entity";
 import { User } from "./../../../database/entity/user.entity";
 import { Comment } from "./../../../database/entity/comment.entity";
@@ -10,6 +10,9 @@ export interface userPostsCommentsRepliesRaw {
     user_name: string;
     user_email: string;
     user_picture: string;
+    u1_id: string;
+    u1_name: string;
+    u1_picture: string;
     reply_id: string;
     reply_body: string;
     reply_author_picture: string;
@@ -45,10 +48,22 @@ export const mapGetUserByIdRaw = async (
     let emotion_creator = new User();
     let comment_author = new User();
     let post_creator = new User();
+    let connections: User[] = [];
     let currentPostId = "";
+    let currentConn = "";
 
     let post: Post;
     qbRaw.forEach((rawObj) => {
+        if (rawObj.u1_id !== currentConn) {
+            currentConn = rawObj.u1_id;
+            let conn = new User();
+            conn.id = rawObj.u1_id;
+            conn.name = rawObj.u1_name;
+            conn.picture = rawObj.u1_picture;
+
+            connections.push(conn);
+        }
+
         if (rawObj.p_id !== currentPostId) {
             post = new Post();
             post.id = rawObj.p_id;
@@ -122,6 +137,7 @@ export const mapGetUserByIdRaw = async (
         user.email = qbRaw[0].user_email;
         user.picture = qbRaw[0].user_picture;
         user.posts = posts;
+        user.connections = connections;
     }
 
     return user;

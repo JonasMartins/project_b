@@ -10,6 +10,11 @@ query GetUserById($post_limit: Float, $post_offset: Float, $id: String!) {
             name
             email
             picture
+            connections {
+                id
+                name
+                picture
+            }
             posts {
                 id
                 body

@@ -16,25 +16,21 @@ import {
     Tooltip,
     useColorMode,
 } from "@chakra-ui/react";
+import CentralFeedPost from "components/CentralFeedPost";
 import Container from "components/Container";
 import Footer from "components/Layout/Footer";
 import LeftPanel from "components/Layout/LeftPanel";
 import NavBar from "components/Layout/NavBar";
+import { useGetUserByIdLazyQuery } from "generated/graphql";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import React, { useCallback, useEffect, useState } from "react";
-import BeatLoader from "react-spinners/BeatLoader";
-import {
-    useGetUserByIdLazyQuery,
-    useGetUserConnectionsLazyQuery,
-} from "generated/graphql";
-import { userGetUserByIdType } from "utils/types/user/user.types";
-import { getServerPathImage } from "utils/generalAuxFunctions";
-import CentralFeedPost from "components/CentralFeedPost";
-import { BsPeopleFill } from "react-icons/bs";
-import { userConnectionType } from "utils/types/user/user.types";
 import { AiOutlineEye } from "react-icons/ai";
+import { BsPeopleFill } from "react-icons/bs";
+import BeatLoader from "react-spinners/BeatLoader";
+import { getServerPathImage } from "utils/generalAuxFunctions";
 import { useUser } from "utils/hooks/useUser";
+import { userGetUserByIdType } from "utils/types/user/user.types";
 
 interface userPageProps {}
 
@@ -50,11 +46,6 @@ const UserPage: NextPage<userPageProps> = () => {
     const [userData, setUserData] = useState<userGetUserByIdType>(null);
     const [getUserById, resultGetUserById] = useGetUserByIdLazyQuery({});
     const [loadEffect, setLoadEffect] = useState(false);
-    const [connections, setConnections] = useState<Array<userConnectionType>>(
-        []
-    );
-    const [getUserConnections, resultGetUserConnectionsLazy] =
-        useGetUserConnectionsLazyQuery({});
 
     const handleGetUserInfo = useCallback(
         async (userId: string, postsOffset: number) => {
@@ -69,41 +60,12 @@ const UserPage: NextPage<userPageProps> = () => {
             if (user_data.data?.getUserById?.user) {
                 setUserData(user_data.data.getUserById.user);
             }
-
-            const conn = await getUserConnections({
-                variables: {
-                    id: userId,
-                },
-            });
-
-            if (conn?.data?.getUserConnections) {
-                setConnections([]);
-                conn.data.getUserConnections.user?.connections?.forEach((x) => {
-                    setConnections((prevConn) => [...prevConn, x]);
-                });
-            }
         },
-        [
-            user,
-            resultGetUserById.data?.getUserById?.user?.id,
-            resultGetUserConnectionsLazy.data?.getUserConnections?.user?.id,
-        ]
+        [user, resultGetUserById.data?.getUserById?.user?.id]
     );
 
     const checkIfLoggedUserCanConnectToUser = (): boolean => {
-        if (loggedUser?.id === user) {
-            return false;
-        }
-
-        let canConnect = true;
-
-        connections.forEach((x) => {
-            if (loggedUser?.id === x.id) {
-                canConnect = false;
-            }
-        });
-
-        return canConnect;
+        return false;
     };
 
     useEffect(() => {
@@ -118,17 +80,11 @@ const UserPage: NextPage<userPageProps> = () => {
         return () => {
             clearTimeout(load);
         };
-    }, [
-        user,
-        resultGetUserById.loading,
-        resultGetUserConnectionsLazy.loading,
-        loggedUser?.id,
-    ]);
+    }, [user, resultGetUserById.loading, loggedUser?.id]);
 
     useEffect(() => {
         return () => {
             setUserData(null);
-            setConnections([]);
         };
     }, []);
 
@@ -198,75 +154,71 @@ const UserPage: NextPage<userPageProps> = () => {
                                             )}
                                         </Flex>
                                     </Skeleton>
+                                    <Flex p={2}>
+                                        <Accordion allowToggle width="100%">
+                                            <AccordionItem>
+                                                <h2>
+                                                    <AccordionButton>
+                                                        <Box
+                                                            flex="1"
+                                                            textAlign="left"
+                                                        >
+                                                            <Flex alignItems="center">
+                                                                <BsPeopleFill />
+                                                                <Text
+                                                                    ml={3}
+                                                                    fontWeight="semibold"
+                                                                >
+                                                                    My
+                                                                    Connections
+                                                                </Text>
+                                                            </Flex>
+                                                        </Box>
+                                                        <AccordionIcon />
+                                                    </AccordionButton>
+                                                </h2>
+                                                <AccordionPanel pb={4}>
+                                                    {userData?.connections?.map(
+                                                        (x) => (
+                                                            <Flex
+                                                                alignItems="center"
+                                                                justifyContent="space-between"
+                                                            >
+                                                                <Flex alignItems="center">
+                                                                    <Image
+                                                                        mr={2}
+                                                                        borderRadius="full"
+                                                                        boxSize="50px"
+                                                                        src={getServerPathImage(
+                                                                            x.picture
+                                                                        )}
+                                                                    />
+
+                                                                    <Text fontWeight="thin">
+                                                                        {x.name}
+                                                                    </Text>
+                                                                </Flex>
+                                                            </Flex>
+                                                        )
+                                                    )}
+                                                </AccordionPanel>
+                                            </AccordionItem>
+                                        </Accordion>
+                                    </Flex>
                                 </React.Fragment>
                             )}
-                            <Box mt={5} p={4}>
+                            {/* <Box mt={5} p={4}>
                                 {userData?.posts?.map((x) => (
                                     <Skeleton isLoaded={!loadEffect}>
                                         <CentralFeedPost key={x.id} post={x} />
                                     </Skeleton>
                                 ))}
-                            </Box>
+                            </Box> */}
                         </GridItem>
-                        <GridItem bg={bgColor[colorMode]} boxShadow="lg">
-                            <Skeleton isLoaded={!loadEffect}>
-                                <Flex p={2} flexDir="column">
-                                    <Text
-                                        fontWeight="light"
-                                        mb={4}
-                                        textAlign="center"
-                                    >{`${userData?.name}'s connections`}</Text>
-                                    {connections &&
-                                        connections.map((x) => (
-                                            <Flex
-                                                alignItems="center"
-                                                justifyContent="space-between"
-                                            >
-                                                <Flex alignItems="center">
-                                                    <Image
-                                                        mr={2}
-                                                        borderRadius="full"
-                                                        boxSize="50px"
-                                                        cursor="pointer"
-                                                        src={getServerPathImage(
-                                                            x.picture
-                                                        )}
-                                                    />
-
-                                                    <Text fontWeight="thin">
-                                                        {x.name}
-                                                    </Text>
-                                                </Flex>
-                                                <Flex>
-                                                    <Tooltip
-                                                        hasArrow
-                                                        aria-label="visit profile"
-                                                        label="Visit Profile"
-                                                    >
-                                                        <IconButton
-                                                            isRound={true}
-                                                            aria-label="visit profile"
-                                                            icon={
-                                                                <AiOutlineEye />
-                                                            }
-                                                            onClick={() => {
-                                                                router.push(
-                                                                    `/user/${x.id}`
-                                                                );
-
-                                                                handleGetUserInfo(
-                                                                    x.id,
-                                                                    0
-                                                                );
-                                                            }}
-                                                        />
-                                                    </Tooltip>
-                                                </Flex>
-                                            </Flex>
-                                        ))}
-                                </Flex>
-                            </Skeleton>
-                        </GridItem>
+                        <GridItem
+                            bg={bgColor[colorMode]}
+                            boxShadow="lg"
+                        ></GridItem>
                     </Grid>
                 </Box>
                 <Box>
@@ -276,7 +228,7 @@ const UserPage: NextPage<userPageProps> = () => {
         </Container>
     );
 
-    return resultGetUserById.loading || resultGetUserConnectionsLazy.loading ? (
+    return resultGetUserById.loading ? (
         <Flex justifyContent="center" alignItems="center" minHeight="100vh">
             <BeatLoader color="3E10DFF" />
         </Flex>

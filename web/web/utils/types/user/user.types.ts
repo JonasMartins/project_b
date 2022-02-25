@@ -8,6 +8,15 @@ export type userGetUserByIdType =
           email: string;
           picture?: string | null | undefined;
           files?: Array<string> | null | undefined;
+          connections?:
+              | Array<{
+                    __typename?: "User";
+                    id: string;
+                    name: string;
+                    picture?: string | null | undefined;
+                }>
+              | null
+              | undefined;
           posts?:
               | Array<{
                     __typename?: "Post";

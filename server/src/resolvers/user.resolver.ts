@@ -137,6 +137,7 @@ export class UserResolver {
             const qb = await em
                 .getRepository(User)
                 .createQueryBuilder("user")
+                .leftJoinAndSelect("user.connections", "u1")
                 .leftJoinAndSelect(
                     (sQ) =>
                         sQ
@@ -187,6 +188,9 @@ export class UserResolver {
                     "user.name",
                     "user.email",
                     "user.picture",
+                    "u1.id",
+                    "u1.name",
+                    "u1.picture",
                     "post.p_id",
                     "post.p_body",
                     "post.p_created_at",
