@@ -17,6 +17,7 @@ import { Message } from "./message.entity";
 import { Chat } from "./chat.entity";
 import { Emotion } from "./emotion.entity";
 import { Comment } from "./comment.entity";
+import { Notification } from "./notification.entity";
 import argon2 from "argon2";
 import { Request } from "./request.entity";
 
@@ -60,6 +61,19 @@ export class User extends Base {
         inverseJoinColumns: [{ name: "chat_id" }],
     })
     public chats: Chat[];
+
+    @Field(() => Notification)
+    @OneToMany(() => Notification, (notification) => notification.creator)
+    public nofiticationsCreated: Notification[];
+
+    @Field(() => [Notification], { nullable: true })
+    @ManyToMany(() => Notification, (notification) => notification.realtedUsers)
+    @JoinTable({
+        name: "user_notifications_notification",
+        joinColumns: [{ name: "user_id" }],
+        inverseJoinColumns: [{ name: "notification_id" }],
+    })
+    public relatedNotifications: Notification[];
 
     @Field(() => [Request], { nullable: true })
     @OneToMany(() => Request, (request) => request.requestor)

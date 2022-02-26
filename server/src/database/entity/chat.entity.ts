@@ -1,18 +1,8 @@
+import { Field, ObjectType } from "type-graphql";
+import { Entity, JoinTable, ManyToMany } from "typeorm";
 import { Base } from "./base.entity";
-import { User } from "./user.entity";
-import { Emotion } from "./emotion.entity";
-import { Comment } from "./comment.entity";
-import {
-    Column,
-    Entity,
-    JoinTable,
-    ManyToOne,
-    OneToMany,
-    ManyToMany,
-    JoinColumn,
-} from "typeorm";
-import { ObjectType, Field } from "type-graphql";
 import { Message } from "./message.entity";
+import { User } from "./user.entity";
 
 @ObjectType()
 @Entity()

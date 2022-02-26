@@ -1,7 +1,5 @@
 import { Base } from "./base.entity";
 import { User } from "./user.entity";
-import { Emotion } from "./emotion.entity";
-import { Comment } from "./comment.entity";
 import { Column, Entity, JoinTable, ManyToOne } from "typeorm";
 import { ObjectType, Field } from "type-graphql";
 import { Chat } from "./chat.entity";
