@@ -1,45 +1,50 @@
 import {
     Button,
+    CloseButton,
     Collapse,
     Flex,
-    useDisclosure,
-    Text,
-    Popover,
+    FormControl,
+    FormErrorMessage,
+    IconButton,
     Image,
-    PopoverTrigger,
-    PopoverContent,
+    Popover,
     PopoverArrow,
     PopoverBody,
-    Textarea,
-    FormControl,
+    PopoverContent,
+    PopoverTrigger,
     Stack,
-    FormErrorMessage,
-    useColorMode,
-    IconButton,
+    Text,
+    Textarea,
     Tooltip,
+    useColorMode,
+    useDisclosure,
     useToast,
-    Box,
 } from "@chakra-ui/react";
-import React, { ComponentProps, useEffect, useState, useRef } from "react";
+import update from "immutability-helper";
+import BeatLoaderCustom from "components/Layout/BeatLoaderCustom";
 import { formatRelative } from "date-fns";
+import { Field, Form, Formik, FormikProps } from "formik";
+import { useCreateCommentMutation } from "generated/graphql";
 import { NextPage } from "next";
+import NexLink from "next/link";
+import React, { ComponentProps, useEffect, useRef, useState } from "react";
 import { BsChatDots } from "react-icons/bs";
+import { CgMailReply } from "react-icons/cg";
 import { getServerPathImage } from "utils/generalAuxFunctions";
+import { useUser } from "utils/hooks/useUser";
 import {
     getPostsCommentsType,
     singlePostComment,
 } from "utils/types/post/post.types";
-import NexLink from "next/link";
 import * as Yup from "yup";
-import { Field, Form, Formik, FormikProps } from "formik";
-import { useUser } from "utils/hooks/useUser";
-import BeatLoaderCustom from "components/Layout/BeatLoaderCustom";
-import { CgMailReply } from "react-icons/cg";
-import { useCreateCommentMutation } from "generated/graphql";
 
 const CommentSchema = Yup.object().shape({
     body: Yup.string().required("Required"),
 });
+
+interface RepliesToggle {
+    [key: string]: boolean;
+}
 
 interface CommentProps {
     comments: getPostsCommentsType;
@@ -53,9 +58,9 @@ interface FormValues {
 type TextAreaProps = ComponentProps<typeof Textarea>;
 
 const Comment: NextPage<CommentProps> = ({ comments, postId }) => {
+    const user = useUser();
     const toast = useToast();
     const showCommentsDisclosure = useDisclosure();
-    const showRepliesDisclosure = useDisclosure();
     const initialValues: FormValues = {
         body: "",
     };
@@ -64,11 +69,11 @@ const Comment: NextPage<CommentProps> = ({ comments, postId }) => {
     const [stateComments, setStateComments] = useState<
         Array<singlePostComment>
     >([]);
-    const [commentParentId, setCommentParentId] = useState("");
+    const [parentComment, setParentComment] =
+        useState<singlePostComment | null>(null);
     const inputCommentRef = useRef<HTMLTextAreaElement>(null);
     const [createComment, resultCreateComment] = useCreateCommentMutation({});
-
-    const user = useUser();
+    const [mapRepliesOpen, setMapRepliesOpen] = useState<RepliesToggle>({});
 
     const ChakraTextArea = (props: TextAreaProps) => {
         return (
@@ -95,7 +100,27 @@ const Comment: NextPage<CommentProps> = ({ comments, postId }) => {
             inputCommentRef.current.focus();
         }
     };
+    /**
+     *
+     * @param commentId The comment in which we want to expand the replies
+     * Given a comment id (with replies), it will togle the value for open
+     * in the mapReplies state object
+     */
+    const handleOpenCorrentReplies = (commentId: string) => {
+        //showRepliesDisclosure
+        setMapRepliesOpen((prevMaps) => ({
+            ...prevMaps,
+            [commentId]: !prevMaps[commentId],
+        }));
+    };
 
+    /**
+     *
+     * @param body The comment body comming from formik values
+     * Insert a new comment into database, return that comment
+     * and handle all the ui update, insert the reply or comment
+     * in the correct order
+     */
     const handleAddNewComment = async (body: string) => {
         if (user) {
             const result = await createComment({
@@ -105,7 +130,7 @@ const Comment: NextPage<CommentProps> = ({ comments, postId }) => {
                         authorId: user.id,
                         postId,
                     },
-                    parentId: commentParentId,
+                    parentId: parentComment?.id,
                 },
                 onError: () => {
                     toast({
@@ -128,26 +153,102 @@ const Comment: NextPage<CommentProps> = ({ comments, postId }) => {
                     createdAt: comment.createdAt,
                     author: comment.author,
                     replies: [],
-                    order: commentParentId ? 2 : 1,
+                    order: parentComment ? 2 : 1,
                 };
                 setTimeout(() => {
-                    // adding on top
-                    setStateComments((prevComments) => [
-                        newComment,
-                        ...prevComments,
-                    ]);
+                    if (!parentComment) {
+                        // adding on top
+                        setStateComments((prevComments) => [
+                            newComment,
+                            ...prevComments,
+                        ]);
+                    } else {
+                        let indexComment = -1;
+                        indexComment = stateComments.findIndex(
+                            (x) => x.id === parentComment.id
+                        );
+
+                        if (indexComment > -1) {
+                            /**
+                             *  Updating the current parent comment,
+                             *  inserting the new comments into replies
+                             *  and getting a new comment object with the
+                             *  new reply
+                             */
+                            const newCommentReply = update(parentComment, {
+                                replies: { $push: [newComment] },
+                            });
+
+                            /**
+                             *  After insert the reply into parent component
+                             *  and getting the new one in "newCommentReply",
+                             *  inserting this new comment into the state,
+                             *  returning the new state and below, updating
+                             *  all the state
+                             */
+                            let newComments = update(stateComments, {
+                                $splice: [[indexComment, 1, newCommentReply]],
+                            });
+
+                            setStateComments(newComments);
+                        }
+                    }
+
                     setLoadEffect(false);
                 }, 500);
             }
         }
+    };
+    /**
+     *
+     * @param replyId The reply id from a comment that i don't know the id
+     * @returns The parent id from that reply
+     * It search in the comments, if a comment has in his replies the comming
+     * id passed as argument.
+     */
+    const getParentCommentId = (replyId: string): string => {
+        let parentId: string | undefined = "";
+        comments?.comments?.forEach((y) => {
+            if (y.replies.length) {
+                if (y.replies.find((yy) => yy.id === replyId)) {
+                    parentId = y.id;
+                }
+            }
+        });
+        return parentId;
     };
 
     useEffect(() => {
         comments?.comments?.map((x) => {
             if (x.order === 1) {
                 setStateComments((prevComments) => [...prevComments, x]);
+            } else {
+                /**
+                 *  There a state like this:
+                 *  {
+                 *      [commentId] : open? boolean
+                 *  }
+                 *
+                 *  This for sets every open as false,
+                 *  when the component mounts, all the ids of comments
+                 *  have its flag as false, indicating that all the replies
+                 *  will be hidden, not expanded
+                 */
+                let parentId: string | undefined = getParentCommentId(x.id);
+                if (parentId !== undefined) {
+                    setMapRepliesOpen((prevMapReplies) => ({
+                        ...prevMapReplies,
+                        [parentId!]: false,
+                    }));
+                }
             }
         });
+    }, []);
+
+    useEffect(() => {
+        return () => {
+            setStateComments([]);
+        };
     }, []);
 
     return (
@@ -193,9 +294,7 @@ const Comment: NextPage<CommentProps> = ({ comments, postId }) => {
                                                         icon={<CgMailReply />}
                                                         onClick={() => {
                                                             focusOnCommentInput();
-                                                            setCommentParentId(
-                                                                x.id
-                                                            );
+                                                            setParentComment(x);
                                                         }}
                                                     />
                                                 </Tooltip>
@@ -258,13 +357,15 @@ const Comment: NextPage<CommentProps> = ({ comments, postId }) => {
                                     <Flex flexDir="column">
                                         <Flex alignSelf="flex-end">
                                             <Button
-                                                onClick={
-                                                    showRepliesDisclosure.onToggle
-                                                }
+                                                onClick={() => {
+                                                    handleOpenCorrentReplies(
+                                                        x.id
+                                                    );
+                                                }}
                                             >{`Replies ${x.replies.length}`}</Button>
                                         </Flex>
                                         <Collapse
-                                            in={showRepliesDisclosure.isOpen}
+                                            in={mapRepliesOpen[x.id]}
                                             animateOpacity
                                         >
                                             {x.replies.map((y) => (
@@ -309,6 +410,38 @@ const Comment: NextPage<CommentProps> = ({ comments, postId }) => {
                                 )}
                             </Flex>
                         ))
+                    )}
+                    {/* Reply body */}
+                    {parentComment ? (
+                        <Flex p={2} flexDir="column" mt={3}>
+                            <Flex justifyContent="space-between">
+                                <Text fontWeight="semibold" as="i">
+                                    In Reply to:
+                                </Text>
+                                <CloseButton
+                                    onClick={() => {
+                                        setParentComment(null);
+                                    }}
+                                />
+                            </Flex>
+
+                            <Text as="i">{parentComment.body}</Text>
+                            <Text
+                                as="i"
+                                fontWeight="thin"
+                                fontSize="sm"
+                                textAlign="end"
+                                mt={2}
+                            >
+                                Posted At:{" "}
+                                {formatRelative(
+                                    new Date(parentComment.createdAt),
+                                    new Date()
+                                )}
+                            </Text>
+                        </Flex>
+                    ) : (
+                        <></>
                     )}
                     <Formik
                         initialValues={initialValues}
