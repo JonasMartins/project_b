@@ -80,7 +80,7 @@ const CentralFeedPost: NextPage<CentralFeedPostProps> = ({ post }) => {
                 )}
             </Flex>
             {user && <PostEmotionsRecord post={post} user={user} />}
-            <Comment comments={{ comments: post.comments }} />
+            <Comment comments={{ comments: post.comments }} postId={post.id} />
         </Flex>
     );
 };

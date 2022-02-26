@@ -511,6 +511,14 @@ export type AddMessageSeenByUserMutationVariables = Exact<{
 
 export type AddMessageSeenByUserMutation = { __typename?: 'Mutation', addMessageSeenByUser: { __typename?: 'GeneralResponse', done?: boolean | null | undefined, errors?: Array<{ __typename?: 'ErrorFieldHandler', message: string }> | null | undefined } };
 
+export type CreateCommentMutationVariables = Exact<{
+  options: CommentValidator;
+  parentId?: InputMaybe<Scalars['String']>;
+}>;
+
+
+export type CreateCommentMutation = { __typename?: 'Mutation', createComment: { __typename?: 'CommentResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', message: string }> | null | undefined, comment?: { __typename?: 'Comment', id: string, body: string, createdAt: any, author: { __typename?: 'User', id: string, name: string, picture?: string | null | undefined } } | null | undefined } };
+
 export type CreateConnectionMutationVariables = Exact<{
   userRequestedId: Scalars['String'];
   userRequestorId: Scalars['String'];
@@ -635,7 +643,7 @@ export type GetPostsQueryVariables = Exact<{
 }>;
 
 
-export type GetPostsQuery = { __typename?: 'Query', getPosts: { __typename?: 'PostsResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', message: string, method: string, field: string }> | null | undefined, posts?: Array<{ __typename?: 'Post', id: string, body: string, files?: Array<string> | null | undefined, createdAt: any, creator: { __typename?: 'User', id: string, name: string, picture?: string | null | undefined }, emotions?: Array<{ __typename?: 'Emotion', id: string, type: EmotionType, creator: { __typename?: 'User', id: string, name: string } }> | null | undefined, comments?: Array<{ __typename?: 'Comment', id: string, body: string, createdAt: any, author: { __typename?: 'User', id: string, name: string, picture?: string | null | undefined }, replies: Array<{ __typename?: 'Comment', id: string, body: string, createdAt: any, author: { __typename?: 'User', id: string, name: string, picture?: string | null | undefined } }> }> | null | undefined }> | null | undefined } };
+export type GetPostsQuery = { __typename?: 'Query', getPosts: { __typename?: 'PostsResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', message: string, method: string, field: string }> | null | undefined, posts?: Array<{ __typename?: 'Post', id: string, body: string, files?: Array<string> | null | undefined, createdAt: any, creator: { __typename?: 'User', id: string, name: string, picture?: string | null | undefined }, emotions?: Array<{ __typename?: 'Emotion', id: string, type: EmotionType, creator: { __typename?: 'User', id: string, name: string } }> | null | undefined, comments?: Array<{ __typename?: 'Comment', id: string, body: string, order: number, createdAt: any, author: { __typename?: 'User', id: string, name: string, picture?: string | null | undefined }, replies: Array<{ __typename?: 'Comment', id: string, body: string, createdAt: any, author: { __typename?: 'User', id: string, name: string, picture?: string | null | undefined } }> }> | null | undefined }> | null | undefined } };
 
 export type GetUserByIdQueryVariables = Exact<{
   post_limit?: InputMaybe<Scalars['Float']>;
@@ -644,7 +652,7 @@ export type GetUserByIdQueryVariables = Exact<{
 }>;
 
 
-export type GetUserByIdQuery = { __typename?: 'Query', getUserById: { __typename?: 'UserResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', message: string, field: string, method: string }> | null | undefined, user?: { __typename?: 'User', id: string, name: string, email: string, picture?: string | null | undefined, connections?: Array<{ __typename?: 'User', id: string, name: string, picture?: string | null | undefined }> | null | undefined, posts?: Array<{ __typename?: 'Post', id: string, body: string, files?: Array<string> | null | undefined, createdAt: any, creator: { __typename?: 'User', id: string, name: string, picture?: string | null | undefined }, emotions?: Array<{ __typename?: 'Emotion', id: string, type: EmotionType, creator: { __typename?: 'User', id: string, name: string } }> | null | undefined, comments?: Array<{ __typename?: 'Comment', id: string, body: string, createdAt: any, author: { __typename?: 'User', id: string, name: string, picture?: string | null | undefined }, replies: Array<{ __typename?: 'Comment', id: string, body: string, createdAt: any, author: { __typename?: 'User', id: string, name: string, picture?: string | null | undefined } }> }> | null | undefined }> | null | undefined } | null | undefined } };
+export type GetUserByIdQuery = { __typename?: 'Query', getUserById: { __typename?: 'UserResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', message: string, field: string, method: string }> | null | undefined, user?: { __typename?: 'User', id: string, name: string, email: string, picture?: string | null | undefined, connections?: Array<{ __typename?: 'User', id: string, name: string, picture?: string | null | undefined }> | null | undefined, posts?: Array<{ __typename?: 'Post', id: string, body: string, files?: Array<string> | null | undefined, createdAt: any, creator: { __typename?: 'User', id: string, name: string, picture?: string | null | undefined }, emotions?: Array<{ __typename?: 'Emotion', id: string, type: EmotionType, creator: { __typename?: 'User', id: string, name: string } }> | null | undefined, comments?: Array<{ __typename?: 'Comment', id: string, body: string, createdAt: any, order: number, author: { __typename?: 'User', id: string, name: string, picture?: string | null | undefined }, replies: Array<{ __typename?: 'Comment', id: string, body: string, createdAt: any, author: { __typename?: 'User', id: string, name: string, picture?: string | null | undefined } }> }> | null | undefined }> | null | undefined } | null | undefined } };
 
 export type GetUserConnectionsQueryVariables = Exact<{
   id: Scalars['String'];
@@ -728,6 +736,52 @@ export function useAddMessageSeenByUserMutation(baseOptions?: Apollo.MutationHoo
 export type AddMessageSeenByUserMutationHookResult = ReturnType<typeof useAddMessageSeenByUserMutation>;
 export type AddMessageSeenByUserMutationResult = Apollo.MutationResult<AddMessageSeenByUserMutation>;
 export type AddMessageSeenByUserMutationOptions = Apollo.BaseMutationOptions<AddMessageSeenByUserMutation, AddMessageSeenByUserMutationVariables>;
+export const CreateCommentDocument = gql`
+    mutation CreateComment($options: CommentValidator!, $parentId: String) {
+  createComment(options: $options, parentId: $parentId) {
+    errors {
+      message
+    }
+    comment {
+      id
+      body
+      createdAt
+      author {
+        id
+        name
+        picture
+      }
+    }
+  }
+}
+    `;
+export type CreateCommentMutationFn = Apollo.MutationFunction<CreateCommentMutation, CreateCommentMutationVariables>;
+
+/**
+ * __useCreateCommentMutation__
+ *
+ * To run a mutation, you first call `useCreateCommentMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateCommentMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createCommentMutation, { data, loading, error }] = useCreateCommentMutation({
+ *   variables: {
+ *      options: // value for 'options'
+ *      parentId: // value for 'parentId'
+ *   },
+ * });
+ */
+export function useCreateCommentMutation(baseOptions?: Apollo.MutationHookOptions<CreateCommentMutation, CreateCommentMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<CreateCommentMutation, CreateCommentMutationVariables>(CreateCommentDocument, options);
+      }
+export type CreateCommentMutationHookResult = ReturnType<typeof useCreateCommentMutation>;
+export type CreateCommentMutationResult = Apollo.MutationResult<CreateCommentMutation>;
+export type CreateCommentMutationOptions = Apollo.BaseMutationOptions<CreateCommentMutation, CreateCommentMutationVariables>;
 export const CreateConnectionDocument = gql`
     mutation CreateConnection($userRequestedId: String!, $userRequestorId: String!) {
   createConnection(
@@ -1448,6 +1502,7 @@ export const GetPostsDocument = gql`
       comments {
         id
         body
+        order
         createdAt
         author {
           id
@@ -1538,6 +1593,7 @@ export const GetUserByIdDocument = gql`
           id
           body
           createdAt
+          order
           author {
             id
             name

@@ -29,6 +29,7 @@ export type userGetUserByIdType =
                               id: string;
                               body: string;
                               createdAt: any;
+                              order: number;
                               author: {
                                   __typename?: "User";
                                   id: string;
@@ -40,6 +41,7 @@ export type userGetUserByIdType =
                                   id: string;
                                   body: string;
                                   createdAt: any;
+                                  order: number;
                                   author: {
                                       __typename?: "User";
                                       id: string;

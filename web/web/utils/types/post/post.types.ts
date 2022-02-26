@@ -27,6 +27,7 @@ export type getPostsByUserType = {
               id: string;
               body: string;
               createdAt: any;
+              order: number;
               author: {
                   __typename?: "User";
                   id: string;
@@ -38,6 +39,7 @@ export type getPostsByUserType = {
                   id: string;
                   body: string;
                   createdAt: any;
+                  order: number;
                   author: {
                       __typename?: "User";
                       id: string;
@@ -68,6 +70,7 @@ export type singlePostComment = {
     id: string;
     body: string;
     createdAt: any;
+    order: number;
     author: {
         __typename?: "User";
         id: string;
@@ -79,6 +82,7 @@ export type singlePostComment = {
         id: string;
         body: string;
         createdAt: any;
+        order: number;
         author: {
             __typename?: "User";
             id: string;
@@ -95,6 +99,7 @@ export type getPostsCommentsType = {
               id: string;
               body: string;
               createdAt: any;
+              order: number;
               author: {
                   __typename?: "User";
                   id: string;
@@ -106,6 +111,7 @@ export type getPostsCommentsType = {
                   id: string;
                   body: string;
                   createdAt: any;
+                  order: number;
                   author: {
                       __typename?: "User";
                       id: string;
@@ -130,6 +136,7 @@ export type getPostsType = {
               id: string;
               body: string;
               createdAt: any;
+              order: number;
               author: {
                   __typename?: "User";
                   id: string;
@@ -141,6 +148,7 @@ export type getPostsType = {
                   id: string;
                   body: string;
                   createdAt: any;
+                  order: number;
                   author: {
                       __typename?: "User";
                       id: string;

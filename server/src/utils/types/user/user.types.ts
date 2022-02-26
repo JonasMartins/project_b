@@ -18,6 +18,7 @@ export interface userPostsCommentsRepliesRaw {
     reply_author_picture: string;
     reply_author_name: string;
     reply_author_id: string;
+    reply_order: number;
     reply_created_at: Date;
     p_id: string;
     p_body: string;
@@ -33,6 +34,7 @@ export interface userPostsCommentsRepliesRaw {
     comment_id: string;
     comment_body: string;
     comment_created_at: Date;
+    comment_order: number;
     comment_author_picture: string;
     comment_author_name: string;
     comment_author_id: string;
@@ -103,6 +105,7 @@ export const mapGetUserByIdRaw = async (
             comment_author.name = rawObj.comment_author_name;
             comment_author.picture = rawObj.comment_author_picture;
             comment.author = comment_author;
+            comment.order = rawObj.comment_order;
 
             let _replies = new Array<Comment>();
             comment.replies = _replies;
@@ -111,6 +114,7 @@ export const mapGetUserByIdRaw = async (
                 let reply = new Comment();
                 reply.id = rawObj.reply_id;
                 reply.body = rawObj.reply_body;
+                reply.order = rawObj.reply_order;
                 reply.createdAt = rawObj.reply_created_at;
                 reply_author.id = rawObj.reply_author_id;
                 reply_author.name = rawObj.reply_author_name;

@@ -1,0 +1,17 @@
+mutation CreateComment($options: CommentValidator!, $parentId: String) {
+    createComment(options: $options, parentId: $parentId) {
+        errors {
+            message
+        }
+        comment {
+            id
+            body
+            createdAt
+            author {
+                id
+                name
+                picture
+            }
+        }
+    }
+}

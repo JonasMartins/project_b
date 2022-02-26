@@ -26,6 +26,7 @@ query GetPosts($offset: Float!, $limit: Float!) {
             comments {
                 id
                 body
+                order
                 createdAt
                 author {
                     id

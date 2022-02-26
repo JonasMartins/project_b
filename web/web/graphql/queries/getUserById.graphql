@@ -37,6 +37,7 @@ query GetUserById($post_limit: Float, $post_offset: Float, $id: String!) {
                     id
                     body
                     createdAt
+                    order
                     author {
                         id
                         name

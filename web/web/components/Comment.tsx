@@ -15,8 +15,12 @@ import {
     Stack,
     FormErrorMessage,
     useColorMode,
+    IconButton,
+    Tooltip,
+    useToast,
+    Box,
 } from "@chakra-ui/react";
-import React, { ComponentProps, useEffect, useState } from "react";
+import React, { ComponentProps, useEffect, useState, useRef } from "react";
 import { formatRelative } from "date-fns";
 import { NextPage } from "next";
 import { BsChatDots } from "react-icons/bs";
@@ -30,6 +34,8 @@ import * as Yup from "yup";
 import { Field, Form, Formik, FormikProps } from "formik";
 import { useUser } from "utils/hooks/useUser";
 import BeatLoaderCustom from "components/Layout/BeatLoaderCustom";
+import { CgMailReply } from "react-icons/cg";
+import { useCreateCommentMutation } from "generated/graphql";
 
 const CommentSchema = Yup.object().shape({
     body: Yup.string().required("Required"),
@@ -37,6 +43,7 @@ const CommentSchema = Yup.object().shape({
 
 interface CommentProps {
     comments: getPostsCommentsType;
+    postId: string;
 }
 
 interface FormValues {
@@ -45,22 +52,10 @@ interface FormValues {
 
 type TextAreaProps = ComponentProps<typeof Textarea>;
 
-const ChakraTextArea = (props: TextAreaProps) => {
-    return (
-        <Textarea
-            {...props}
-            resize="vertical"
-            borderRadius="1em"
-            size={"sm"}
-            variant="filled"
-            p={2}
-            mt={3}
-        />
-    );
-};
-
-const Comment: NextPage<CommentProps> = ({ comments }) => {
-    const { isOpen, onToggle } = useDisclosure();
+const Comment: NextPage<CommentProps> = ({ comments, postId }) => {
+    const toast = useToast();
+    const showCommentsDisclosure = useDisclosure();
+    const showRepliesDisclosure = useDisclosure();
     const initialValues: FormValues = {
         body: "",
     };
@@ -69,32 +64,89 @@ const Comment: NextPage<CommentProps> = ({ comments }) => {
     const [stateComments, setStateComments] = useState<
         Array<singlePostComment>
     >([]);
+    const [commentParentId, setCommentParentId] = useState("");
+    const inputCommentRef = useRef<HTMLTextAreaElement>(null);
+    const [createComment, resultCreateComment] = useCreateCommentMutation({});
 
     const user = useUser();
 
-    const handleAddNewComment = (body: string) => {
+    const ChakraTextArea = (props: TextAreaProps) => {
+        return (
+            <Textarea
+                {...props}
+                ref={inputCommentRef}
+                resize="vertical"
+                borderRadius="1em"
+                size={"sm"}
+                variant="filled"
+                p={2}
+                mt={3}
+            />
+        );
+    };
+
+    const focusOnCommentInput = () => {
+        if (inputCommentRef.current) {
+            inputCommentRef.current.scrollIntoView({
+                behavior: "smooth",
+                block: "nearest",
+                inline: "end",
+            });
+            inputCommentRef.current.focus();
+        }
+    };
+
+    const handleAddNewComment = async (body: string) => {
         if (user) {
-            let newComment: singlePostComment = {
-                id: "123",
-                body,
-                createdAt: new Date(),
-                author: user,
-                replies: [],
-            };
-            setTimeout(() => {
-                // adding on top
-                setStateComments((prevComments) => [
-                    newComment,
-                    ...prevComments,
-                ]);
-                setLoadEffect(false);
-            }, 500);
+            const result = await createComment({
+                variables: {
+                    options: {
+                        body,
+                        authorId: user.id,
+                        postId,
+                    },
+                    parentId: commentParentId,
+                },
+                onError: () => {
+                    toast({
+                        title: "Error",
+                        description: "Something went wrong",
+                        status: "error",
+                        duration: 8000,
+                        isClosable: true,
+                        position: "top",
+                    });
+                    console.error(resultCreateComment.error);
+                },
+            });
+
+            if (result.data?.createComment?.comment) {
+                const { comment } = result.data.createComment;
+                let newComment: singlePostComment = {
+                    id: comment.id,
+                    body: comment.body,
+                    createdAt: comment.createdAt,
+                    author: comment.author,
+                    replies: [],
+                    order: commentParentId ? 2 : 1,
+                };
+                setTimeout(() => {
+                    // adding on top
+                    setStateComments((prevComments) => [
+                        newComment,
+                        ...prevComments,
+                    ]);
+                    setLoadEffect(false);
+                }, 500);
+            }
         }
     };
 
     useEffect(() => {
         comments?.comments?.map((x) => {
-            setStateComments((prevComments) => [...prevComments, x]);
+            if (x.order === 1) {
+                setStateComments((prevComments) => [...prevComments, x]);
+            }
         });
     }, []);
 
@@ -104,13 +156,13 @@ const Comment: NextPage<CommentProps> = ({ comments }) => {
                 <Button
                     aria-label="comments"
                     leftIcon={<BsChatDots />}
-                    onClick={onToggle}
+                    onClick={showCommentsDisclosure.onToggle}
                     mb={3}
                 >
                     {stateComments.length ?? 0}
                 </Button>
-                <Collapse in={isOpen} animateOpacity>
-                    {loadEffect ? (
+                <Collapse in={showCommentsDisclosure.isOpen} animateOpacity>
+                    {loadEffect || resultCreateComment.loading ? (
                         <BeatLoaderCustom />
                     ) : (
                         stateComments.map((x) => (
@@ -131,20 +183,38 @@ const Comment: NextPage<CommentProps> = ({ comments }) => {
                                             justifyContent="space-between"
                                             width="100%"
                                         >
-                                            <Text
-                                                fontWeight="thin"
-                                                fontSize="sm"
-                                                textAlign="end"
-                                            >
-                                                Posted At:{" "}
-                                                {formatRelative(
-                                                    new Date(x.createdAt),
-                                                    new Date()
-                                                )}
-                                            </Text>
+                                            <Flex alignItems="center">
+                                                <Tooltip
+                                                    aria-label="reply to comment"
+                                                    label="Reply to this comment"
+                                                >
+                                                    <IconButton
+                                                        aria-label="reply"
+                                                        icon={<CgMailReply />}
+                                                        onClick={() => {
+                                                            focusOnCommentInput();
+                                                            setCommentParentId(
+                                                                x.id
+                                                            );
+                                                        }}
+                                                    />
+                                                </Tooltip>
+                                                <Text
+                                                    fontWeight="thin"
+                                                    fontSize="sm"
+                                                    textAlign="end"
+                                                    ml={3}
+                                                >
+                                                    Posted At:{" "}
+                                                    {formatRelative(
+                                                        new Date(x.createdAt),
+                                                        new Date()
+                                                    )}
+                                                </Text>
+                                            </Flex>
                                             <PopoverTrigger>
                                                 <Image
-                                                    mr={2}
+                                                    mr={4}
                                                     borderRadius="full"
                                                     boxSize="32px"
                                                     src={getServerPathImage(
@@ -153,6 +223,7 @@ const Comment: NextPage<CommentProps> = ({ comments }) => {
                                                 />
                                             </PopoverTrigger>
                                         </Flex>
+
                                         <PopoverContent>
                                             <PopoverArrow />
                                             <PopoverBody>
@@ -183,12 +254,65 @@ const Comment: NextPage<CommentProps> = ({ comments }) => {
                                         </PopoverContent>
                                     </Popover>
                                 </Flex>
+                                {x.replies.length ? (
+                                    <Flex flexDir="column">
+                                        <Flex alignSelf="flex-end">
+                                            <Button
+                                                onClick={
+                                                    showRepliesDisclosure.onToggle
+                                                }
+                                            >{`Replies ${x.replies.length}`}</Button>
+                                        </Flex>
+                                        <Collapse
+                                            in={showRepliesDisclosure.isOpen}
+                                            animateOpacity
+                                        >
+                                            {x.replies.map((y) => (
+                                                <Flex
+                                                    boxShadow="md"
+                                                    borderRadius="1rem"
+                                                    flexDir="column"
+                                                    p={2}
+                                                    ml={2}
+                                                >
+                                                    <Text>{y.body}</Text>
+                                                    <Flex justifyContent="space-between">
+                                                        <Text
+                                                            fontWeight="thin"
+                                                            fontSize="sm"
+                                                            textAlign="end"
+                                                            mt={2}
+                                                        >
+                                                            Posted At:{" "}
+                                                            {formatRelative(
+                                                                new Date(
+                                                                    y.createdAt
+                                                                ),
+                                                                new Date()
+                                                            )}
+                                                        </Text>
+                                                        <Image
+                                                            mr={4}
+                                                            borderRadius="full"
+                                                            boxSize="32px"
+                                                            src={getServerPathImage(
+                                                                y.author.picture
+                                                            )}
+                                                        />
+                                                    </Flex>
+                                                </Flex>
+                                            ))}
+                                        </Collapse>
+                                    </Flex>
+                                ) : (
+                                    <></>
+                                )}
                             </Flex>
                         ))
                     )}
                     <Formik
                         initialValues={initialValues}
-                        onSubmit={(values) => {
+                        onSubmit={async (values) => {
                             setLoadEffect(true);
                             console.log(values);
                             handleAddNewComment(values.body);
