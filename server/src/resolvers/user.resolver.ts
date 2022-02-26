@@ -8,7 +8,6 @@ import {
     ObjectType,
     Query,
     Resolver,
-    Publisher,
     PubSub,
     Subscription,
     Root,
