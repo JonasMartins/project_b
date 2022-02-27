@@ -17,7 +17,6 @@ import { Notification } from "./../database/entity/notification.entity";
 import { User } from "./../database/entity/user.entity";
 import { genericError } from "./../helpers/generalAuxMethods";
 import { GeneralResponse, UserResponse } from "./../helpers/generalTypeReturns";
-import e from "express";
 
 @ObjectType()
 class NotificationRespose {
