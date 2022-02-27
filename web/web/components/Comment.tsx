@@ -315,6 +315,7 @@ const Comment: NextPage<CommentProps> = ({ comments, post }) => {
                                 boxShadow="md"
                                 borderRadius="1rem"
                                 flexDir="column"
+                                key={x.id}
                             >
                                 <Text>{x.body}</Text>
                                 <Flex>
@@ -417,6 +418,7 @@ const Comment: NextPage<CommentProps> = ({ comments, post }) => {
                                                     flexDir="column"
                                                     p={2}
                                                     ml={2}
+                                                    key={y.id}
                                                 >
                                                     <Text>{y.body}</Text>
                                                     <Flex justifyContent="space-between">

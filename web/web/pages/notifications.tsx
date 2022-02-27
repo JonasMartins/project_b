@@ -27,6 +27,7 @@ import {
     notificationType,
     userNotificationsType,
 } from "utils/types/user/user.types";
+import update from "immutability-helper";
 
 interface notificationsProps {}
 
@@ -57,9 +58,32 @@ const Notifications: NextPage = () => {
             });
 
             if (news.data?.getUserNotifications?.user) {
-                console.log(news.data.getUserNotifications.user);
+                // console.log(news.data.getUserNotifications.user);
                 setUserNotifications(news.data.getUserNotifications.user);
             }
+        }
+    };
+
+    const addNewNotificationCallback = (
+        notification: notificationType
+    ): void => {
+        console.log("new noti ", notification);
+        let newNotificationsAux = update(userNotifications, {
+            relatedNotifications: { $push: [notification] },
+        });
+
+        let orderedNotifications =
+            newNotificationsAux?.relatedNotifications?.sort(
+                (a: notificationType, b: notificationType) =>
+                    a.createdAt < b.createdAt ? 1 : -1
+            );
+
+        if (orderedNotifications) {
+            let finalNewNotificationList = update(newNotificationsAux, {
+                relatedNotifications: { $set: orderedNotifications },
+            });
+            console.log("new stat ", newNotificationsAux);
+            setUserNotifications(finalNewNotificationList);
         }
     };
 
@@ -172,7 +196,9 @@ const Notifications: NextPage = () => {
                             boxShadow="lg"
                             borderRadius="1rem"
                         >
-                            <RightPanel />
+                            <RightPanel
+                                addNewNotification={addNewNotificationCallback}
+                            />
                         </GridItem>
                         <GridItem />
                     </Grid>

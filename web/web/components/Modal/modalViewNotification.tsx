@@ -39,7 +39,6 @@ const ModalViewNotification: NextPage<ModalViewNotificationProps> = ({
     notification,
 }) => {
     const { colorMode } = useColorMode();
-    //const bgColor = { light: "gray.200", dark: "gray.700" };
 
     return (
         <Modal

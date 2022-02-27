@@ -789,7 +789,7 @@ export type NewMessageNotificationSubscription = { __typename?: 'Subscription', 
 export type NewNotificationSubscriptionSubscriptionVariables = Exact<{ [key: string]: never; }>;
 
 
-export type NewNotificationSubscriptionSubscription = { __typename?: 'Subscription', newNotificationSubscription: { __typename?: 'NotificationSubscription', notification?: { __typename?: 'Notification', id: string, description: string, userSeen: Array<string>, relatedUsers: Array<{ __typename?: 'User', id: string, name: string, picture?: string | null | undefined }> } | null | undefined } };
+export type NewNotificationSubscriptionSubscription = { __typename?: 'Subscription', newNotificationSubscription: { __typename?: 'NotificationSubscription', notification?: { __typename?: 'Notification', id: string, description: string, userSeen: Array<string>, createdAt: any, creator: { __typename?: 'User', id: string, name: string, picture?: string | null | undefined }, relatedUsers: Array<{ __typename?: 'User', id: string, name: string, picture?: string | null | undefined }> } | null | undefined } };
 
 export type NewRequestSubscriptionSubscriptionVariables = Exact<{ [key: string]: never; }>;
 
@@ -2197,6 +2197,12 @@ export const NewNotificationSubscriptionDocument = gql`
       id
       description
       userSeen
+      createdAt
+      creator {
+        id
+        name
+        picture
+      }
       relatedUsers {
         id
         name

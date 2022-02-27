@@ -4,6 +4,12 @@ subscription NewNotificationSubscription {
             id
             description
             userSeen
+            createdAt
+            creator {
+                id
+                name
+                picture
+            }
             relatedUsers {
                 id
                 name
