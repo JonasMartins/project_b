@@ -158,7 +158,9 @@ const LeftPanel: NextPage<LeftPanelProps> = ({}) => {
                             aria-label="news"
                             size="lg"
                             icon={<BsFillBellFill />}
-                            onClick={() => {}}
+                            onClick={() => {
+                                router.push("/notifications");
+                            }}
                         />
                     </Tooltip>
                 </GridItem>

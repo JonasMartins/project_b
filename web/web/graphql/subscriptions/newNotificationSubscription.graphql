@@ -1,0 +1,14 @@
+subscription NewNotificationSubscription {
+    newNotificationSubscription {
+        notification {
+            id
+            description
+            userSeen
+            realtedUsers {
+                id
+                name
+                picture
+            }
+        }
+    }
+}

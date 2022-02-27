@@ -96,3 +96,27 @@ export interface userConnectionType {
     name: string;
     picture?: string | null | undefined;
 }
+
+export type userNotificationsType =
+    | {
+          __typename?: "User";
+          id: string;
+          relatedNotifications?:
+              | Array<{
+                    __typename?: "Notification";
+                    id: string;
+                    description: string;
+                    createdAt: any;
+                    userSeen: Array<string>;
+                    creator: {
+                        __typename?: "User";
+                        id: string;
+                        name: string;
+                        picture?: string | null | undefined;
+                    };
+                }>
+              | null
+              | undefined;
+      }
+    | null
+    | undefined;

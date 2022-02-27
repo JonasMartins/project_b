@@ -1,0 +1,21 @@
+query GetUserNotifications($userId: String!, $offset: Float, $limit: Float) {
+    getUserNotifications(userId: $userId, offset: $offset, limit: $limit) {
+        errors {
+            message
+        }
+        user {
+            id
+            relatedNotifications {
+                id
+                description
+                createdAt
+                creator {
+                    id
+                    name
+                    picture
+                }
+                userSeen
+            }
+        }
+    }
+}

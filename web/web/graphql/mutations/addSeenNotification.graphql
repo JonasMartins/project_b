@@ -1,0 +1,8 @@
+mutation AddSeenNotification($userId: String!, $notificationId: String!) {
+    addSeenNotification(userId: $userId, notificationId: $notificationId) {
+        errors {
+            message
+        }
+        done
+    }
+}
