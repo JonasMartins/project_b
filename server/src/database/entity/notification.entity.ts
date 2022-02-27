@@ -25,7 +25,7 @@ export class Notification extends Base {
         joinColumns: [{ name: "notification_id" }],
         inverseJoinColumns: [{ name: "user_id" }],
     })
-    public realtedUsers!: User[];
+    public relatedUsers!: User[];
 
     @Field(() => [String])
     @Column({ type: "text", array: true, default: [] })

@@ -16,6 +16,7 @@ import {
     useGetUserPendingInvitationsCountLazyQuery,
     useGetUserUnseenMessagesLazyQuery,
     useNewRequestSubscriptionSubscription,
+    useGetCountUnsawUserNotificationsLazyQuery,
 } from "generated/graphql";
 import type { NextPage } from "next";
 import React, { useCallback, useEffect, useState } from "react";
@@ -62,6 +63,7 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
         setCountUserInvitations,
         setCountNewMessages,
         setCountChatUnsawMessages,
+        setCountUnsawNotifications,
     } = bindActionCreators(actionCreators, dispatch);
 
     const onSetCountUserInvitations = (count: number) => {
@@ -79,6 +81,11 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
 
     const [getUserUnseenMessages, resultGetUserUnseenMessages] =
         useGetUserUnseenMessagesLazyQuery({
+            fetchPolicy: "cache-and-network",
+        });
+
+    const [getCountUnsawNotifications, resultGetCountUnsawNotifications] =
+        useGetCountUnsawUserNotificationsLazyQuery({
             fetchPolicy: "cache-and-network",
         });
 
@@ -185,6 +192,27 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
                 },
             });
 
+            const countUnsawNotifications = await getCountUnsawNotifications({
+                variables: {
+                    userId: user.id,
+                },
+            });
+
+            if (
+                countUnsawNotifications.data?.getCountUnsawUserNotifications
+                    ?.count
+            ) {
+                console.log(
+                    countUnsawNotifications.data.getCountUnsawUserNotifications
+                        .count
+                );
+
+                setCountUnsawNotifications(
+                    countUnsawNotifications.data.getCountUnsawUserNotifications
+                        .count
+                );
+            }
+
             if (userUnseenMessages.data?.getUserUnseenMessages?.user?.chats) {
                 let unsawMessagesCountByChat: chatsUnseeMessages = [];
 
@@ -250,6 +278,7 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
         hasSubmittedPost,
         resultgetCountPendingInvitations.loading,
         resultGetUserUnseenMessages.loading,
+        resultGetCountUnsawNotifications.loading,
         onSetCountUserInvitations,
     ]);
 

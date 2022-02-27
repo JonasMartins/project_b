@@ -1,39 +1,50 @@
-import type { NextPage } from "next";
-import Container from "components/Container";
 import {
-    Flex,
     Box,
+    Circle,
+    Flex,
     Grid,
     GridItem,
-    useColorMode,
-    Text,
     Image,
-    Circle,
+    Text,
+    useColorMode,
+    useDisclosure,
 } from "@chakra-ui/react";
+import Container from "components/Container";
+import BeatLoaderCustom from "components/Layout/BeatLoaderCustom";
 import Footer from "components/Layout/Footer";
 import LeftPanel from "components/Layout/LeftPanel";
 import NavBar from "components/Layout/NavBar";
 import RightPanel from "components/Layout/RightPanel";
-import { useGetUserNotificationsLazyQuery } from "generated/graphql";
-import { useUser } from "utils/hooks/useUser";
-import React, { useEffect, useState } from "react";
-import { userNotificationsType } from "utils/types/user/user.types";
-import BeatLoaderCustom from "components/Layout/BeatLoaderCustom";
+import ModalViewNotification from "components/Modal/modalViewNotification";
 import { formatRelative } from "date-fns";
-import { getServerPathImage, truncateString } from "utils/generalAuxFunctions";
+import { useGetUserNotificationsLazyQuery } from "generated/graphql";
+import type { NextPage } from "next";
+import React, { useEffect, useState } from "react";
 import { BsFillBellFill } from "react-icons/bs";
+import { getServerPathImage } from "utils/generalAuxFunctions";
+import { useUser } from "utils/hooks/useUser";
+import {
+    notificationType,
+    userNotificationsType,
+} from "utils/types/user/user.types";
 
 interface notificationsProps {}
 
 const Notifications: NextPage = () => {
     const user = useUser();
+    const modalNotification = useDisclosure();
     const { colorMode } = useColorMode();
     const bgColor = { light: "gray.200", dark: "gray.700" };
 
     const [userNotifications, setUserNotifications] =
         useState<userNotificationsType>(null);
     const [getUserNotifications, resultGetUserNotifications] =
-        useGetUserNotificationsLazyQuery({});
+        useGetUserNotificationsLazyQuery({
+            fetchPolicy: "cache-and-network",
+        });
+
+    const [selectedNotification, setSelectedNotification] =
+        useState<notificationType | null>(null);
 
     const handlePageInfo = async () => {
         if (user?.id) {
@@ -46,6 +57,7 @@ const Notifications: NextPage = () => {
             });
 
             if (news.data?.getUserNotifications?.user) {
+                console.log(news.data.getUserNotifications.user);
                 setUserNotifications(news.data.getUserNotifications.user);
             }
         }
@@ -102,50 +114,53 @@ const Notifications: NextPage = () => {
                                                     ? "grey.800"
                                                     : "white"
                                             }
+                                            cursor="pointer"
+                                            onClick={() => {
+                                                setSelectedNotification(x);
+                                                modalNotification.onOpen();
+                                            }}
                                         >
-                                            <Flex justifyContent="flex-end">
-                                                <Circle
-                                                    size="32px"
-                                                    bg={
-                                                        x.userSeen.includes(
-                                                            user?.id || ""
-                                                        )
-                                                            ? "grey"
-                                                            : "red"
-                                                    }
-                                                    color="white"
-                                                    mr={4}
-                                                >
-                                                    <BsFillBellFill />
-                                                </Circle>
-                                            </Flex>
-                                            <Text>
-                                                {truncateString(
-                                                    x.description,
-                                                    10
-                                                )}
-                                            </Text>
                                             <Flex justifyContent="space-between">
-                                                <Text
-                                                    fontWeight="thin"
-                                                    fontSize="sm"
-                                                    textAlign="end"
-                                                    mt={2}
-                                                >
-                                                    Created At:{" "}
-                                                    {formatRelative(
-                                                        new Date(x.createdAt),
-                                                        new Date()
-                                                    )}
-                                                </Text>
-                                                <Image
-                                                    mr={4}
-                                                    borderRadius="full"
-                                                    boxSize="32px"
-                                                    src={getServerPathImage(
-                                                        x.creator.picture
-                                                    )}
-                                                />
+                                                <Flex alignItems="center">
+                                                    <Image
+                                                        mr={4}
+                                                        borderRadius="full"
+                                                        boxSize="32px"
+                                                        src={getServerPathImage(
+                                                            x.creator.picture
+                                                        )}
+                                                    />
+                                                    <Text
+                                                        fontWeight="thin"
+                                                        fontSize="sm"
+                                                        textAlign="end"
+                                                        mt={2}
+                                                    >
+                                                        Created At:{" "}
+                                                        {formatRelative(
+                                                            new Date(
+                                                                x.createdAt
+                                                            ),
+                                                            new Date()
+                                                        )}
+                                                    </Text>
+                                                </Flex>
+                                                <Flex>
+                                                    <Circle
+                                                        size="32px"
+                                                        bg={
+                                                            x.userSeen.includes(
+                                                                user?.id || ""
+                                                            )
+                                                                ? "grey"
+                                                                : "red"
+                                                        }
+                                                        color="white"
+                                                        mr={4}
+                                                    >
+                                                        <BsFillBellFill />
+                                                    </Circle>
+                                                </Flex>
                                             </Flex>
                                         </Flex>
                                     )
@@ -166,6 +181,12 @@ const Notifications: NextPage = () => {
                     <Footer />
                 </Box>
             </Flex>
+            <ModalViewNotification
+                isOpen={modalNotification.isOpen}
+                onClose={modalNotification.onClose}
+                user={user}
+                notification={selectedNotification}
+            />
         </Container>
     );
 };

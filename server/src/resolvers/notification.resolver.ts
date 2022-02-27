@@ -16,7 +16,11 @@ import { Context } from "./../context";
 import { Notification } from "./../database/entity/notification.entity";
 import { User } from "./../database/entity/user.entity";
 import { genericError } from "./../helpers/generalAuxMethods";
-import { GeneralResponse, UserResponse } from "./../helpers/generalTypeReturns";
+import {
+    GeneralResponse,
+    UserResponse,
+    GeneralCountType,
+} from "./../helpers/generalTypeReturns";
 
 @ObjectType()
 class NotificationRespose {
@@ -44,6 +48,43 @@ class NotificationSubscription {
 
 @Resolver()
 export class NotificationResolver {
+    @Query(() => GeneralCountType)
+    async getCountUnsawUserNotifications(
+        @Arg("userId") userId: string,
+        @Ctx() { em }: Context
+    ): Promise<GeneralCountType> {
+        try {
+            /**
+             * Count of notifications from given userId,
+             * which that notification field "user_seen"
+             * does not contain that partilar user id,
+             * in other words, that user do not saw the
+             * notification yet, the count gives the amount
+             * of it
+             */
+            const qb = await em
+                .getRepository(Notification)
+                .createQueryBuilder("n")
+                .leftJoinAndSelect("n.relatedUsers", "u")
+                .select(["COUNT(n.id)"])
+                .where("u.id = :id", { id: userId })
+                .andWhere("NOT (:id = ANY (user_seen))", { id: userId });
+
+            const notifications = await qb.execute();
+
+            return { count: notifications[0].count };
+        } catch (e) {
+            return {
+                errors: genericError(
+                    "-",
+                    "getCountUnsawUserNotifications",
+                    __filename,
+                    `Could not get the data, details: ${e.message}`
+                ),
+            };
+        }
+    }
+
     @Query(() => UserResponse)
     async getUserNotifications(
         @Arg("limit", () => Number, { nullable: true }) limit: number,
@@ -221,7 +262,7 @@ export class NotificationResolver {
                 .values(user_notifications)
                 .execute();
 
-            notification.realtedUsers = usersRelated;
+            notification.relatedUsers = usersRelated;
 
             await pubSub.publish("NOTIFICATION_CREATED", {
                 notification: {

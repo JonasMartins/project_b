@@ -24,7 +24,10 @@ import update from "immutability-helper";
 import BeatLoaderCustom from "components/Layout/BeatLoaderCustom";
 import { formatRelative } from "date-fns";
 import { Field, Form, Formik, FormikProps } from "formik";
-import { useCreateCommentMutation } from "generated/graphql";
+import {
+    useCreateCommentMutation,
+    useCreateNotificationMutation,
+} from "generated/graphql";
 import { NextPage } from "next";
 import NexLink from "next/link";
 import React, { ComponentProps, useEffect, useRef, useState } from "react";
@@ -34,6 +37,7 @@ import { getServerPathImage } from "utils/generalAuxFunctions";
 import { useUser } from "utils/hooks/useUser";
 import {
     getPostsCommentsType,
+    getPostsType,
     singlePostComment,
 } from "utils/types/post/post.types";
 import * as Yup from "yup";
@@ -48,7 +52,7 @@ interface RepliesToggle {
 
 interface CommentProps {
     comments: getPostsCommentsType;
-    postId: string;
+    post: getPostsType;
 }
 
 interface FormValues {
@@ -57,7 +61,7 @@ interface FormValues {
 
 type TextAreaProps = ComponentProps<typeof Textarea>;
 
-const Comment: NextPage<CommentProps> = ({ comments, postId }) => {
+const Comment: NextPage<CommentProps> = ({ comments, post }) => {
     const user = useUser();
     const toast = useToast();
     const showCommentsDisclosure = useDisclosure();
@@ -73,6 +77,8 @@ const Comment: NextPage<CommentProps> = ({ comments, postId }) => {
         useState<singlePostComment | null>(null);
     const inputCommentRef = useRef<HTMLTextAreaElement>(null);
     const [createComment, resultCreateComment] = useCreateCommentMutation({});
+    const [createNotification, resultCreateNotification] =
+        useCreateNotificationMutation({});
     const [mapRepliesOpen, setMapRepliesOpen] = useState<RepliesToggle>({});
 
     const ChakraTextArea = (props: TextAreaProps) => {
@@ -128,7 +134,7 @@ const Comment: NextPage<CommentProps> = ({ comments, postId }) => {
                     options: {
                         body,
                         authorId: user.id,
-                        postId,
+                        postId: post.id,
                     },
                     parentId: parentComment?.id,
                 },
@@ -144,6 +150,42 @@ const Comment: NextPage<CommentProps> = ({ comments, postId }) => {
                     console.error(resultCreateComment.error);
                 },
             });
+
+            if (parentComment?.id) {
+                /**
+                 * User replying to his own comment, does not create
+                 * a notification
+                 */
+                if (user.id !== parentComment.author.id) {
+                    await createNotification({
+                        variables: {
+                            creatorId: user.id,
+                            description: `${user.name} just replied to your comment: "${parentComment.body}" in the post: "${post.body}" `,
+                            usersRelatedIds: [parentComment.author.id],
+                        },
+                        onError: () => {
+                            console.error(resultCreateNotification.error);
+                        },
+                    });
+                }
+            } else {
+                /**
+                 * Only creates a notification if the comment is not from
+                 * the same user that created the post.
+                 */
+                if (user.id !== post.creator.id) {
+                    await createNotification({
+                        variables: {
+                            creatorId: user.id,
+                            description: `${user.name} just commented on your post: "${post.body}" `,
+                            usersRelatedIds: [post.creator.id],
+                        },
+                        onError: () => {
+                            console.error(resultCreateNotification.error);
+                        },
+                    });
+                }
+            }
 
             if (result.data?.createComment?.comment) {
                 const { comment } = result.data.createComment;
@@ -447,7 +489,6 @@ const Comment: NextPage<CommentProps> = ({ comments, postId }) => {
                         initialValues={initialValues}
                         onSubmit={async (values) => {
                             setLoadEffect(true);
-                            console.log(values);
                             handleAddNewComment(values.body);
                         }}
                         validationSchema={CommentSchema}

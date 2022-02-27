@@ -1,0 +1,8 @@
+query GetCountUnsawUserNotifications($userId: String!) {
+    getCountUnsawUserNotifications(userId: $userId) {
+        errors {
+            message
+        }
+        count
+    }
+}

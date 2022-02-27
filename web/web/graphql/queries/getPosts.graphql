@@ -37,6 +37,7 @@ query GetPosts($offset: Float!, $limit: Float!) {
                     id
                     body
                     createdAt
+                    order
                     author {
                         id
                         name

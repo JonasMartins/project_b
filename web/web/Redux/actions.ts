@@ -42,6 +42,15 @@ export type CountUserInvitations = {
     payload: number;
 };
 
+export type SetCountUnsawNotifications = {
+    type: typeof GlobalTypes.SET_COUNT_UNSAW_NOTIFICATIONS;
+    payload: number;
+};
+
+export type CountUnsawNotifications = {
+    type: typeof GlobalTypes.COUNT_UNSAW_NOTIFICATIONS;
+    payload: number;
+};
 export type CountNewMessages = {
     type: typeof GlobalTypes.COUNT_NEW_MESSAGES;
     payload: number;
@@ -73,6 +82,8 @@ export type Action =
     | CountNewMessages
     | SetCountUnsawMessagesByChat
     | AddMessageToStore
-    | ClearMessagesFromStore;
+    | ClearMessagesFromStore
+    | CountUnsawNotifications
+    | SetCountUnsawNotifications;
 
 export * as actionCreators from "Redux/actionCreators";

@@ -12,6 +12,7 @@ export interface globalState {
     userConnections: GetUserConnectionsQuery | null;
     countUserInvitations: number;
     countUserNewMessages: number;
+    countUnsawNotifications: number;
     hasCreatedEmotion: boolean;
     createdEmotion: postEmotion | null;
     chatsCountUnsawMessages: chatsUnseeMessages | null;
@@ -23,6 +24,7 @@ const initialState = {
     hasUpdateUserSettings: false,
     userConnections: null,
     countUserInvitations: 0,
+    countUnsawNotifications: 0,
     countUserNewMessages: 0,
     hasCreatedEmotion: false,
     createdEmotion: null,
@@ -58,6 +60,9 @@ export const globalReducer = (
         }
         case GlobalTypes.COUNT_NEW_MESSAGES: {
             return { ...state, countUserNewMessages: action.payload };
+        }
+        case GlobalTypes.SET_COUNT_UNSAW_NOTIFICATIONS: {
+            return { ...state, countUnsawNotifications: action.payload };
         }
         case GlobalTypes.SET_CHATS_COUNT_UNSAW_MESSAGES: {
             return { ...state, chatsCountUnsawMessages: action.payload };

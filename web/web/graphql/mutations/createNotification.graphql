@@ -1,0 +1,18 @@
+mutation CreateNotification(
+    $creatorId: String!
+    $description: String!
+    $usersRelatedIds: [String!]!
+) {
+    createNotification(
+        creatorId: $creatorId
+        description: $description
+        usersRelatedIds: $usersRelatedIds
+    ) {
+        errors {
+            message
+        }
+        notification {
+            id
+        }
+    }
+}

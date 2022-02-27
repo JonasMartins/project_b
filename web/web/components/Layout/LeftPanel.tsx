@@ -40,6 +40,10 @@ const LeftPanel: NextPage<LeftPanelProps> = ({}) => {
         (state: RootState) => state.globalReducer.userConnections
     );
 
+    const countUnsawNotifications = useSelector(
+        (state: RootState) => state.globalReducer.countUnsawNotifications
+    );
+
     const countUserNewMessages = useSelector(
         (state: RootState) => state.globalReducer.countUserNewMessages
     );
@@ -164,7 +168,15 @@ const LeftPanel: NextPage<LeftPanelProps> = ({}) => {
                         />
                     </Tooltip>
                 </GridItem>
-                <GridItem css={css(gridCell)} />
+                <GridItem css={css(gridCell)}>
+                    {countUnsawNotifications ? (
+                        <Circle size="25px" bg="red.400" color="white">
+                            {countUnsawNotifications}
+                        </Circle>
+                    ) : (
+                        <></>
+                    )}
+                </GridItem>
 
                 <GridItem />
                 <GridItem css={css(gridCell)}>

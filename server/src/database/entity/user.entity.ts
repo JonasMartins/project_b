@@ -67,7 +67,7 @@ export class User extends Base {
     public nofiticationsCreated: Notification[];
 
     @Field(() => [Notification], { nullable: true })
-    @ManyToMany(() => Notification, (notification) => notification.realtedUsers)
+    @ManyToMany(() => Notification, (notification) => notification.relatedUsers)
     @JoinTable({
         name: "user_notifications_notification",
         joinColumns: [{ name: "user_id" }],

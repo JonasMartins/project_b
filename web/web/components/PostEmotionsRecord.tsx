@@ -1,12 +1,9 @@
 import { useMutation } from "@apollo/client";
 import {
-    useColorMode,
-    Text,
     Button,
-    Tooltip,
     Flex,
-    Image as ChakraImage,
     IconButton,
+    Image as ChakraImage,
     Popover,
     PopoverArrow,
     PopoverBody,
@@ -14,23 +11,30 @@ import {
     PopoverContent,
     PopoverHeader,
     PopoverTrigger,
+    Text,
+    Tooltip,
+    useColorMode,
 } from "@chakra-ui/react";
 import {
-    DeleteEmotionDocument,
-    DeleteEmotionMutation,
-    EmotionType,
     CreateEmotionDocument,
     CreateEmotionMutation,
+    useCreateNotificationMutation,
+    EmotionType,
 } from "generated/graphql";
 import { NextPage } from "next";
+import NexLink from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { UserType } from "utils/hooks/useUser";
-import { getEmotionTypeIcon } from "utils/posts/postsUtils";
-import { emotion as emotionElement } from "utils/types/post/post.types";
+import { FaUserCheck } from "react-icons/fa";
+import { HiUserAdd } from "react-icons/hi";
 import { MdOutlineEmojiEmotions } from "react-icons/md";
+import BeatLoader from "react-spinners/BeatLoader";
+import { handleChangeEmotions } from "utils/emotions/auxFunctions";
+import { getServerPathImage } from "utils/generalAuxFunctions";
+import { UserType } from "utils/hooks/useUser";
 import {
     AngryFace,
     FireEmoji,
+    getEmotionTypeIcon,
     HeartEmoji,
     HeartEyeFace,
     PreyingHands,
@@ -42,13 +46,10 @@ import {
     ThumbsUp,
     VomitFace,
 } from "utils/posts/postsUtils";
-import { getPostsType } from "utils/types/post/post.types";
-import { getServerPathImage } from "utils/generalAuxFunctions";
-import BeatLoader from "react-spinners/BeatLoader";
-import { handleChangeEmotions } from "utils/emotions/auxFunctions";
-import NexLink from "next/link";
-import { HiUserAdd } from "react-icons/hi";
-import { FaUserCheck } from "react-icons/fa";
+import {
+    emotion as emotionElement,
+    getPostsType,
+} from "utils/types/post/post.types";
 
 interface PostEmotionsRecordProps {
     user: UserType;
@@ -129,6 +130,8 @@ const PostEmotionsRecord: NextPage<PostEmotionsRecordProps> = ({
     const [createEmotion, { error }] = useMutation<CreateEmotionMutation>(
         CreateEmotionDocument
     );
+    const [createNotification, resultCreateNotification] =
+        useCreateNotificationMutation();
 
     const handleCreateEmotion = async (type: EmotionType) => {
         setLoadEffect(true);
@@ -153,6 +156,23 @@ const PostEmotionsRecord: NextPage<PostEmotionsRecordProps> = ({
                     name: user?.name || "Doe",
                 },
             };
+
+            /**
+             * Ceates a notification of the post author
+             * is different from the user reacting to it
+             */
+            if (user && user.id !== post.creator.id) {
+                await createNotification({
+                    variables: {
+                        creatorId: user.id,
+                        description: `${user.name} just reacted to your post: "${post.body}"`,
+                        usersRelatedIds: [post.creator.id],
+                    },
+                    onError: () => {
+                        console.error(resultCreateNotification.error);
+                    },
+                });
+            }
 
             setTimeout(() => {
                 if (user?.id) {

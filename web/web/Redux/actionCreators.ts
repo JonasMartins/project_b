@@ -14,6 +14,15 @@ export const setHasCreatedEmotion = (hasCreated: boolean) => {
     };
 };
 
+export const setCountUnsawNotifications = (amount: number) => {
+    return (dispatch: Dispatch<Action>) => {
+        dispatch({
+            type: GlobalTypes.SET_COUNT_UNSAW_NOTIFICATIONS,
+            payload: amount,
+        });
+    };
+};
+
 export const AddNewMessageToStore = (newMessageId: string) => {
     return (dispatch: Dispatch<Action>) => {
         dispatch({
