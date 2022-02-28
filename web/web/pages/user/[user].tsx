@@ -41,25 +41,24 @@ const UserPage: NextPage<userPageProps> = () => {
     const bgColor = { light: "gray.200", dark: "gray.700" };
     const { colorMode } = useColorMode();
     const [userData, setUserData] = useState<userGetUserByIdType>(null);
-    const [getUserById, resultGetUserById] = useGetUserByIdLazyQuery({});
+    const [getUserById, resultGetUserById] = useGetUserByIdLazyQuery({
+        fetchPolicy: "cache-and-network",
+    });
     const [loadEffect, setLoadEffect] = useState(false);
 
-    const handleGetUserInfo = useCallback(
-        async (userId: string, postsOffset: number) => {
-            const user_data = await getUserById({
-                variables: {
-                    id: userId,
-                    post_limit: 5,
-                    post_offset: postsOffset,
-                },
-            });
+    const handleGetUserInfo = async (userId: string, postsOffset: number) => {
+        const user_data = await getUserById({
+            variables: {
+                id: userId,
+                post_limit: 5,
+                post_offset: postsOffset,
+            },
+        });
 
-            if (user_data.data?.getUserById?.user) {
-                setUserData(user_data.data.getUserById.user);
-            }
-        },
-        [user, resultGetUserById.data?.getUserById?.user?.id]
-    );
+        if (user_data.data?.getUserById?.user) {
+            setUserData(user_data.data.getUserById.user);
+        }
+    };
 
     const checkIfLoggedUserCanConnectToUser = (): boolean => {
         return false;
@@ -77,7 +76,7 @@ const UserPage: NextPage<userPageProps> = () => {
         return () => {
             clearTimeout(load);
         };
-    }, [user, resultGetUserById.loading, loggedUser?.id]);
+    }, [user, loggedUser?.id]);
 
     useEffect(() => {
         return () => {

@@ -176,6 +176,7 @@ const Connections: NextPage = () => {
                                         m={3}
                                         alignItems="center"
                                         key={u.id}
+                                        borderRadius="1rem"
                                     >
                                         <Skeleton isLoaded={!loadEffect}>
                                             <Flex alignItems="center">

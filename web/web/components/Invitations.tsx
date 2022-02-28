@@ -332,6 +332,7 @@ const Invitations: NextPage<InvitationsProps> = ({}) => {
                     alignItems="center"
                     key={connection.id}
                     bg={bgColor[colorMode]}
+                    borderRadius="1rem"
                 >
                     <Skeleton isLoaded={!loadEffect}>
                         <Flex alignItems="center">

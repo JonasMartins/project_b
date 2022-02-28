@@ -46,15 +46,17 @@ export const mapGetUserByIdRaw = async (
     let qbRaw: userPostsCommentsRepliesRaw[] = await qb.getRawMany();
 
     let posts: Post[] = [];
-    let reply_author = new User();
     let emotion_creator = new User();
-    let comment_author = new User();
     let post_creator = new User();
     let connections: User[] = [];
     let currentPostId = "";
     let currentConn = "";
+    let currentComment = "";
+    let currentEmotionId = "";
+    let currentCommentObj: Comment;
+    let commentsAux: Comment[] = [];
+    let post: Post = new Post();
 
-    let post: Post;
     qbRaw.forEach((rawObj) => {
         if (rawObj.u1_id !== currentConn) {
             currentConn = rawObj.u1_id;
@@ -62,29 +64,69 @@ export const mapGetUserByIdRaw = async (
             conn.id = rawObj.u1_id;
             conn.name = rawObj.u1_name;
             conn.picture = rawObj.u1_picture;
-
             connections.push(conn);
         }
 
-        if (rawObj.p_id !== currentPostId) {
-            post = new Post();
-            post.id = rawObj.p_id;
-            post.body = rawObj.p_body;
-            post.createdAt = rawObj.p_created_at;
-            post.files = rawObj.p_files;
-            post_creator.id = rawObj.user_id;
-            post_creator.name = rawObj.user_name;
-            post_creator.picture = rawObj.user_picture;
-            post.creator = post_creator;
-
-            let _comments = new Array<Comment>();
-            let _emotions = new Array<Emotion>();
-
-            post.comments = _comments;
-            post.emotions = _emotions;
+        if (rawObj.comment_id && rawObj.comment_id !== currentComment) {
+            if (currentComment.length) {
+                if (!commentsAux.find((x) => x.id === currentComment)) {
+                    commentsAux.push(currentCommentObj);
+                }
+            }
+            let comment_author = new User();
+            currentComment = rawObj.comment_id;
+            currentCommentObj = new Comment();
+            currentCommentObj.id = rawObj.comment_id;
+            currentCommentObj.body = rawObj.comment_body;
+            currentCommentObj.createdAt = rawObj.comment_created_at;
+            comment_author.id = rawObj.comment_author_id;
+            comment_author.name = rawObj.comment_author_name;
+            comment_author.picture = rawObj.comment_author_picture;
+            currentCommentObj.author = comment_author;
+            currentCommentObj.order = rawObj.comment_order;
+            let _replies = new Array<Comment>();
+            currentCommentObj.replies = _replies;
         }
 
-        if (rawObj.e_id) {
+        if (rawObj.reply_id) {
+            let reply = new Comment();
+            let reply_author = new User();
+            reply.id = rawObj.reply_id;
+            reply.body = rawObj.reply_body;
+            reply.order = rawObj.reply_order;
+            reply.createdAt = rawObj.reply_created_at;
+            reply_author.id = rawObj.reply_author_id;
+            reply_author.name = rawObj.reply_author_name;
+            reply_author.picture = rawObj.reply_author_picture;
+            reply.author = reply_author;
+            if (!currentCommentObj.replies.find((x) => x.id === reply.id)) {
+                currentCommentObj.replies.push(reply);
+            }
+        }
+
+        if (rawObj.p_id !== currentPostId) {
+            if (!posts.find((x) => x.id === currentPostId)) {
+                if (currentPostId.length) {
+                    posts.push(post);
+                }
+                currentPostId = rawObj.p_id;
+                post = new Post();
+                post.id = rawObj.p_id;
+                post.body = rawObj.p_body;
+                post.createdAt = rawObj.p_created_at;
+                post.files = rawObj.p_files;
+                post_creator.id = rawObj.user_id;
+                post_creator.name = rawObj.user_name;
+                post_creator.picture = rawObj.user_picture;
+                post.creator = post_creator;
+                let _comments = new Array<Comment>();
+                let _emotions = new Array<Emotion>();
+                post.comments = _comments;
+                post.emotions = _emotions;
+            }
+        }
+
+        if (rawObj.e_id && rawObj.e_id !== currentEmotionId) {
             let emotion = new Emotion();
             emotion.id = rawObj.e_id;
             emotion.type = getCorrectEnumEmotionType(rawObj.e_type);
@@ -95,46 +137,31 @@ export const mapGetUserByIdRaw = async (
                 post.emotions.push(emotion);
             }
         }
+    });
 
-        if (rawObj.comment_id) {
-            let comment = new Comment();
-            comment.id = rawObj.comment_id;
-            comment.body = rawObj.comment_body;
-            comment.createdAt = rawObj.comment_created_at;
-            comment_author.id = rawObj.comment_author_id;
-            comment_author.name = rawObj.comment_author_name;
-            comment_author.picture = rawObj.comment_author_picture;
-            comment.author = comment_author;
-            comment.order = rawObj.comment_order;
+    if (!posts.length && post?.id) {
+        posts.push(post);
+    }
 
-            let _replies = new Array<Comment>();
-            comment.replies = _replies;
+    let user = new User();
+    let indexPost = -1;
+    commentsAux.forEach((x) => {
+        let qbRawFound = qbRaw.findIndex((y) => y.comment_id === x.id);
+        if (qbRawFound > -1) {
+            indexPost = posts.findIndex((z) => z.id === qbRaw[qbRawFound].p_id);
 
-            if (rawObj.reply_id) {
-                let reply = new Comment();
-                reply.id = rawObj.reply_id;
-                reply.body = rawObj.reply_body;
-                reply.order = rawObj.reply_order;
-                reply.createdAt = rawObj.reply_created_at;
-                reply_author.id = rawObj.reply_author_id;
-                reply_author.name = rawObj.reply_author_name;
-                reply_author.picture = rawObj.reply_author_picture;
-                reply.author = reply_author;
-                comment.replies.push(reply);
+            if (indexPost > -1) {
+                if (posts[indexPost].comments) {
+                    posts[indexPost].comments.push(x);
+                } else {
+                    let _comments = new Array<Comment>();
+                    post.comments = _comments;
+                    posts[indexPost].comments.push(x);
+                }
             }
-
-            if (!post.comments.find((x) => x.id === comment.id)) {
-                post.comments.push(comment);
-            }
-        }
-
-        currentPostId = rawObj.p_id;
-        if (!posts.find((x) => x.id === post.id)) {
-            posts.push(post);
         }
     });
 
-    let user = new User();
     if (qbRaw.length) {
         user.id = qbRaw[0].user_id;
         user.name = qbRaw[0].user_name;

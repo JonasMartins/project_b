@@ -8,7 +8,6 @@ import {
     ModalOverlay,
     Text,
     Flex,
-    useColorMode,
     Circle,
     Popover,
     PopoverArrow,
@@ -16,6 +15,7 @@ import {
     PopoverContent,
     PopoverTrigger,
     Image,
+    useToast,
 } from "@chakra-ui/react";
 import { formatRelative } from "date-fns";
 import type { NextPage } from "next";
@@ -29,6 +29,7 @@ import { bindActionCreators } from "redux";
 import { actionCreators } from "Redux/actions";
 import { RootState } from "Redux/Global/GlobalReducer";
 import { useEffect } from "react";
+import { useAddSeenNotificationMutation } from "generated/graphql";
 
 interface ModalViewNotificationProps {
     onClose: () => void;
@@ -46,7 +47,7 @@ const ModalViewNotification: NextPage<ModalViewNotificationProps> = ({
     notification,
 }) => {
     const dispatch = useDispatch();
-
+    const toast = useToast();
     const countUnsawNotifications = useSelector(
         (state: RootState) => state.globalReducer.countUnsawNotifications
     );
@@ -56,9 +57,35 @@ const ModalViewNotification: NextPage<ModalViewNotificationProps> = ({
         dispatch
     );
 
+    const [addSeenNotification, resultAddSeenNotification] =
+        useAddSeenNotificationMutation({});
+
+    const handleNotificationSeen = async () => {
+        if (user?.id && notification) {
+            await addSeenNotification({
+                variables: {
+                    userId: user.id,
+                    notificationId: notification?.id,
+                },
+                onError: () => {
+                    toast({
+                        title: "Error",
+                        description: "Something went wrong",
+                        status: "error",
+                        duration: 8000,
+                        isClosable: true,
+                        position: "top",
+                    });
+                    console.error(resultAddSeenNotification.error);
+                },
+            });
+        }
+    };
+
     useEffect(() => {
         if (isOpen && countUnsawNotifications && user?.id && notification?.id) {
             if (!notification?.userSeen.includes(user.id)) {
+                handleNotificationSeen();
                 setCountUnsawNotifications(countUnsawNotifications - 1);
                 updateUserSawNotification(notification.id);
             }
