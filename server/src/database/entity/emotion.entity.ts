@@ -16,12 +16,18 @@ export class Emotion extends Base {
     public type: EmotionType;
 
     @Field(() => User)
-    @ManyToOne(() => User, (creator) => creator.emotions, { eager: true })
+    @ManyToOne(() => User, (creator) => creator.emotions, {
+        eager: true,
+        onDelete: "CASCADE",
+    })
     @JoinColumn()
     public creator: User;
 
     @Field(() => Post)
-    @ManyToOne(() => Post, (post) => post.emotions, { eager: true })
+    @ManyToOne(() => Post, (post) => post.emotions, {
+        eager: true,
+        onDelete: "CASCADE",
+    })
     @JoinColumn()
     public post: Post;
 }

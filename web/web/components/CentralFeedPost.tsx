@@ -3,13 +3,14 @@ import type { NextPage } from "next";
 import PostEmotionsRecord from "components/PostEmotionsRecord";
 import { getPostsType } from "utils/types/post/post.types";
 import { useUser } from "utils/hooks/useUser";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "Redux/Global/GlobalReducer";
 import { emotion as emotionElement } from "utils/types/post/post.types";
 import { getServerPathImage } from "utils/generalAuxFunctions";
 import { formatRelative } from "date-fns";
 import Comment from "components/Comment";
+import ModalImage from "react-modal-image";
 
 interface CentralFeedPostProps {
     post: getPostsType;
@@ -69,10 +70,18 @@ const CentralFeedPost: NextPage<CentralFeedPostProps> = ({ post }) => {
                 {post.files?.length ? (
                     post.files.map((file) => (
                         <Box p={1} m={0} key={file}>
-                            <Image
-                                src={getServerPathImage(file)}
-                                boxSize="52px"
+                            <ModalImage
+                                small={getServerPathImage(file)}
+                                large={getServerPathImage(file)}
+                                hideDownload={true}
                             />
+
+                            {/* <Image
+                                src={getServerPathImage(file)}
+                                minWidth="20%"
+                                maxWidth="100%"
+                                boxSize="60px"
+                            /> */}
                         </Box>
                     ))
                 ) : (
