@@ -64,10 +64,45 @@ const Notifications: NextPage = () => {
         }
     };
 
+    /**
+     *
+     * @param notificationId: The notification id that was open
+     *  Recieve the id of the clicked, opened, then find the index
+     *  among all notifications, if the logged user id is not in the
+     *  userSeen array of that notification, then its added and updated
+     *  the state, which will make the component to put the grey color in
+     *  the bell, indicating that this notification was viewed
+     */
+    const handleSawNotificationCallback = (notificationId: string) => {
+        let indexNotificationOpend: number = -1;
+        let newAux: notificationType | undefined;
+
+        newAux = userNotifications?.relatedNotifications?.find((x, index) => {
+            if (x.id === notificationId) {
+                indexNotificationOpend = index;
+                return x;
+            }
+        });
+
+        if (indexNotificationOpend > -1 && newAux !== undefined && user?.id) {
+            if (!newAux.userSeen.includes(user.id)) {
+                let newAuxChecked = update(newAux, {
+                    userSeen: { $push: [user.id] },
+                });
+
+                let newNotificationsAux = update(userNotifications, {
+                    relatedNotifications: {
+                        $splice: [[indexNotificationOpend, 1, newAuxChecked!]],
+                    },
+                });
+                setUserNotifications(newNotificationsAux);
+            }
+        }
+    };
+
     const addNewNotificationCallback = (
         notification: notificationType
     ): void => {
-        console.log("new noti ", notification);
         let newNotificationsAux = update(userNotifications, {
             relatedNotifications: { $push: [notification] },
         });
@@ -82,7 +117,6 @@ const Notifications: NextPage = () => {
             let finalNewNotificationList = update(newNotificationsAux, {
                 relatedNotifications: { $set: orderedNotifications },
             });
-            console.log("new stat ", newNotificationsAux);
             setUserNotifications(finalNewNotificationList);
         }
     };
@@ -212,6 +246,7 @@ const Notifications: NextPage = () => {
                 onClose={modalNotification.onClose}
                 user={user}
                 notification={selectedNotification}
+                updateUserSawNotification={handleSawNotificationCallback}
             />
         </Container>
     );

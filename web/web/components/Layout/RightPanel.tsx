@@ -37,8 +37,6 @@ const RightPanel: NextPage<RightPanelProps> = ({ addNewNotification }) => {
             const { notification } =
                 newNotificationSubscription.data.newNotificationSubscription;
 
-            console.log("new notification comming");
-
             if (notification.relatedUsers.find((x) => x.id === user.id)) {
                 if (addNewNotification) {
                     addNewNotification(notification);
@@ -50,7 +48,6 @@ const RightPanel: NextPage<RightPanelProps> = ({ addNewNotification }) => {
     };
 
     useEffect(() => {
-        console.log("right panel");
         handleNewNotificationSubscription();
     }, [
         user?.id,

@@ -24,10 +24,16 @@ import { getServerPathImage } from "utils/generalAuxFunctions";
 import { UserType } from "utils/hooks/useUser";
 import { notificationType } from "utils/types/user/user.types";
 import NexLink from "next/link";
+import { useDispatch, useSelector } from "react-redux";
+import { bindActionCreators } from "redux";
+import { actionCreators } from "Redux/actions";
+import { RootState } from "Redux/Global/GlobalReducer";
+import { useEffect } from "react";
 
 interface ModalViewNotificationProps {
     onClose: () => void;
     isOpen: boolean;
+    updateUserSawNotification: (notificationId: string) => void;
     notification?: notificationType | null;
     user?: UserType;
 }
@@ -36,9 +42,28 @@ const ModalViewNotification: NextPage<ModalViewNotificationProps> = ({
     isOpen,
     onClose,
     user,
+    updateUserSawNotification,
     notification,
 }) => {
-    const { colorMode } = useColorMode();
+    const dispatch = useDispatch();
+
+    const countUnsawNotifications = useSelector(
+        (state: RootState) => state.globalReducer.countUnsawNotifications
+    );
+
+    const { setCountUnsawNotifications } = bindActionCreators(
+        actionCreators,
+        dispatch
+    );
+
+    useEffect(() => {
+        if (isOpen && countUnsawNotifications && user?.id && notification?.id) {
+            if (!notification?.userSeen.includes(user.id)) {
+                setCountUnsawNotifications(countUnsawNotifications - 1);
+                updateUserSawNotification(notification.id);
+            }
+        }
+    }, [isOpen, notification?.id]);
 
     return (
         <Modal
@@ -61,13 +86,7 @@ const ModalViewNotification: NextPage<ModalViewNotificationProps> = ({
                 <ModalCloseButton />
                 <ModalBody>
                     {notification && (
-                        <Flex
-                            p={1}
-                            flexDir="column"
-                            bgColor={
-                                colorMode === "dark" ? "grey.800" : "white"
-                            }
-                        >
+                        <Flex p={1} flexDir="column">
                             <Text>{notification.description}</Text>
                             <Flex justifyContent="space-between">
                                 <Text
