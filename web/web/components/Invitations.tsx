@@ -228,6 +228,7 @@ const Invitations: NextPage<InvitationsProps> = ({}) => {
                         p={3}
                         m={3}
                         alignItems="center"
+                        borderRadius="1rem"
                         key={invitation.id}
                     >
                         <Skeleton isLoaded={!loadEffect}>

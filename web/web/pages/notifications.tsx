@@ -162,6 +162,7 @@ const Notifications: NextPage = () => {
                                 userNotifications?.relatedNotifications?.map(
                                     (x) => (
                                         <Flex
+                                            key={x.id}
                                             boxShadow="lg"
                                             p={4}
                                             m={4}

@@ -84,11 +84,14 @@ const Chat: NextPage<ChatProps> = ({
         if (newMessagesSubscription.data?.newMessageNotification?.newMessage) {
             const { newMessage } =
                 newMessagesSubscription.data.newMessageNotification;
+
+            console.log("message arrived", newMessage);
+            console.log("messages sended ", messagesSended);
             if (!messagesSended.includes(newMessage.id)) {
                 addNewMessage(newMessage);
                 AddNewMessageToStore(newMessage.id);
-
                 if (user?.id && newMessage.creator.id !== user?.id) {
+                    // debugger;
                     if (
                         chat?.id === newMessage.chat.id &&
                         newMessage.chat.id !== currentChatId
@@ -109,7 +112,7 @@ const Chat: NextPage<ChatProps> = ({
             if (currentChatId) {
                 if (x.chatId === chat?.id && x.chatId === currentChatId) {
                     setChatUnsawMessages(0);
-                    if (userNewMessages >= x.countMessages) {
+                    if (userNewMessages && userNewMessages >= x.countMessages) {
                         chatToRemoveIndex = index;
                         setCountNewMessages(
                             userNewMessages - Math.max(1, x.countMessages)

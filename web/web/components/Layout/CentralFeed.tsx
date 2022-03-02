@@ -329,7 +329,7 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
             </Flex>
             <Box mt={5}>
                 {data?.getPosts?.posts?.map((post) => (
-                    <Skeleton isLoaded={!loadEffect}>
+                    <Skeleton isLoaded={!loadEffect} key={post.id}>
                         <CentralFeedPost key={post.id} post={post} />
                     </Skeleton>
                 ))}
