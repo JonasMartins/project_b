@@ -1,4 +1,4 @@
-## Project in development
+## Project [DEMO](https://victorious-pebble-0fa6b6210.1.azurestaticapps.net/)
 
 ## Screenshots
 
