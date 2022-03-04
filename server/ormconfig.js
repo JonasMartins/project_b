@@ -6,7 +6,7 @@ module.exports = {
     port: 5432,
     username: "postgres",
     password: "postgres",
-    database: "pb_dev",
+    database: `${process.env.DB}`,
     synchronize: false,
     logging: false,
     entities: [
