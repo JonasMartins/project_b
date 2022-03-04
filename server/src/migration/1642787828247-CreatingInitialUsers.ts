@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 import { v4 } from "uuid";
-import argon2 from "argon2";
+import bcrypt from "bcrypt";
 
 export class CreatingInitialUsers1642787828247 implements MigrationInterface {
     public createdUsers: string[] = [];
@@ -14,16 +14,18 @@ export class CreatingInitialUsers1642787828247 implements MigrationInterface {
             generatedId = v4();
             this.createdUsers.push(generatedId);
             await queryRunner.query(
-                `INSERT INTO public.user (id, name, email, password) VALUES ('${generatedId}', 'Richard', 'richard@email.com', '${argon2.hash(
-                    "pb_richard"
+                `INSERT INTO public.user (id, name, email, password) VALUES ('${generatedId}', 'Richard', 'richard@email.com', '${bcrypt.hash(
+                    "pb_richard",
+                    10
                 )}' );`
             );
 
             generatedId = v4();
             this.createdUsers.push(generatedId);
             await queryRunner.query(
-                `INSERT INTO public.user (id, name, email, password) VALUES ('${generatedId}', 'Paul', 'paul@email.com', '${argon2.hash(
-                    "pb_paul"
+                `INSERT INTO public.user (id, name, email, password) VALUES ('${generatedId}', 'Paul', 'paul@email.com', '${bcrypt.hash(
+                    "pb_paul",
+                    10
                 )}' );`
             );
         }

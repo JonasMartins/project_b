@@ -1,4 +1,4 @@
-import argon2 from "argon2";
+import bcrypt from "bcrypt";
 import { FileUpload, GraphQLUpload } from "graphql-upload";
 import {
     Arg,
@@ -425,7 +425,7 @@ export class UserResolver {
             };
         }
 
-        const validPass = await argon2.verify(user.password, password);
+        const validPass = await bcrypt.compare(password, user.password);
 
         if (!validPass) {
             return {
@@ -537,7 +537,7 @@ export class UserResolver {
             const validPass = user.password === options.password;
 
             if (!validPass) {
-                user.password = await argon2.hash(options.password);
+                user.password = await bcrypt.hash(options.password, 10);
             }
 
             if (file) {
