@@ -38,7 +38,7 @@ export const resolvers = {
                     `./upload/${assetUniqName}`
                 );
                 await stream.pipe(fs.createWriteStream(pathName));
-                const urlForArray = `http://localhost:4001/${assetUniqName}`;
+                const urlForArray = `${process.env.SERVER_URL}/${assetUniqName}`;
                 url.push({ url: urlForArray });
             }
             return url;

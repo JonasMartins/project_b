@@ -54,13 +54,15 @@ export const getServerPathImage = (path: string | null | undefined): string => {
     // esse valor retornado será visível ao react
 
     if (!path || path === undefined) {
-        return "http://127.0.0.1:4001/images/default-user-image.png";
+        //return "http://127.0.0.1:4001/images/default-user-image.png";
+        return `${process.env.SERVER_URL}/images/default-user-image.png`;
     }
 
     let result = "";
     let arrPath = path.split("/");
 
-    result = "http://127.0.0.1:4001/images";
+    //result = "http://127.0.0.1:4001/images";
+    result = `${process.env.SERVER_URL}/images`;
 
     result += "/" + arrPath[arrPath.length - 1];
 

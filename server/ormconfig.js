@@ -2,7 +2,7 @@ const SnakeNamingStrategy =
     require("typeorm-naming-strategies").SnakeNamingStrategy;
 module.exports = {
     type: "postgres",
-    host: "localhost",
+    host: `${process.env.SERVER_HOST}`,
     port: 5432,
     username: "postgres",
     password: "postgres",
