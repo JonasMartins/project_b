@@ -46,6 +46,7 @@ query GetUserById($post_limit: Float, $post_offset: Float, $id: String!) {
                     replies {
                         id
                         body
+                        order
                         createdAt
                         author {
                             id

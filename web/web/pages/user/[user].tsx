@@ -179,6 +179,7 @@ const UserPage: NextPage<userPageProps> = () => {
                                                             <Flex
                                                                 alignItems="center"
                                                                 justifyContent="space-between"
+                                                                key={x.id}
                                                             >
                                                                 <Flex alignItems="center">
                                                                     <Image
@@ -205,7 +206,7 @@ const UserPage: NextPage<userPageProps> = () => {
                             )}
                             <Box mt={5} p={4}>
                                 {userData?.posts?.map((x) => (
-                                    <Skeleton isLoaded={!loadEffect}>
+                                    <Skeleton isLoaded={!loadEffect} key={x.id}>
                                         <CentralFeedPost key={x.id} post={x} />
                                     </Skeleton>
                                 ))}

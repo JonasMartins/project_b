@@ -736,7 +736,7 @@ export type GetUserByIdQueryVariables = Exact<{
 }>;
 
 
-export type GetUserByIdQuery = { __typename?: 'Query', getUserById: { __typename?: 'UserResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', message: string, field: string, method: string }> | null | undefined, user?: { __typename?: 'User', id: string, name: string, email: string, picture?: string | null | undefined, connections?: Array<{ __typename?: 'User', id: string, name: string, picture?: string | null | undefined }> | null | undefined, posts?: Array<{ __typename?: 'Post', id: string, body: string, files?: Array<string> | null | undefined, createdAt: any, creator: { __typename?: 'User', id: string, name: string, picture?: string | null | undefined }, emotions?: Array<{ __typename?: 'Emotion', id: string, type: EmotionType, creator: { __typename?: 'User', id: string, name: string } }> | null | undefined, comments?: Array<{ __typename?: 'Comment', id: string, body: string, createdAt: any, order: number, author: { __typename?: 'User', id: string, name: string, picture?: string | null | undefined }, replies: Array<{ __typename?: 'Comment', id: string, body: string, createdAt: any, author: { __typename?: 'User', id: string, name: string, picture?: string | null | undefined } }> }> | null | undefined }> | null | undefined } | null | undefined } };
+export type GetUserByIdQuery = { __typename?: 'Query', getUserById: { __typename?: 'UserResponse', errors?: Array<{ __typename?: 'ErrorFieldHandler', message: string, field: string, method: string }> | null | undefined, user?: { __typename?: 'User', id: string, name: string, email: string, picture?: string | null | undefined, connections?: Array<{ __typename?: 'User', id: string, name: string, picture?: string | null | undefined }> | null | undefined, posts?: Array<{ __typename?: 'Post', id: string, body: string, files?: Array<string> | null | undefined, createdAt: any, creator: { __typename?: 'User', id: string, name: string, picture?: string | null | undefined }, emotions?: Array<{ __typename?: 'Emotion', id: string, type: EmotionType, creator: { __typename?: 'User', id: string, name: string } }> | null | undefined, comments?: Array<{ __typename?: 'Comment', id: string, body: string, createdAt: any, order: number, author: { __typename?: 'User', id: string, name: string, picture?: string | null | undefined }, replies: Array<{ __typename?: 'Comment', id: string, body: string, order: number, createdAt: any, author: { __typename?: 'User', id: string, name: string, picture?: string | null | undefined } }> }> | null | undefined }> | null | undefined } | null | undefined } };
 
 export type GetUserConnectionsQueryVariables = Exact<{
   id: Scalars['String'];
@@ -1820,6 +1820,7 @@ export const GetUserByIdDocument = gql`
           replies {
             id
             body
+            order
             createdAt
             author {
               id
