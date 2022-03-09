@@ -109,6 +109,7 @@ describe("User tests", async () => {
                         }`,
                 })
                 .expect(200);
+
             expect(response.body.data.getUserById.user).to.be.a("object");
         }
     });
@@ -167,22 +168,48 @@ describe("User tests", async () => {
 
             if (response.body.data.createUser.user.id) {
                 createdUserId = response.body.data.createUser.user.id;
+                createdUser = response.body.data.createUser.user;
             }
             expect(response.body.data.createUser.user).to.be.a("object");
         }
     });
 
-    /*
     it("Should update user settings", async () => {
-        if (!createdUserId.length) {
+        if (!createdUserId || !Cookies) {
             expect.fail("An user created id must be filled here");
         } else {
-            const response = await request.post("/graphql").send({
-                query: `
+            const response = await request
+                .post("/graphql")
+                .set("Cookie", [Cookies])
+                .send({
+                    query: `
+                    mutation {
+                        updateUserSettings(
+                            id: "${createdUserId}",
+                            options: {
+                                name: "newUserName",
+                                email: "new_email@email.com",
+                                password: "new_password",
+                            }) {
+                            errors {
+                                message
+                                method
+                                field
+                            }
+                            user {
+                                id
+                            }
+                        }
+                    }
                 `,
-            });
+                })
+                .expect(200);
+
+            expect(response.body.data.updateUserSettings.user).to.be.a(
+                "object"
+            );
         }
-    }); */
+    });
 
     it("Should delete a User", async () => {
         if (!createdUserId.length || !Cookies) {

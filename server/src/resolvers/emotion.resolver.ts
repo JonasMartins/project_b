@@ -89,6 +89,7 @@ export class EmotionResolver {
     }
 
     @Query(() => EmotionsResponse)
+    @UseMiddleware(AuthMiddleWare)
     async getEmotionsFromUser(
         @Arg("userId", () => String) userId: string,
         @Ctx() { em }: Context
@@ -286,55 +287,6 @@ export class EmotionResolver {
             qb.execute();
 
             return { deleted: true };
-        } catch (error) {
-            return {
-                errors: genericError(
-                    "emotionId",
-                    "deleteEmotion",
-                    __filename,
-                    `Error: ${error.message}`
-                ),
-            };
-        }
-    }
-
-    @Mutation(() => EmotionDeletion)
-    async deleteEmotionFromPostByUser(
-        @Arg("userId", () => String) userId: string,
-        @Arg("postId", () => String) postId: string,
-        @Ctx() { em }: Context
-    ): Promise<EmotionDeletion> {
-        try {
-            const postRepo = em.connection.getRepository(Post);
-            let postEmotions = await postRepo.findOne({
-                relations: ["emotions"],
-                where: { id: postId },
-            });
-
-            let emotionToBeDeleted = "";
-
-            if (postEmotions && postEmotions.emotions.length) {
-                postEmotions?.emotions.forEach((emotion) => {
-                    if (emotion.creator.id === userId) {
-                        emotionToBeDeleted = emotion.id;
-                        return;
-                    }
-                });
-            }
-
-            if (emotionToBeDeleted.length) {
-                const qb = await em.connection
-                    .createQueryBuilder()
-                    .delete()
-                    .from(Emotion)
-                    .where("id = :id", { id: emotionToBeDeleted });
-
-                qb.execute();
-
-                return { deleted: true };
-            }
-
-            return { deleted: false };
         } catch (error) {
             return {
                 errors: genericError(

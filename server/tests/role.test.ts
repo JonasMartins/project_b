@@ -10,7 +10,7 @@ let application: Application;
 let em: EntityManager;
 let Cookies: string = "";
 
-describe("User tests", async () => {
+describe("Role tests", async () => {
     let roleId: String = "";
 
     before(async () => {
@@ -22,6 +22,14 @@ describe("User tests", async () => {
     });
 
     after(async () => {
+        await request
+            .post("/graphql")
+            .send({
+                query: `mutation {
+                            logout
+                        }`,
+            })
+            .expect(200);
         application.server.close();
     });
 

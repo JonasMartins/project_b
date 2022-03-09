@@ -242,4 +242,28 @@ export class PostResolver {
             };
         }
     }
+
+    @Mutation(() => Boolean)
+    @UseMiddleware(AuthMiddleWare)
+    async deletePost(
+        @Arg("id") id: string,
+        @Ctx() { em }: Context
+    ): Promise<Boolean> {
+        try {
+            const post = await em.findOne(Post, { id });
+            let result: boolean = false;
+            if (!post) {
+                throw new Error(`post with id: ${id} not found.`);
+            }
+            const postRemoved = await em.remove(post);
+            result = postRemoved ? true : false;
+            return new Promise((resolve, _) => {
+                resolve(result);
+            });
+        } catch (e) {
+            return new Promise((resolve, _) => {
+                resolve(false);
+            });
+        }
+    }
 }

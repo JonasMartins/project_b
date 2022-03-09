@@ -14,6 +14,15 @@ export class CreatingInitialUsers1642787828247 implements MigrationInterface {
             generatedId = v4();
             this.createdUsers.push(generatedId);
             await queryRunner.query(
+                `INSERT INTO public.user (id, name, email, password) VALUES ('${generatedId}', 'Admin', 'admin@email.com', '${bcrypt.hash(
+                    "pb_admin",
+                    10
+                )}' );`
+            );
+
+            generatedId = v4();
+            this.createdUsers.push(generatedId);
+            await queryRunner.query(
                 `INSERT INTO public.user (id, name, email, password) VALUES ('${generatedId}', 'Richard', 'richard@email.com', '${bcrypt.hash(
                     "pb_richard",
                     10

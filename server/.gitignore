@@ -7,3 +7,4 @@ tmp/
 temp/
 .env
 images/
+.nyc_output/

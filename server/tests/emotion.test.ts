@@ -4,15 +4,17 @@ import { EntityManager } from "typeorm";
 import supertest = require("supertest");
 import {} from "mocha";
 import { expect } from "chai";
+import { EmotionType } from "../src/database/enum/emotionType.enum";
 
 let request: SuperTest<Test>;
 let application: Application;
 let em: EntityManager;
 
-describe("Post Tests", async () => {
+describe("Emotion Tests", async () => {
     let Cookies: string = "";
     let userId: String = "";
     let postCreatedId: String = "";
+    let emotionCreatedId: String = "";
 
     before(async () => {
         application = new Application();
@@ -56,33 +58,7 @@ describe("Post Tests", async () => {
         expect(response.body.data.login.token).to.be.a("string");
     });
 
-    it("Should get some posts", async () => {
-        if (!Cookies) {
-            expect.fail("A Cookie must be set here");
-        } else {
-            const response = await request
-                .post("/graphql")
-                .set("Cookie", [Cookies])
-                .send({
-                    query: `query {
-                        getPosts(limit: ${5}, offset: ${0}) {
-                            errors {
-                                message
-                                method
-                                field
-                            }
-                            posts {
-                                id
-                            }
-                        }
-                    }`,
-                })
-                .expect(200);
-            expect(response.body.data.getPosts.posts).to.be.a("array");
-        }
-    });
-
-    it("Should get a user for create a post", async () => {
+    it("Should get a user to create a emotion", async () => {
         if (!Cookies) {
             expect.fail("A Cookie must be set here");
         } else {
@@ -149,25 +125,112 @@ describe("Post Tests", async () => {
         }
     });
 
-    it("Should get a user by Id", async () => {
-        if (!postCreatedId || !Cookies) {
-            expect.fail("An user id must be filled here");
+    it("Should create a Emotion ", async () => {
+        if (!userId.length || !Cookies) {
+            expect.fail("A Cookie must be set here");
+        } else {
+            const response = await request
+                .post("/graphql")
+                .set("Cookie", [Cookies])
+                .send({
+                    query: `mutation {
+                        createEmotion(userId: "${userId}", postId: "${postCreatedId}", type: ${EmotionType.ANGRY}) {
+                        errors {
+                            message
+                            method
+                            field
+                        }
+                        emotion {
+                            id
+                        }
+                    }
+                }`,
+                })
+                .expect(200);
+            if (response.body.data.createEmotion.emotion) {
+                emotionCreatedId = response.body.data.createEmotion.emotion.id;
+            }
+            expect(response.body.data.createEmotion.emotion).to.be.a("object");
+        }
+    });
+
+    it("Should get a user Emotions ", async () => {
+        if (!userId.length || !Cookies) {
+            expect.fail("A Cookie must be set here");
         } else {
             const response = await request
                 .post("/graphql")
                 .set("Cookie", [Cookies])
                 .send({
                     query: `query {
-                        getPostById(id: "${postCreatedId}") {
-                                post {
-                                    id
-                                }
-                            }
-                        }`,
+                    getEmotionsFromUser(userId: "${userId}") {
+                        errors {
+                            message
+                            method
+                            field
+                        }
+                        emotions {
+                            id
+                        }
+                    }
+                }`,
                 })
                 .expect(200);
 
-            expect(response.body.data.getPostById.post).to.be.a("object");
+            expect(response.body.data.getEmotionsFromUser.emotions).to.be.an(
+                "array"
+            );
+        }
+    });
+
+    it("Should update a Emotion ", async () => {
+        if (!emotionCreatedId.length || !Cookies) {
+            expect.fail("A Cookie must be set here");
+        } else {
+            const response = await request
+                .post("/graphql")
+                .set("Cookie", [Cookies])
+                .send({
+                    query: `mutation {
+                        updateEmotion(emotionId: "${emotionCreatedId}", newType: ${EmotionType.FIRE}) {
+                        errors {
+                            message
+                            method
+                            field
+                        }
+                        emotion {
+                            id
+                        }
+                    }
+                }`,
+                })
+                .expect(200);
+            expect(response.body.data.updateEmotion.emotion).to.be.an("object");
+        }
+    });
+
+    it("Should delete a Emotion", async () => {
+        if (!emotionCreatedId.length || !Cookies) {
+            expect.fail("An user created id must be filled here");
+        } else {
+            const response = await request
+                .post("/graphql")
+                .set("Cookie", [Cookies])
+                .send({
+                    query: `
+                        mutation {
+                            deleteEmotion(emotionId: "${emotionCreatedId}") {
+                                errors {
+                                    message
+                                }
+                                deleted
+                            }
+                        }
+                    `,
+                })
+                .expect(200);
+
+            expect(response.body.data.deleteEmotion.deleted).to.be.true;
         }
     });
 
