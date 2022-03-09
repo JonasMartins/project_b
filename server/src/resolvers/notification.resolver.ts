@@ -11,6 +11,7 @@ import {
     Resolver,
     Root,
     Subscription,
+    UseMiddleware,
 } from "type-graphql";
 import { Context } from "./../context";
 import { Notification } from "./../database/entity/notification.entity";
@@ -21,6 +22,7 @@ import {
     UserResponse,
     GeneralCountType,
 } from "./../helpers/generalTypeReturns";
+import { AuthMiddleWare } from "helpers/auth";
 
 @ObjectType()
 class NotificationRespose {
@@ -49,6 +51,7 @@ class NotificationSubscription {
 @Resolver()
 export class NotificationResolver {
     @Query(() => GeneralCountType)
+    @UseMiddleware(AuthMiddleWare)
     async getCountUnsawUserNotifications(
         @Arg("userId") userId: string,
         @Ctx() { em }: Context
@@ -86,6 +89,7 @@ export class NotificationResolver {
     }
 
     @Query(() => UserResponse)
+    @UseMiddleware(AuthMiddleWare)
     async getUserNotifications(
         @Arg("limit", () => Number, { nullable: true }) limit: number,
         @Arg("offset", () => Number, { nullable: true }) offset: number,
@@ -132,6 +136,7 @@ export class NotificationResolver {
     }
 
     @Mutation(() => GeneralResponse)
+    @UseMiddleware(AuthMiddleWare)
     async addSeenNotification(
         @Arg("userId") userId: string,
         @Arg("notificationId") notificationId: string,
@@ -183,6 +188,7 @@ export class NotificationResolver {
     }
 
     @Mutation(() => NotificationRespose)
+    @UseMiddleware(AuthMiddleWare)
     async createNotification(
         @Arg("description") description: string,
         @Arg("creatorId") creatorId: string,

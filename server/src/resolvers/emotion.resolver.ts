@@ -6,6 +6,7 @@ import {
     Arg,
     Ctx,
     Mutation,
+    UseMiddleware,
 } from "type-graphql";
 import { ErrorFieldHandler } from "./../helpers/errorFieldHandler";
 import { Emotion } from "./../database/entity/emotion.entity";
@@ -14,6 +15,7 @@ import { User } from "./../database/entity/user.entity";
 import { Context } from "./../context";
 import { genericError } from "./../helpers/generalAuxMethods";
 import { EmotionType } from "./../database/enum/emotionType.enum";
+import { AuthMiddleWare } from "helpers/auth";
 
 @ObjectType()
 class EmotionResponse {
@@ -45,6 +47,7 @@ class EmotionsResponse {
 @Resolver()
 export class EmotionResolver {
     @Query(() => EmotionsResponse)
+    @UseMiddleware(AuthMiddleWare)
     async getEmotionsFromPost(
         @Arg("postId", () => String) postId: string,
         @Ctx() { em }: Context
@@ -127,6 +130,7 @@ export class EmotionResolver {
     }
 
     @Mutation(() => EmotionResponse)
+    @UseMiddleware(AuthMiddleWare)
     async createEmotion(
         @Arg("userId", () => String) userId: string,
         @Arg("postId", () => String) postId: string,

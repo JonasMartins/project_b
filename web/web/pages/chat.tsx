@@ -29,9 +29,11 @@ import {
     useCreateMessageMutation,
     useGetChatsLazyQuery,
     useGetUserConnectionsLazyQuery,
+    useLoginTestQuery,
 } from "generated/graphql";
 import update from "immutability-helper";
-import type { NextPage } from "next";
+import type { GetServerSideProps, NextPage } from "next";
+import { useRouter } from "next/router";
 import React, {
     ChangeEvent,
     ComponentProps,
@@ -72,12 +74,13 @@ interface FormValues {
     body: string;
 }
 
-const Chat: NextPage<ChatProps> = () => {
+const Chat: NextPage<ChatProps> = ({}) => {
     const initialValues: FormValues = {
         body: "",
     };
     const user = useUser();
     const toast = useToast();
+    const router = useRouter();
     const dispatch = useDispatch();
     const { colorMode } = useColorMode();
     const bgColor = { light: "gray.200", dark: "gray.700" };
@@ -122,6 +125,7 @@ const Chat: NextPage<ChatProps> = () => {
             />
         );
     };
+
     /**
      *
      * @param conn A user connection, which is the same as a chat

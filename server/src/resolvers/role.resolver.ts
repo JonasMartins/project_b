@@ -1,3 +1,4 @@
+import { AuthMiddleWare } from "helpers/auth";
 import {
     Arg,
     Ctx,
@@ -6,6 +7,7 @@ import {
     ObjectType,
     Query,
     Resolver,
+    UseMiddleware,
 } from "type-graphql";
 import { RoleValidator } from "../database/validators/role.validator";
 import { Context } from "./../context";
@@ -32,6 +34,7 @@ class RolesResponse {
 @Resolver()
 export class RoleResolver {
     @Query(() => RolesResponse)
+    @UseMiddleware(AuthMiddleWare)
     async getRoles(
         @Arg("limit", () => Number, { nullable: true }) limit: number,
         @Ctx() { em }: Context
@@ -64,6 +67,7 @@ export class RoleResolver {
     }
 
     @Query(() => RoleResponse)
+    @UseMiddleware(AuthMiddleWare)
     async getRoleById(
         @Arg("id") id: string,
         @Ctx() { em }: Context
@@ -85,6 +89,7 @@ export class RoleResolver {
     }
 
     @Mutation(() => RoleResponse)
+    @UseMiddleware(AuthMiddleWare)
     async createRole(
         @Arg("options") options: RoleValidator,
         @Ctx() { em }: Context
@@ -120,6 +125,7 @@ export class RoleResolver {
     }
 
     @Mutation(() => Boolean)
+    @UseMiddleware(AuthMiddleWare)
     async deleteRole(
         @Arg("id") id: string,
         @Ctx() { em }: Context

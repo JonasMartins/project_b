@@ -7,6 +7,7 @@ import {
     ObjectType,
     Query,
     Resolver,
+    UseMiddleware,
 } from "type-graphql";
 import { Post } from "../database/entity/post.entity";
 import { User } from "../database/entity/user.entity";
@@ -16,6 +17,7 @@ import { Context } from "./../context";
 import { genericError } from "./../helpers/generalAuxMethods";
 import { FileUpload, GraphQLUpload } from "graphql-upload";
 import { HandleUpload } from "./../helpers/handleUpload.helper";
+import { AuthMiddleWare } from "helpers/auth";
 
 interface postAndCommentsRaw {
     post_id: string;
@@ -43,6 +45,7 @@ class PostResponse {
 @Resolver()
 export class PostResolver {
     @Query(() => PostsResponse)
+    @UseMiddleware(AuthMiddleWare)
     async getPosts(
         @Arg("limit", () => Number, { nullable: true }) limit: number,
         @Arg("offset", () => Number, { nullable: true }) offset: number,
@@ -109,6 +112,7 @@ export class PostResolver {
     }
 
     @Query(() => PostResponse)
+    @UseMiddleware(AuthMiddleWare)
     async getPostById(
         @Arg("id") id: string,
         @Arg("comment_offset", () => Number, { nullable: true })
@@ -181,6 +185,7 @@ export class PostResolver {
     }
 
     @Mutation(() => PostResponse)
+    @UseMiddleware(AuthMiddleWare)
     async createPost(
         @Arg("options") options: PostValidator,
         @Arg("files", () => [GraphQLUpload], { nullable: true })

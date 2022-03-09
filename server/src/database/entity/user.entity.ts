@@ -18,8 +18,8 @@ import { Chat } from "./chat.entity";
 import { Emotion } from "./emotion.entity";
 import { Comment } from "./comment.entity";
 import { Notification } from "./notification.entity";
-import bcrypt from "bcrypt";
 import { Request } from "./request.entity";
+import argon2 from "argon2";
 
 @ObjectType()
 @Entity()
@@ -110,7 +110,7 @@ export class User extends Base {
 
     @BeforeInsert()
     async hashPassword() {
-        const hashedPasswWord = await bcrypt.hash(this.password, 10);
+        const hashedPasswWord = await argon2.hash(this.password);
         this.password = hashedPasswWord;
     }
 

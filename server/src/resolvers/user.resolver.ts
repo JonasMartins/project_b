@@ -1,5 +1,5 @@
-import bcrypt from "bcrypt";
 import { FileUpload, GraphQLUpload } from "graphql-upload";
+import argon2 from "argon2";
 import {
     Arg,
     Ctx,
@@ -11,6 +11,7 @@ import {
     PubSub,
     Subscription,
     Root,
+    UseMiddleware,
 } from "type-graphql";
 import { Role } from "../database/entity/role.entity";
 import { UserValidator } from "../database/validators/user.validator";
@@ -26,6 +27,7 @@ import { GeneralResponse, UserResponse } from "./../helpers/generalTypeReturns";
 import { HandleUpload } from "./../helpers/handleUpload.helper";
 import { mapGetUserByIdRaw } from "./../utils/types/user/user.types";
 import { PubSubEngine } from "graphql-subscriptions";
+import { AuthMiddleWare } from "../helpers/auth";
 
 @ObjectType()
 class LoginResponse {
@@ -71,6 +73,7 @@ export class UserResolver {
     public cookieLife: number = 1000 * 60 * 60 * 24 * 4;
 
     @Query(() => UsersResponse)
+    @UseMiddleware(AuthMiddleWare)
     async getUsers(
         @Arg("limit", () => Number, { nullable: true }) limit: number,
         @Arg("offset", () => Number, { nullable: true }) offset: number,
@@ -111,6 +114,7 @@ export class UserResolver {
     }
 
     @Query(() => UserResponse)
+    @UseMiddleware(AuthMiddleWare)
     async getUserById(
         @Arg("id") id: string,
         @Arg("post_offset", () => Number, { nullable: true })
@@ -425,7 +429,7 @@ export class UserResolver {
             };
         }
 
-        const validPass = await bcrypt.compare(password, user.password);
+        const validPass = await argon2.verify(user.password, password);
 
         if (!validPass) {
             return {
@@ -451,6 +455,7 @@ export class UserResolver {
     }
 
     @Mutation(() => Boolean)
+    @UseMiddleware(AuthMiddleWare)
     async deleteUser(
         @Arg("id") id: string,
         @Ctx() { em }: Context
@@ -475,6 +480,7 @@ export class UserResolver {
     }
 
     @Mutation(() => UserResponse)
+    @UseMiddleware(AuthMiddleWare)
     async updateUserSettings(
         @Arg("id") id: string,
         @Arg("file", () => GraphQLUpload, { nullable: true })
@@ -537,7 +543,7 @@ export class UserResolver {
             const validPass = user.password === options.password;
 
             if (!validPass) {
-                user.password = await bcrypt.hash(options.password, 10);
+                user.password = await argon2.hash(options.password);
             }
 
             if (file) {
@@ -586,6 +592,7 @@ export class UserResolver {
      *  also creates a chat with them as participants
      */
     @Mutation(() => GeneralResponse)
+    @UseMiddleware(AuthMiddleWare)
     async createConnection(
         @Arg("userRequestorId") userRequestorId: string,
         @Arg("userRequestedId") userRequestedId: string,
@@ -670,6 +677,7 @@ export class UserResolver {
     }
 
     @Mutation(() => GeneralResponse)
+    @UseMiddleware(AuthMiddleWare)
     async createRequest(
         @Arg("options") options: RequestValidator,
         @PubSub() pubSub: PubSubEngine,
@@ -721,6 +729,7 @@ export class UserResolver {
     }
 
     @Mutation(() => GeneralResponse)
+    @UseMiddleware(AuthMiddleWare)
     async updateRequest(
         @Arg("requestId", () => String) requestId: string,
         @Arg("accepted", () => Boolean) accepted: boolean,
@@ -758,6 +767,7 @@ export class UserResolver {
     }
 
     @Query(() => UserResponse)
+    @UseMiddleware(AuthMiddleWare)
     async getUserConnections(
         @Arg("id") id: string,
         @Ctx() { em }: Context
@@ -821,6 +831,7 @@ export class UserResolver {
     }
 
     @Query(() => CountResponse)
+    @UseMiddleware(AuthMiddleWare)
     async getUserPendingInvitationsCount(
         @Arg("id") id: string,
         @Ctx() { em }: Context
@@ -850,6 +861,7 @@ export class UserResolver {
     }
 
     @Query(() => UsersResponse)
+    @UseMiddleware(AuthMiddleWare)
     async getUserSuggestions(
         @Ctx() { req, em }: Context
     ): Promise<UsersResponse> {

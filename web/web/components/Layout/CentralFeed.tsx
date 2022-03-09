@@ -7,6 +7,7 @@ import {
     Tooltip,
     useColorMode,
     useDisclosure,
+    useToast,
 } from "@chakra-ui/react";
 import CentralFeedPost from "components/CentralFeedPost";
 import ModalCreatePost from "components/Modal/modalCreatePost";
@@ -17,6 +18,7 @@ import {
     useGetUserUnseenMessagesLazyQuery,
     useNewRequestSubscriptionSubscription,
     useGetCountUnsawUserNotificationsLazyQuery,
+    useLoginTestQuery,
 } from "generated/graphql";
 import type { NextPage } from "next";
 import React, { useCallback, useEffect, useState } from "react";
@@ -30,6 +32,7 @@ import { useUser } from "utils/hooks/useUser";
 import { useNewMessageNotificationSubscription } from "generated/graphql";
 import { chatsUnseeMessages } from "utils/types/chat/chat.types";
 import BeatLoaderCustom from "./BeatLoaderCustom";
+import { useRouter } from "next/dist/client/router";
 
 interface CentralFeedProps {}
 
@@ -39,6 +42,8 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
     const dispatch = useDispatch();
     const modalCreatePostDisclousure = useDisclosure();
     const [loadEffect, setLoadEffect] = useState(false);
+    const router = useRouter();
+    const toast = useToast();
 
     const hasSubmittedPost = useSelector(
         (state: RootState) => state.globalReducer.hasSubmittedPost
@@ -344,4 +349,5 @@ const CentralFeed: NextPage<CentralFeedProps> = ({}) => {
 
     return loadEffect ? <BeatLoaderCustom /> : content;
 };
+
 export default CentralFeed;

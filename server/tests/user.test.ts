@@ -4,6 +4,7 @@ import { EntityManager } from "typeorm";
 import supertest = require("supertest");
 import {} from "mocha";
 import { expect } from "chai";
+import { User } from "../src/database/entity/user.entity";
 
 let request: SuperTest<Test>;
 let application: Application;
@@ -13,6 +14,7 @@ describe("User tests", async () => {
     let userId: String = "";
     let createdUserId: String = "";
     let createdRoleId: String = "";
+    let createdUser: User = null;
 
     before(async () => {
         application = new Application();
@@ -125,6 +127,17 @@ describe("User tests", async () => {
                 createdUserId = response.body.data.createUser.user.id;
             }
             expect(response.body.data.createUser.user).to.be.a("object");
+        }
+    });
+
+    it("Should update user settings", async () => {
+        if (!createdUserId.length) {
+            expect.fail("An user created id must be filled here");
+        } else {
+            const response = await request.post("/graphql").send({
+                query: `
+                `,
+            });
         }
     });
 

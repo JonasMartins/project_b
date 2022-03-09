@@ -10,10 +10,12 @@ import {
     Ctx,
     Arg,
     Mutation,
+    UseMiddleware,
 } from "type-graphql";
 import { genericError } from "./../helpers/generalAuxMethods";
 import { Context } from "./../context";
 import { CommentValidator } from "../database/validators/comment.validator";
+import { AuthMiddleWare } from "helpers/auth";
 
 @ObjectType()
 class CommentsResponse {
@@ -34,6 +36,7 @@ class CommentResponse {
 @Resolver()
 export class CommentResolver {
     @Query(() => CommentsResponse)
+    @UseMiddleware(AuthMiddleWare)
     async getPostComments(
         @Arg("postId", () => String) postId: string,
         @Ctx() { em }: Context
@@ -60,6 +63,7 @@ export class CommentResolver {
     }
 
     @Mutation(() => CommentResponse)
+    @UseMiddleware(AuthMiddleWare)
     async createComment(
         @Arg("options") options: CommentValidator,
         @Arg("parentId", () => String, { nullable: true }) parentId: string,

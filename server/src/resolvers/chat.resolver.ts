@@ -10,6 +10,7 @@ import {
     PubSub,
     Subscription,
     Root,
+    UseMiddleware,
 } from "type-graphql";
 import { Chat } from "./../database/entity/chat.entity";
 import { Context } from "./../context";
@@ -19,6 +20,7 @@ import { Message } from "./../database/entity/message.entity";
 import { GeneralResponse, UserResponse } from "./../helpers/generalTypeReturns";
 import { PubSubEngine } from "graphql-subscriptions";
 import { mapGetUserSeenMessages } from "./../utils/types/chat/chat.map";
+import { AuthMiddleWare } from "helpers/auth";
 
 interface user_chats_chat {
     user_id: string;
@@ -70,6 +72,7 @@ class ChatsResponse {
 @Resolver()
 export class ChatResolver {
     @Query(() => ChatsResponse)
+    @UseMiddleware(AuthMiddleWare)
     async getChats(
         @Arg("participant") participant: string,
         @Ctx() { em }: Context
@@ -125,6 +128,7 @@ export class ChatResolver {
     }
 
     @Mutation(() => GeneralResponse)
+    @UseMiddleware(AuthMiddleWare)
     async addMessageSeenByUser(
         @Arg("messageId") messageId: string,
         @Arg("userId") userId: string,
@@ -181,6 +185,7 @@ export class ChatResolver {
     }
 
     @Mutation(() => MessageResponse)
+    @UseMiddleware(AuthMiddleWare)
     async createMessage(
         @Arg("creatorId") creatorId: string,
         @Arg("chatId", () => String, { nullable: true }) chatId: string,
@@ -338,6 +343,7 @@ export class ChatResolver {
      * this id on it.
      */
     @Mutation(() => GeneralResponse)
+    @UseMiddleware(AuthMiddleWare)
     async updateUnSeenChat(
         @Arg("userId") userId: string,
         @Arg("chatId") chatId: string,
@@ -393,6 +399,7 @@ export class ChatResolver {
     }
 
     @Query(() => UserResponse)
+    @UseMiddleware(AuthMiddleWare)
     async getUserUnseenMessages(
         @Arg("userId") userId: string,
         @Ctx() { em }: Context
