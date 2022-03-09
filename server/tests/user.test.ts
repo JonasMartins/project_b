@@ -15,6 +15,7 @@ describe("User tests", async () => {
     let createdUserId: String = "";
     let createdRoleId: String = "";
     let createdUser: User = null;
+    let Cookies: string = "";
 
     before(async () => {
         application = new Application();
@@ -25,14 +26,48 @@ describe("User tests", async () => {
     });
 
     after(async () => {
+        await request
+            .post("/graphql")
+            .send({
+                query: `mutation {
+                            logout
+                        }`,
+            })
+            .expect(200);
         application.server.close();
     });
 
-    it("Should get the users", async () => {
+    it("Should login the admin user", async () => {
         const response = await request
             .post("/graphql")
             .send({
-                query: `query {
+                query: `mutation {
+                    login(email: "admin@email.com", password: "${process.env.ADMIN_PASS}") {
+                        errors {
+                            message
+                            method
+                            field
+                        }
+                        token
+                    }
+                }`,
+            })
+            .expect(200);
+
+        Cookies = response.headers["set-cookie"].pop().split(";")[0];
+
+        expect(response.body.data.login.token).to.be.a("string");
+    });
+
+    it("Should get the users", async () => {
+        if (!Cookies) {
+            expect.fail("A Cookie must be set here");
+        } else {
+            const response = await request
+                .post("/graphql")
+                .set("Cookie", [Cookies])
+                .send({
+                    query: `query {
                         getUsers(limit: ${10}, offset: ${0}) {
                             errors {
                                 message
@@ -45,22 +80,24 @@ describe("User tests", async () => {
                             }
                         }
                     }`,
-            })
-            .expect(200);
+                })
+                .expect(200);
 
-        expect(response.body.data.getUsers.users).to.be.a("array");
+            expect(response.body.data.getUsers.users).to.be.a("array");
 
-        if (response.body.data.getUsers.users.length) {
-            userId = response.body.data.getUsers.users[0].id;
+            if (response.body.data.getUsers.users.length) {
+                userId = response.body.data.getUsers.users[0].id;
+            }
         }
     });
 
     it("Should get a user by Id", async () => {
-        if (!userId) {
+        if (!userId || !Cookies) {
             expect.fail("An user id must be filled here");
         } else {
             const response = await request
                 .post("/graphql")
+                .set("Cookie", [Cookies])
                 .send({
                     query: `query {
                             getUserById(id: "${userId}") {
@@ -77,10 +114,14 @@ describe("User tests", async () => {
     });
 
     it("Should Create a Role", async () => {
-        const response = await request
-            .post("/graphql")
-            .send({
-                query: `mutation {
+        if (!Cookies) {
+            expect.fail("A Cookie must be set here");
+        } else {
+            const response = await request
+                .post("/graphql")
+                .set("Cookie", [Cookies])
+                .send({
+                    query: `mutation {
                         createRole(
                             options: {
                                 name: "TestRole"
@@ -92,13 +133,14 @@ describe("User tests", async () => {
                                 }
                         }
                     }`,
-            })
-            .expect(200);
+                })
+                .expect(200);
 
-        if (response.body.data.createRole.role.id) {
-            createdRoleId = response.body.data.createRole.role.id;
+            if (response.body.data.createRole.role.id) {
+                createdRoleId = response.body.data.createRole.role.id;
+            }
+            expect(response.body.data.createRole.role).to.be.a("object");
         }
-        expect(response.body.data.createRole.role).to.be.a("object");
     });
 
     it("Should create a User", async () => {
@@ -130,6 +172,7 @@ describe("User tests", async () => {
         }
     });
 
+    /*
     it("Should update user settings", async () => {
         if (!createdUserId.length) {
             expect.fail("An user created id must be filled here");
@@ -139,14 +182,15 @@ describe("User tests", async () => {
                 `,
             });
         }
-    });
+    }); */
 
     it("Should delete a User", async () => {
-        if (!createdUserId.length) {
+        if (!createdUserId.length || !Cookies) {
             expect.fail("An user created id must be filled here");
         } else {
             const response = await request
                 .post("/graphql")
+                .set("Cookie", [Cookies])
                 .send({
                     query: `
                         mutation {
@@ -161,7 +205,7 @@ describe("User tests", async () => {
     });
 
     it("Should delete a Role", async () => {
-        if (!createdRoleId.length) {
+        if (!createdRoleId.length || !Cookies) {
             expect.fail("A role created id must be filled here");
         } else {
             const response = await request
@@ -174,7 +218,6 @@ describe("User tests", async () => {
                     `,
                 })
                 .expect(200);
-
             expect(response.body.data.deleteRole).to.be.true;
         }
     });

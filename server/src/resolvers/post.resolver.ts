@@ -17,7 +17,7 @@ import { Context } from "./../context";
 import { genericError } from "./../helpers/generalAuxMethods";
 import { FileUpload, GraphQLUpload } from "graphql-upload";
 import { HandleUpload } from "./../helpers/handleUpload.helper";
-import { AuthMiddleWare } from "helpers/auth";
+import { AuthMiddleWare } from "./../helpers/auth";
 
 interface postAndCommentsRaw {
     post_id: string;

@@ -20,7 +20,7 @@ import { Message } from "./../database/entity/message.entity";
 import { GeneralResponse, UserResponse } from "./../helpers/generalTypeReturns";
 import { PubSubEngine } from "graphql-subscriptions";
 import { mapGetUserSeenMessages } from "./../utils/types/chat/chat.map";
-import { AuthMiddleWare } from "helpers/auth";
+import { AuthMiddleWare } from "./../helpers/auth";
 
 interface user_chats_chat {
     user_id: string;

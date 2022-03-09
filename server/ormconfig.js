@@ -9,6 +9,7 @@ module.exports = {
     database: `${process.env.DB}`,
     synchronize: false,
     logging: false,
+    keepConnectionAlive: true,
     entities: [
         process.env.NODE_ENV === "test"
             ? "src/**/*.entity.ts"

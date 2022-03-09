@@ -22,7 +22,7 @@ import {
     UserResponse,
     GeneralCountType,
 } from "./../helpers/generalTypeReturns";
-import { AuthMiddleWare } from "helpers/auth";
+import { AuthMiddleWare } from "./../helpers/auth";
 
 @ObjectType()
 class NotificationRespose {

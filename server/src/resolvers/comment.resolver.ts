@@ -15,7 +15,7 @@ import {
 import { genericError } from "./../helpers/generalAuxMethods";
 import { Context } from "./../context";
 import { CommentValidator } from "../database/validators/comment.validator";
-import { AuthMiddleWare } from "helpers/auth";
+import { AuthMiddleWare } from "./../helpers/auth";
 
 @ObjectType()
 class CommentsResponse {

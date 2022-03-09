@@ -15,7 +15,7 @@ import { User } from "./../database/entity/user.entity";
 import { Context } from "./../context";
 import { genericError } from "./../helpers/generalAuxMethods";
 import { EmotionType } from "./../database/enum/emotionType.enum";
-import { AuthMiddleWare } from "helpers/auth";
+import { AuthMiddleWare } from "./../helpers/auth";
 
 @ObjectType()
 class EmotionResponse {

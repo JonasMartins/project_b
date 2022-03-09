@@ -1,4 +1,4 @@
-import { AuthMiddleWare } from "helpers/auth";
+import { AuthMiddleWare } from "./../helpers/auth";
 import {
     Arg,
     Ctx,
@@ -89,7 +89,6 @@ export class RoleResolver {
     }
 
     @Mutation(() => RoleResponse)
-    @UseMiddleware(AuthMiddleWare)
     async createRole(
         @Arg("options") options: RoleValidator,
         @Ctx() { em }: Context
@@ -125,7 +124,6 @@ export class RoleResolver {
     }
 
     @Mutation(() => Boolean)
-    @UseMiddleware(AuthMiddleWare)
     async deleteRole(
         @Arg("id") id: string,
         @Ctx() { em }: Context
